@@ -270,7 +270,9 @@ async function loadBackends() {
   document.querySelector("#ju-table tbody").replaceChildren(...ju.judges.map(j => el("tr", {},
     el("td", { class: "mono", text: j.id }), el("td", { text: j.kind + (j.provider ? ` (${j.provider})` : "") }),
     el("td", { class: "mono", text: j.found_by || "" }), el("td", { text: j.consent }),
-    el("td", { text: j.usable === false ? `no: ${j.reason}` : "yes" }))));
+    el("td", { text: j.usable === false ? `no: ${j.reason}` : "yes" }),
+    el("td", { text: !j.adversarial ? "not recorded" : j.adversarial.reliable ? `reliable (${j.adversarial.recorded})`
+      : `UNRELIABLE: fooled on ${j.adversarial.missed_files} of ${j.adversarial.files} files` }))));
   document.getElementById("ju-default").textContent = `Auto picks: ${ju.default || "none (no on-device judge found)"}. Hosted judges are never picked automatically.`;
   const agreement = last ? Object.entries(last.summary.agreement) : [];
   document.querySelector("#agree-table tbody").replaceChildren(...agreement.map(([k, v]) => el("tr", {},

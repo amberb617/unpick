@@ -120,6 +120,13 @@ def main() -> None:
               "the provider, so run `python tests/adversarial/eval.py <judge-id>` yourself and commit the result. "
               "Codex CLI and Grok CLI are never used as judges (they cannot be confirmed to run with zero tools).", ""]
     OUT.write_text("\n".join(lines), encoding="utf-8")
+    reliability = {}
+    for rec_path in sorted(JUDGES.glob("*.json")):
+        rec = json.loads(rec_path.read_text(encoding="utf-8"))
+        reliability[rec["judge"]] = {"reliable": rec["reliable"], "recorded": rec["date"],
+                                     "missed_files": sum(bool(v["missed"]) for v in rec["results"].values()),
+                                     "files": len(rec["results"])}
+    (HERE.parent / "data" / "judge_reliability.json").write_text(json.dumps(reliability, indent=2) + "\n", encoding="utf-8")
     print(OUT.read_text(encoding="utf-8"))
 
 

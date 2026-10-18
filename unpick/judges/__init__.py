@@ -25,7 +25,7 @@ import secrets
 from dataclasses import dataclass, field
 
 from unpick.finding import Finding, with_context
-from unpick.resources import data_dir, schemas_dir
+from unpick.resources import data_dir, load_json, schemas_dir
 
 PROMPT_VERSION = "judge-v1"
 CHUNK_LINES = 200
@@ -70,8 +70,17 @@ def detect_all() -> list[dict]:
             row.setdefault("kind", mod.KIND)
             row.setdefault("provider", getattr(mod, "PROVIDER", None))
             row["consent"] = "not needed" if mod.KIND == "on-device" else consent.status(row["provider"])
+            row["adversarial"] = _reliability().get(row["id"])
             rows.append(row)
     return rows
+
+
+def _reliability() -> dict:
+    """Adversarial-corpus results per judge id, written by tests/benchmark.py (docs/BENCHMARK.md)."""
+    try:
+        return load_json("judge_reliability.json")
+    except FileNotFoundError:
+        return {}
 
 
 def default_judge() -> str | None:
@@ -82,7 +91,10 @@ def default_judge() -> str | None:
 
 
 def schema() -> dict:
-    return json.loads((schemas_dir() / "judge.schema.json").read_text(encoding="utf-8"))
+    """The judge schema as runtimes take it: without $schema / $id, which some validators refuse
+    (Claude Code's --json-schema rejects the draft 2020-12 meta-schema reference)."""
+    sch = json.loads((schemas_dir() / "judge.schema.json").read_text(encoding="utf-8"))
+    return {k: v for k, v in sch.items() if k not in ("$schema", "$id")}
 
 
 def build_prompt(rel: str, lines: list[str], start: int) -> str:

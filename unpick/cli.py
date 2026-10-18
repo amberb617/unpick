@@ -202,6 +202,14 @@ def cmd_backends(args) -> int:
     return 0
 
 
+def _adv(a: dict | None) -> str:
+    if not a:
+        return "not recorded"
+    if a["reliable"]:
+        return f"reliable ({a['recorded']})"
+    return f"UNRELIABLE: fooled on {a['missed_files']} of {a['files']} files ({a['recorded']})"
+
+
 def cmd_judges(args) -> int:
     from unpick import judges
 
@@ -210,11 +218,11 @@ def cmd_judges(args) -> int:
     rows = judges.detect_all()
     def render(rows):
         t = Table(title="Judges found (a judge is one witness, never the verdict)")
-        for c in ("id", "where", "found by", "consent", "usable"):
+        for c in ("id", "where", "found by", "consent", "usable", "adversarial corpus"):
             t.add_column(c, overflow="fold")
         for r in rows:
             t.add_row(esc(r["id"]), r["kind"] + (f" ({r['provider']})" if r.get("provider") else ""), esc(r.get("found_by", "")),
-                      r["consent"], "yes" if r.get("usable", True) else esc("no: " + r.get("reason", "")))
+                      r["consent"], "yes" if r.get("usable", True) else esc("no: " + r.get("reason", "")), _adv(r.get("adversarial")))
         console.print(t)
         d = judges.default_judge()
         console.print(f"default for --judge auto: {esc(d) if d else 'none (no on-device judge found)'}")
@@ -229,12 +237,18 @@ def _install_fallback(args) -> int:
         print("unpick: only the 'fallback' judge can be installed by unpick", file=sys.stderr)
         return 2
     if not args.online:
-        print(f"unpick: this downloads {fallback.FILE} ({fallback.SIZE / 1e9:.1f} GB) from huggingface.co "
-              f"({fallback.REPO} @ {fallback.REVISION[:7]}); re-run with --online", file=sys.stderr)
+        print(f"unpick: this installs {fallback.RUNTIME} from PyPI and downloads {fallback.FILE} "
+              f"({fallback.SIZE / 1e9:.1f} GB) from huggingface.co ({fallback.REPO} @ {fallback.REVISION[:7]}); "
+              "re-run with --online", file=sys.stderr)
         return 2
-    path = fallback.install(lambda done, total: console.print(f"\r{done / total:6.1%}", end=""))
-    _out(args, {"installed": path, "sha256": fallback.SHA256},
-         lambda d: console.print(f"\nverified and installed {esc(path)}. Runtime: pip install {fallback.INSTALL_RUNTIME}"))
+    code, log = fallback.install_runtime()
+    if code != 0:
+        print(f"unpick: could not install the runtime ({' '.join(fallback.runtime_argv()[3:])}):\n{log}", file=sys.stderr)
+        return 2
+    path = str(fallback.MODEL) if fallback.verified() else fallback.install(
+        lambda done, total: console.print(f"\r{done / total:6.1%}", end=""))
+    _out(args, {"installed": path, "sha256": fallback.SHA256, "runtime": fallback.RUNTIME},
+         lambda d: console.print(f"\nverified and installed {esc(path)} and {fallback.RUNTIME}"))
     return 0
 
 

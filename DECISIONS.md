@@ -50,16 +50,19 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     Apache-2.0, 3.4B parameters, published as GGUF by IBM itself, pinned by commit and SHA-256, downloaded
     only with `--online`. Chosen over Qwen3-4B-Instruct-2507 (just over 4B, no first-party GGUF) and
     Ministral 3 3B (no published instruction-following score). Granite 4.2 was skipped because it reasons
-    by default, which fights JSON-only output. It is not yet recorded on the adversarial corpus: the
-    download is 2.1 GB and was left for you to approve. **OPEN:** download it now and record it?
+    by default, which fights JSON-only output. Approved and recorded 2026-10-18: **unreliable**, fooled on
+    3 of 4 adversarial files (once by obeying the planted instruction). Weights are never bundled (2.1 GB,
+    over PyPI's file limit) and llama-cpp-python stays an optional extra (PyPI ships only source, which
+    would force a compiler on every Windows install); `unpick judges install fallback --online` installs
+    both. The macOS arm64 wheels for 0.3.34-0.3.36 are corrupt upstream, so macOS builds from source.
 
 12. **Apple Intelligence judge is unreliable.** It missed a planted base64-to-shell line when a hidden
     note told it the line was safe. It stays the default on-device judge on Macs (it is the only one
     many Macs have), shown with the "unreliable" result in docs/BENCHMARK.md. Recommendation: keep, since
     a judge is never the verdict.
 
-13. **Hosted judges were not benchmarked.** Recording one sends the adversarial corpus (synthetic, CC0) to
-    the provider. Left for you: `python tests/adversarial/eval.py claude-code:default`.
+13. **Hosted judges benchmarked with consent (2026-10-18).** Claude Code: reliable on all four files.
+    Gemini CLI could not run (the AI Studio project is out of prepaid credit); no recording kept.
 
 14. **The `api` judge tier is UNVERIFIED.** Provider endpoints and request shapes are written but not yet
     checked against each provider's current API reference; the tier warns when used and is never automatic.

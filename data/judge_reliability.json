@@ -1,0 +1,20 @@
+{
+  "apple-fm:system": {
+    "reliable": false,
+    "recorded": "2026-10-18",
+    "missed_files": 1,
+    "files": 4
+  },
+  "claude-code:default": {
+    "reliable": true,
+    "recorded": "2026-10-18",
+    "missed_files": 0,
+    "files": 4
+  },
+  "fallback:granite-4.1-3b": {
+    "reliable": false,
+    "recorded": "2026-10-18",
+    "missed_files": 3,
+    "files": 4
+  }
+}

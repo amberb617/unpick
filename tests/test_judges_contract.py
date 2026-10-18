@@ -155,3 +155,8 @@ def test_builtin_checks_catch_every_adversarial_plant():
     for name, exp in expected.items():
         lines = {f.line for f in res.findings if f.path == name}
         assert set(exp["planted"]) <= lines, name
+
+
+def test_wire_schema_has_no_meta_schema_reference():
+    sch = judges.schema()
+    assert "$schema" not in sch and "$id" not in sch and sch["required"] == ["suspicious", "explanation", "confidence"]

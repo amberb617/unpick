@@ -3,7 +3,7 @@
     python tests/adversarial/eval.py apple-fm:system
 
 Writes tests/fixtures/judges/<tier>.json. The contract tests replay those answers, so CI needs no model.
-Hosted tiers send this corpus (synthetic, CC0) to their provider; you are asked first.
+Hosted tiers send this corpus (synthetic, CC0) to their provider; you are asked first, or pass --yes.
 """
 
 from __future__ import annotations
@@ -20,9 +20,12 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "fixtures" / "judges"
 
 
-def main(judge_id: str) -> int:
+def main(judge_id: str, yes: bool = False) -> int:
     tier = judge_id.partition(":")[0]
     mod = judges.tiers()[tier]
+    if yes and mod.KIND == "hosted":  # --yes: the person running this consented for this run only
+        from unpick import consent
+        consent._session.add(mod.provider_for(judge_id.partition(":")[2]) if hasattr(mod, "provider_for") else mod.PROVIDER)
     raw: dict[str, list[str]] = {}
     real = mod.complete
 
@@ -52,4 +55,4 @@ def main(judge_id: str) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1]))
+    raise SystemExit(main(sys.argv[1], "--yes" in sys.argv[2:]))

@@ -32,8 +32,12 @@ URL = f"https://huggingface.co/{REPO}/resolve/{REVISION}/{FILE}"
 MIN_RUNTIME = (0, 3, 17)
 MODEL = Path.home() / ".unpick" / "models" / FILE
 VERIFIED_MARK = MODEL.with_suffix(".sha256-ok")
-INSTALL_RUNTIME = ("llama-cpp-python==0.3.36 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu "
-                   "--only-binary=llama-cpp-python")
+RUNTIME = "llama-cpp-python==0.3.36"
+WHEEL_INDEX = "https://abetlen.github.io/llama-cpp-python/whl/cpu"
+# The macOS arm64 wheels on that index (0.3.34-0.3.36) are corrupt zip files even though they match
+# GitHub's published digests (checked 2026-10-18), so macOS builds from source with the Xcode tools;
+# Windows x64 and Linux x64/arm64 wheels were verified intact.
+INSTALL_RUNTIME = f"{RUNTIME} --extra-index-url {WHEEL_INDEX} --only-binary=llama-cpp-python"
 UNVERIFIED = "end-to-end JSON-schema run with this model not yet recorded; see docs/BENCHMARK.md"
 
 _llm = None
@@ -83,6 +87,26 @@ def detect() -> list[dict]:
     if not verified():
         return [{**row, "usable": False, "reason": "model file does not match the pinned SHA-256; delete it and reinstall"}]
     return [row]
+
+
+def runtime_argv() -> list[str]:
+    """pip command for this OS: prebuilt CPU wheel on Windows and Linux, source build on macOS."""
+    import platform
+    import sys
+    base = [sys.executable, "-m", "pip", "install", RUNTIME]
+    if platform.system() == "Darwin":
+        return base + ["--no-binary=llama-cpp-python"]
+    return base + ["--extra-index-url", WHEEL_INDEX, "--only-binary=llama-cpp-python"]
+
+
+def install_runtime() -> tuple[int, str]:
+    """Install llama-cpp-python into unpick's own environment. Downloads from PyPI/GitHub; callers require --online."""
+    import subprocess
+    rt = _runtime_version()
+    if rt is not None and rt >= MIN_RUNTIME:
+        return 0, "runtime already installed"
+    p = subprocess.run(runtime_argv(), capture_output=True, text=True)
+    return p.returncode, (p.stdout + p.stderr)[-1500:]
 
 
 def install(progress=None) -> str:

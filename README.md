@@ -58,7 +58,7 @@ is no telemetry, no auto-update and no version check.
 |---|---|---|
 | `unpick backends install <name> --online` | PyPI (and GitHub for SkillSpector) | a normal package download request |
 | `unpick backends install <name> --docker --online` | Docker Hub and PyPI | image and package download requests |
-| `unpick judges install fallback --online` | huggingface.co | a download request for one pinned model file (2.1 GB) |
+| `unpick judges install fallback --online` | PyPI and GitHub (runtime), huggingface.co (model) | download requests for llama-cpp-python and one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
 | `scan --backends jiffy --online` | Jiffy Labs API (commercial; the author's company) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
 | `scan --judge claude-code:<model>` | Anthropic, via the Claude Code CLI | the full content of every scanned file. Asks first, every session |
@@ -94,15 +94,15 @@ the fallback judge.
 
 **Fallback judge for Windows and Linux.** When no other local model exists, unpick can use IBM
 Granite 4.1 3B (Apache-2.0), run in-process on CPU by llama-cpp-python. No weights ship with unpick.
-`unpick judges install fallback --online` downloads one pinned 2.1 GB GGUF file from IBM's own
-Hugging Face repository and checks its SHA-256; a file that does not match is never loaded. Install the
-runtime from prebuilt CPU wheels (no compiler needed on Windows x64, Linux x64/arm64 or Apple silicon):
+One opt-in command sets it up: `unpick judges install fallback --online` installs the llama-cpp-python
+runtime into unpick's own environment (a prebuilt CPU wheel on Windows x64 and Linux, no compiler
+needed; a source build on macOS, which needs the Xcode command line tools, because the published macOS
+wheels are corrupt), then downloads one pinned 2.1 GB GGUF file from IBM's Hugging Face repository and
+checks its SHA-256. A file that does not match is never loaded. Version 0.3.17 or later is required
+(CVE-2026-27940).
 
-```
-pip install llama-cpp-python==0.3.36 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --only-binary=llama-cpp-python
-```
-
-Version 0.3.17 or later is required (CVE-2026-27940). Intel Macs and Windows on Arm compile from source.
+Be clear about what it is: on the adversarial corpus Granite was fooled on three of four files, once by
+obeying a planted "return an empty list" instruction. It is a witness of last resort, not a safety net.
 
 Hosted judges (Claude Code CLI, Gemini CLI, an API key in your environment) are never used
 automatically. Codex CLI and Grok CLI are detected but never used as judges, because neither can be
@@ -121,7 +121,8 @@ confirmed to run with zero tools.
 - The built-in checks read prose and configuration well and code poorly. On Cisco's labelled eval set,
   which is mostly Python, they catch a minority of malicious cases; see docs/BENCHMARK.md.
 - They flag a share of honest files too. That is why every finding explains when it is a false positive.
-- The Apple Intelligence judge missed a planted line on the adversarial corpus and is marked unreliable.
+- On the adversarial corpus, Claude Code (hosted) caught every planted line; Apple Intelligence missed one
+  file and Granite 4.1 3B missed three. `unpick judges` shows each judge's result next to it.
 - A component can behave differently later (sleeper and rug-pull patterns). Re-check on every update.
 
 UNVERIFIED items are listed in docs/VERIFIED.md and warned about at run time: the `api` judge tier's
