@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from runthrough import consent, judges
-from runthrough.checks import Doc
+from unpick import consent, judges
+from unpick.checks import Doc
 
 HERE = Path(__file__).resolve().parent
 ADV = HERE / "adversarial"
@@ -110,14 +110,14 @@ def test_default_judge_is_never_hosted(monkeypatch):
 
 
 def test_codex_and_grok_are_never_usable():
-    from runthrough.judges import codex, grok
+    from unpick.judges import codex, grok
     for mod in (codex, grok):
         for row in mod.detect():
             assert row["usable"] is False and "zero tools" in row["reason"]
 
 
 def test_claude_judge_invocation_disables_tools():
-    from runthrough.judges import claude_code
+    from unpick.judges import claude_code
     argv = claude_code.argv("default", {"type": "object"})
     for flag in ("--tools", "--strict-mcp-config", "--setting-sources", "--no-session-persistence", "--json-schema"):
         assert flag in argv
@@ -125,7 +125,7 @@ def test_claude_judge_invocation_disables_tools():
 
 
 def test_local_tiers_refuse_non_loopback():
-    from runthrough.judges import _local
+    from unpick.judges import _local
     with pytest.raises(ValueError):
         _local.post_json("https://api.example.invalid/v1/chat/completions", {})
     assert _local.is_loopback("http://127.0.0.1:11434") and not _local.is_loopback("http://10.0.0.5:11434")
@@ -149,7 +149,7 @@ def test_recorded_adversarial_answers_replay(monkeypatch, recording):
 
 
 def test_builtin_checks_catch_every_adversarial_plant():
-    from runthrough import scan
+    from unpick import scan
     expected = json.loads((ADV / "expected.json").read_text(encoding="utf-8"))
     res = scan.scan(ADV, decision_files=[])
     for name, exp in expected.items():

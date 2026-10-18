@@ -1,7 +1,7 @@
 import json
 
-from runthrough import decisions, scan
-from runthrough.cli import main
+from unpick import decisions, scan
+from unpick.cli import main
 
 
 def test_sample_a_has_exactly_three_planted_lines(kit):
@@ -39,7 +39,7 @@ def test_changed_line_fires_again(kit):
 def test_decide_by_id_round_trip(kit, monkeypatch):
     monkeypatch.chdir(kit)
     assert main(["scan", "sample-b", "--no-decisions", "--json"]) == 1
-    last = json.loads((kit / ".runthrough" / "last-scan.json").read_text(encoding="utf-8"))
+    last = json.loads((kit / ".unpick" / "last-scan.json").read_text(encoding="utf-8"))
     fid = last["findings"][0]["id"]
     assert main(["decide", fid, "accept", "--note", "warns against committing secrets"]) == 0
     assert main(["scan", "sample-b", "--json"]) == 0

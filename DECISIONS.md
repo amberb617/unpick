@@ -1,23 +1,22 @@
 # Decisions
 
-Each entry: the question, what runthrough does now (the recommendation it is running on), and what would
+Each entry: the question, what unpick does now (the recommendation it is running on), and what would
 change it. Open ones are marked **OPEN**. Answer by editing this file or telling the maintainer.
 
 ## Phase 1
 
-1. **Name.** `runthrough` is free on PyPI and npm. On GitHub the `runthrough` organisation exists
-   (created 2024, no public repos), so `github.com/runthrough` is unavailable; the repository name is
-   free under `amberb617` and `Jiffy-Labs-AI`. `thatsall` and `priestly` are taken as GitHub user
-   accounts too, so falling back gains nothing. Running on: `runthrough`. **OPEN:** host the repository
-   under `amberb617/runthrough` (personal, vendor-neutral) or `Jiffy-Labs-AI/runthrough`? Recommendation:
-   `amberb617`, because the talk is vendor-neutral and the org name would read as a product.
+1. **Name: `unpick`** (decided 2026-10-18; replaces `runthrough`, which reads like "ran through").
+   To unpick a seam is to take it apart stitch by stitch and see what was sewn in, and "unpick" also
+   means to examine something carefully. Free on PyPI and npm, and as `amberb617/unpick` on GitHub
+   (a GitHub user named `unpick` exists, so `github.com/unpick` is not ours). Alternates that were also
+   free everywhere: `seamrip`, `tailorcheck`. Repository: `amberb617/unpick`, private until you publish it.
 
-2. **Where the code lives locally.** `~/Desktop/bsides-cambridge/runthrough`, next to the talk material,
+2. **Where the code lives locally.** `~/Desktop/bsides-cambridge/unpick`, next to the talk material,
    not under `~/jiffy/` (that folder is auto-synced from the Jiffy-Labs-AI org).
 
-3. **What `scan .` skips in this repo.** `.runthroughignore` skips `tests/`, `data/`, `demo/` and
-   `runthrough/demo_kit/`, each with a reason. The remaining findings in source and docs (the tool's own
-   descriptions of attacks) are accepted in `.runthrough/decisions.json` with notes. The demo kit passes
+3. **What `scan .` skips in this repo.** `.unpickignore` skips `tests/`, `data/`, `demo/` and
+   `unpick/demo_kit/`, each with a reason. The remaining findings in source and docs (the tool's own
+   descriptions of attacks) are accepted in `.unpick/decisions.json` with notes. The demo kit passes
    on its own with `demo/accepted.decisions.json`, which is a separate test.
 
 4. **Decision key.** Accepted findings are suppressed by rule id plus the content hash of the matched
@@ -37,7 +36,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 8. **Codex CLI and Grok CLI are not judges.** Neither can be confirmed to run with zero tools (Codex has
    no all-tools switch and cannot print its tool list; Grok keeps MCP tools available and loads other
-   agents' MCP servers and allow rules). Both are listed by `runthrough judges` with the reason.
+   agents' MCP servers and allow rules). Both are listed by `unpick judges` with the reason.
    Revisit when either ships a verifiable no-tools mode.
 
 9. **Gemini CLI as a judge** has no schema flag. The schema goes in the prompt and the answer is

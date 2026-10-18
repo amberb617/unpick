@@ -19,8 +19,8 @@ from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
-from runthrough import scan
-from runthrough.checks import all_checks
+from unpick import scan
+from unpick.checks import all_checks
 
 HERE = Path(__file__).resolve().parent
 BENIGN = HERE / "fixtures" / "benign"
@@ -70,7 +70,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backends", default="")
     args = ap.parse_args()
-    from runthrough import backends as be
+    from unpick import backends as be
     names = [r["name"] for r in be.describe() if r["installed"] and not r["needs_online"]] if args.backends == "installed" else [
         b for b in args.backends.split(",") if b]
 

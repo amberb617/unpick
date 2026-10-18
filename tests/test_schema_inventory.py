@@ -3,8 +3,8 @@ from pathlib import Path
 
 import jsonschema
 
-from runthrough import inventory, scan
-from runthrough.resources import load_json, schemas_dir
+from unpick import inventory, scan
+from unpick.resources import load_json, schemas_dir
 
 
 def test_findings_match_schema(kit):

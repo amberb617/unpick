@@ -12,7 +12,7 @@ skillspector scan <skill-dir> --no-llm
 ```
 
 Even with `--no-llm` it sends dependency names to OSV.dev when the skill has a manifest, and no flag
-turns that off. Block it at the OS level (runthrough's `--boxed`, or any no-network sandbox); it then
+turns that off. Block it at the OS level (unpick's `--boxed`, or any no-network sandbox); it then
 falls back to its bundled advisory list.
 Source: https://github.com/nvidia/skillspector @ cf5cac7 (static_patterns_supply_chain.py, osv_client.py).
 

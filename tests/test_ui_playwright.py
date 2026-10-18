@@ -10,7 +10,7 @@ import pytest
 
 sync_api = pytest.importorskip("playwright.sync_api")
 
-from runthrough.ui.server import create_app, free_port  # noqa: E402
+from unpick.ui.server import create_app, free_port  # noqa: E402
 
 SHOTS = Path(__file__).resolve().parents[1] / "docs" / "screenshots" / "ui"
 
@@ -42,7 +42,7 @@ def page():
 def test_scan_screen(ui, page, theme):
     url, kit = ui
     page.goto(url + "#scan")
-    page.evaluate(f"localStorage.setItem('runthrough-theme', '{theme}')")
+    page.evaluate(f"localStorage.setItem('unpick-theme', '{theme}')")
     page.reload()
     page.fill("#scan-path", "sample-a")
     page.click("#scan-form button[type=submit]")
@@ -73,7 +73,7 @@ def test_decide_from_ui(ui, page):
     page.wait_for_selector(".finding")
     page.click(".finding .decide button:text('accept')")
     page.wait_for_selector(".finding.decided")
-    assert (kit / ".runthrough" / "decisions.json").is_file()
+    assert (kit / ".unpick" / "decisions.json").is_file()
     page.screenshot(path=str(SHOTS / "scan-false-positive-accepted.png"))
 
 

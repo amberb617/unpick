@@ -1,6 +1,6 @@
 # Verified claims
 
-Every file path, config key, CLI flag, API and registry URL runthrough relies on, with where and when it was checked.
+Every file path, config key, CLI flag, API and registry URL unpick relies on, with where and when it was checked.
 Format: `<claim> — verified <date> against <URL or repo@commit>`. Lines marked UNVERIFIED are gated behind a warning in code and README.
 
 ## inventory
@@ -634,4 +634,4 @@ No model weights were downloaded. Sizes and sha256 come from the Hugging Face tr
 
 ## api judge tier
 
-- Provider API endpoints and request shapes in runthrough/judges/api.py — UNVERIFIED (not yet checked against each provider's current API reference)
+- Provider API endpoints and request shapes in unpick/judges/api.py — UNVERIFIED (not yet checked against each provider's current API reference)

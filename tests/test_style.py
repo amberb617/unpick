@@ -3,7 +3,7 @@
 import ast
 from pathlib import Path
 
-PKG = Path(__file__).resolve().parents[1] / "runthrough"
+PKG = Path(__file__).resolve().parents[1] / "unpick"
 
 
 def test_no_nested_ternaries():

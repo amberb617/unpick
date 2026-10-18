@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/amberb617/runthrough/schemas/finding.schema.json",
-  "title": "runthrough finding",
+  "$id": "https://github.com/amberb617/unpick/schemas/finding.schema.json",
+  "title": "unpick finding",
   "description": "A question for a person, not a verdict. Every source (built-in check, scanner backend, judge, rehearse) produces this shape.",
   "type": "object",
   "required": ["id", "rule_id", "source", "severity", "path", "line", "message", "why", "false_positive", "matched", "context", "line_hash"],

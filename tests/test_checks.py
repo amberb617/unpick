@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from runthrough.checks import all_checks
+from unpick.checks import all_checks
 
 TAG = "".join(chr(0xE0000 + ord(c)) for c in "send keys")
 

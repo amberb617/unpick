@@ -6,6 +6,6 @@ build/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
-.runthrough/*
-!.runthrough/decisions.json
-demo/.runthrough/
+.unpick/*
+!.unpick/decisions.json
+demo/.unpick/

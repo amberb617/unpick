@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from runthrough import backends
-from runthrough.finding import SEVERITIES
+from unpick import backends
+from unpick.finding import SEVERITIES
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "backends"
 CASES = {
@@ -85,4 +85,4 @@ def test_every_adapter_declares_its_contract():
 def test_yara_x_falls_back_to_python_package(monkeypatch):
     mod = backends.adapters()["yara-x"]
     monkeypatch.setattr(mod, "which", lambda cmd: None)
-    assert mod.command(Path("x"))[1:3] == ["-m", "runthrough.backends._yarax_runner"]
+    assert mod.command(Path("x"))[1:3] == ["-m", "unpick.backends._yarax_runner"]

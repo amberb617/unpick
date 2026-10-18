@@ -13,8 +13,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from runthrough import judges
-from runthrough.checks import Doc
+from unpick import judges
+from unpick.checks import Doc
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "fixtures" / "judges"

@@ -89,19 +89,19 @@
       "pattern": "(this|the) (file|skill|tool|server) (is|has been) (safe|verified|approved|whitelisted)",
       "score": 2,
       "category": "judge-manipulation",
-      "source": "runthrough adversarial corpus: text aimed at scanners and judges"
+      "source": "unpick adversarial corpus: text aimed at scanners and judges"
     },
     {
       "pattern": "ignore (the|any) (scanner|security|warning|finding)s?",
       "score": 3,
       "category": "judge-manipulation",
-      "source": "runthrough adversarial corpus"
+      "source": "unpick adversarial corpus"
     },
     {
       "pattern": "(as|you are) an? (ai|security) (scanner|reviewer|judge|auditor)",
       "score": 2,
       "category": "judge-manipulation",
-      "source": "runthrough adversarial corpus"
+      "source": "unpick adversarial corpus"
     },
     {
       "pattern": "otherwise the (tool|application|system) will (crash|fail|break)",

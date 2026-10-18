@@ -2,8 +2,8 @@
 
 A judge is a language model that reads a file and says what it thinks the file would make an agent do.
 It is useful because it can read intent in plain English, which pattern rules cannot. It is also the
-easiest part of runthrough to fool, because the file it reads was written by the person you are worried
-about. So runthrough treats a judge's opinion as one vote, shown with a judge badge, and never as the
+easiest part of unpick to fool, because the file it reads was written by the person you are worried
+about. So unpick treats a judge's opinion as one vote, shown with a judge badge, and never as the
 reason on its own for calling something safe or unsafe.
 
 ## How the judge is protected from the file

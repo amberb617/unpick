@@ -4,7 +4,7 @@ import pytest
 
 pytest.importorskip("flask")
 
-from runthrough.ui.server import create_app  # noqa: E402
+from unpick.ui.server import create_app  # noqa: E402
 
 PORT, TOKEN = 47000, "t0ken"
 
@@ -16,7 +16,7 @@ def client(kit):
 
 
 def h(**extra):
-    return {"Host": f"127.0.0.1:{PORT}", "X-Runthrough-Token": TOKEN, **extra}
+    return {"Host": f"127.0.0.1:{PORT}", "X-Unpick-Token": TOKEN, **extra}
 
 
 def test_rejects_foreign_host(client):
@@ -26,7 +26,7 @@ def test_rejects_foreign_host(client):
 
 def test_api_needs_token(client):
     assert client.get("/api/meta", headers={"Host": f"127.0.0.1:{PORT}"}).status_code == 403
-    assert client.get("/api/meta", headers=h(**{"X-Runthrough-Token": "wrong"})).status_code == 403
+    assert client.get("/api/meta", headers=h(**{"X-Unpick-Token": "wrong"})).status_code == 403
     assert client.get("/api/meta", headers=h()).status_code == 200
 
 
@@ -48,7 +48,7 @@ def test_strict_csp_and_no_external_assets(client):
 def test_scan_matches_cli_json(client, kit, capsys):
     import json
 
-    from runthrough.cli import main
+    from unpick.cli import main
     ui = client.post("/api/scan", json={"path": str(kit / "sample-a")}, headers=h()).get_json()
     main(["scan", str(kit / "sample-a"), "--json", "--no-decisions"])
     cli = json.loads(capsys.readouterr().out)
@@ -66,7 +66,7 @@ def test_decide_and_exports(client, kit):
 
 
 def test_export_html_escapes_untrusted_content(tmp_path):
-    from runthrough import report
+    from unpick import report
     d = {"target": "<script>x</script>", "runs": [], "sources": ["builtin"], "files": [], "summary": {},
          "findings": [{"rule_id": "R", "source": "builtin", "severity": "high", "path": "a", "line": 1,
                        "message": "<img src=x onerror=alert(1)>", "why": "w.", "false_positive": "f.",

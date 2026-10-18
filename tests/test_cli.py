@@ -1,6 +1,6 @@
 import json
 
-from runthrough.cli import main
+from unpick.cli import main
 
 
 def test_exit_codes(kit, tmp_path, capsys):
@@ -27,7 +27,7 @@ def test_raw_json(kit, capsys):
 
 
 def test_every_command_has_json_and_no_color():
-    from runthrough.cli import build_parser
+    from unpick.cli import build_parser
     sub = next(a for a in build_parser()._actions if a.dest == "cmd")
     for name, parser in sub.choices.items():
         opts = {o for a in parser._actions for o in a.option_strings}

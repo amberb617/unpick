@@ -1,4 +1,4 @@
-// runthrough bundled YARA-X rules. Byte-level twins of the built-in checks, so YARA-X can run as an
+// unpick bundled YARA-X rules. Byte-level twins of the built-in checks, so YARA-X can run as an
 // independent second opinion. Each rule cites where the pattern comes from.
 
 rule base64_pipe_to_shell {

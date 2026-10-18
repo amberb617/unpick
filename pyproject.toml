@@ -3,7 +3,7 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "runthrough"
+name = "unpick"
 version = "0.1.0"
 description = "Vet AI components (skills, rules files, MCP servers, plugins) on your own laptop, offline by default."
 readme = "README.md"
@@ -21,16 +21,16 @@ dev = ["pytest>=8", "jsonschema>=4", "ruff>=0.6", "flask>=3"]
 uitest = ["playwright>=1.48"]
 
 [project.scripts]
-runthrough = "runthrough.cli:main"
+unpick = "unpick.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["runthrough"]
+packages = ["unpick"]
 
 # data/ and schemas/ live at the repo root so contributors find them; ship them inside the wheel.
 [tool.hatch.build.targets.wheel.force-include]
-"data" = "runthrough/_data"
-"schemas" = "runthrough/_schemas"
-"shims" = "runthrough/_shims"
+"data" = "unpick/_data"
+"schemas" = "unpick/_schemas"
+"shims" = "unpick/_shims"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

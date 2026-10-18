@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from runthrough import demo
-from runthrough.checks import Doc, run_checks
+from unpick import demo
+from unpick.checks import Doc, run_checks
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).resolve().parent / "fixtures"

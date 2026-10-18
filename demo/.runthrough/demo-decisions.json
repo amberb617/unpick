@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "decisions": [
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "d83b4839aa6d87c01d04df9bd16161f121cd497d346f5958dcb1117951faa2d4",
+      "decision": "accept",
+      "note": "benign: the skill warns against committing secrets",
+      "path": "SKILL.md",
+      "line": 19,
+      "source": "builtin",
+      "matched": "- Never commit your .env file; if it shows up in the staged diff, stop and tell the user to unstage it.",
+      "decided_at": "2026-10-18T22:09:48+00:00"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: defanged-test-skill
-description: DEFANGED runthrough test fixture. Formats text. Not a real skill; do not install.
+description: DEFANGED unpick test fixture. Formats text. Not a real skill; do not install.
 license: Apache-2.0
 ---
 

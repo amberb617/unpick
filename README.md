@@ -1,14 +1,14 @@
-# runthrough
+# unpick
 
 *Gird your loins. Then read the Markdown raw.*
 
-runthrough vets AI components on your own laptop before they go out on the runway: agent skills
+unpick vets AI components on your own laptop before you trust them: agent skills
 (SKILL.md folders), IDE rules files, MCP servers and their tool descriptions, and Claude Code plugins
 and hooks. It is for people with no security team, no budget and no vendor accounts. It runs offline by
 default, and it is fully useful with nothing else installed.
 
-The name is the fashion-show run-through: the inspection where every piece gets judged before it goes
-out. It backs the BSides Cambridge talk "The Devil Wears Markdown".
+To unpick a seam is to take it apart stitch by stitch and see what was sewn in. unpick does that to a
+Markdown file. It backs the BSides Cambridge talk "The Devil Wears Markdown".
 
 ## Install
 
@@ -24,17 +24,17 @@ the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below
 
 | step | what you do | command |
 |---|---|---|
-| 1. Who made it? | provenance: author, age, publisher matches the name | `runthrough check <url>` (phase 3) |
-| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `runthrough raw SKILL.md` |
-| 3. Scan offline | built-in checks, plus any scanners and judge you have | `runthrough scan <path>` |
-| 4. First run in a box | no network, no real credentials | `runthrough rehearse <path>` (phase 3) |
-| 5. Pin and re-check | lockfile, diff on update | `runthrough lock` / `verify` (phase 3) |
+| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url>` (phase 3) |
+| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` |
+| 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` |
+| 4. First run in a box | no network, no real credentials | `unpick rehearse <path>` (phase 3) |
+| 5. Pin and re-check | lockfile, diff on update | `unpick lock` / `verify` (phase 3) |
 
-Also: `runthrough inventory` lists every AI component already on this machine and in this project,
-`runthrough decide <id> accept|reject|ask-author` records what you concluded about a finding, and
-`runthrough demo` writes the talk's demo kit. Every command takes `--json` and `--no-color`.
+Also: `unpick inventory` lists every AI component already on this machine and in this project,
+`unpick decide <id> accept|reject|ask-author` records what you concluded about a finding, and
+`unpick demo` writes the talk's demo kit. Every command takes `--json` and `--no-color`.
 
-`runthrough ui` opens a local web app on 127.0.0.1 (random port, localhost-only, per-launch token,
+`unpick ui` opens a local web app on 127.0.0.1 (random port, localhost-only, per-launch token,
 strict CSP, no external assets, works with Wi-Fi off). It calls the same functions as the CLI; every
 screen exports the same JSON as `--json` and the same HTML as `--html FILE`. Screenshots at 1920x1080 are
 in docs/screenshots/ui/.
@@ -56,9 +56,9 @@ is no telemetry, no auto-update and no version check.
 
 | what you run | where it goes | what is sent |
 |---|---|---|
-| `runthrough backends install <name> --online` | PyPI (and GitHub for SkillSpector) | a normal package download request |
-| `runthrough backends install <name> --docker --online` | Docker Hub and PyPI | image and package download requests |
-| `runthrough judges install fallback --online` | huggingface.co | a download request for one pinned model file (2.1 GB) |
+| `unpick backends install <name> --online` | PyPI (and GitHub for SkillSpector) | a normal package download request |
+| `unpick backends install <name> --docker --online` | Docker Hub and PyPI | image and package download requests |
+| `unpick judges install fallback --online` | huggingface.co | a download request for one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
 | `scan --backends jiffy --online` | Jiffy Labs API (commercial; the author's company) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
 | `scan --judge claude-code:<model>` | Anthropic, via the Claude Code CLI | the full content of every scanned file. Asks first, every session |
@@ -77,24 +77,24 @@ the fallback judge. Local judges only ever talk to loopback addresses; a non-loo
 | cisco-skill-scanner | Cisco AI Defense | Apache-2.0 | none (no `--use-*` flags) |
 | cisco-mcp-scanner | Cisco AI Defense | Apache-2.0 | none (`--analyzers yara`, static, saved tools file) |
 | skillspector | NVIDIA | Apache-2.0 | OSV.dev, even with `--no-llm`; needs `--online` or `--boxed` |
-| yara-x | VirusTotal | BSD-3-Clause | none; runs runthrough's bundled rules |
+| yara-x | VirusTotal | BSD-3-Clause | none; runs unpick's bundled rules |
 | jiffy | Jiffy Labs (commercial) | MIT CLI, commercial service | Jiffy API; opt-in only, never a default |
 
-`runthrough backends` shows what is installed and the version each adapter was tested against.
+`unpick backends` shows what is installed and the version each adapter was tested against.
 `--boxed` runs scanners in a no-network box: Anthropic sandbox-runtime if installed (`pnpm add -g
 @anthropic-ai/sandbox-runtime`, macOS and Linux), otherwise Docker with `--network none` and the target
 mounted read-only, otherwise it refuses.
 
 ## Judges: the AI already on your machine
 
-A judge is one witness, never the jury (docs/JUDGES.md). `runthrough judges` lists what was found.
+A judge is one witness, never the jury (docs/JUDGES.md). `unpick judges` lists what was found.
 `--judge auto` picks the first on-device one, in this order: Apple Intelligence (macOS 26+, Apple
 silicon), Ollama, llama.cpp, LM Studio, MLX, any loopback OpenAI-compatible server, Foundry Local, then
 the fallback judge.
 
-**Fallback judge for Windows and Linux.** When no other local model exists, runthrough can use IBM
-Granite 4.1 3B (Apache-2.0), run in-process on CPU by llama-cpp-python. No weights ship with runthrough.
-`runthrough judges install fallback --online` downloads one pinned 2.1 GB GGUF file from IBM's own
+**Fallback judge for Windows and Linux.** When no other local model exists, unpick can use IBM
+Granite 4.1 3B (Apache-2.0), run in-process on CPU by llama-cpp-python. No weights ship with unpick.
+`unpick judges install fallback --online` downloads one pinned 2.1 GB GGUF file from IBM's own
 Hugging Face repository and checks its SHA-256; a file that does not match is never loaded. Install the
 runtime from prebuilt CPU wheels (no compiler needed on Windows x64, Linux x64/arm64 or Apple silicon):
 
@@ -108,12 +108,12 @@ Hosted judges (Claude Code CLI, Gemini CLI, an API key in your environment) are 
 automatically. Codex CLI and Grok CLI are detected but never used as judges, because neither can be
 confirmed to run with zero tools.
 
-## What runthrough does not do
+## What unpick does not do
 
 - It is not a runtime guard. To block risky tool calls while an agent runs, use agentjail
   (https://github.com/LuD1161/agentjail; turn off its telemetry and auto-update, see docs/DEFAULTS.md).
 - It is not a sandbox. For the first run of anything, use Docker with `--network none` or Anthropic
-  sandbox-runtime. runthrough's `rehearse` (phase 3) uses those.
+  sandbox-runtime. unpick's `rehearse` (phase 3) uses those.
 - It cannot prove something is safe. A clean scan means none of these checks fired.
 
 ## Limitations

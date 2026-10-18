@@ -1,0 +1,6 @@
+# Paths `unpick scan .` skips in this repository. Each one holds deliberately suspicious text.
+# Everything else must pass with zero unaccepted findings (tests/test_dogfood.py).
+tests/          # test inputs, third-party eval fixtures, recorded scanner output and the adversarial corpus
+data/           # the pattern lists the checks match against
+demo/           # generated demo kit; it passes on its own with demo/accepted.decisions.json (tests/test_demo_and_decisions.py)
+unpick/demo_kit/   # source of the demo kit

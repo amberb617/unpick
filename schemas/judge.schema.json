@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/amberb617/runthrough/schemas/judge.schema.json",
-  "title": "runthrough judge output",
+  "$id": "https://github.com/amberb617/unpick/schemas/judge.schema.json",
+  "title": "unpick judge output",
   "type": "object",
   "additionalProperties": false,
   "required": ["suspicious", "explanation", "confidence"],
