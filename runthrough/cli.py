@@ -30,6 +30,9 @@ def cmd_inventory(args) -> int:
 
     items = inventory.discover(project=Path(args.project), extra=[Path(p) for p in args.add_path],
                                config=Path(args.config) if args.config else None)
+    if args.html:
+        from runthrough import report
+        report.write(Path(args.html), report.inventory_html(items))
     def render(rows):
         t = Table(title=f"AI components found ({len(rows)})", show_lines=False)
         for col in ("kind", "host", "scope", "name", "path", "sha256", "modified", "provenance"):
@@ -107,6 +110,9 @@ def cmd_scan(args) -> int:
     res = scan.scan(target, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed,
                     online=args.online, decision_files=files)
     scan.save_last(res)
+    if args.html:
+        from runthrough import report
+        report.write(Path(args.html), report.scan_html(res.to_dict()))
     _out(args, res.to_dict(), _print_scan)
     return res.exit_code
 
@@ -232,6 +238,16 @@ def _install_fallback(args) -> int:
     return 0
 
 
+def cmd_ui(args) -> int:
+    try:
+        from runthrough.ui.server import serve
+    except ImportError:
+        print("runthrough: the UI needs the ui extra: pipx install '.[ui]'", file=sys.stderr)
+        return 2
+    serve(project=Path(args.project), open_browser=not args.no_browser, port=args.port)
+    return 0
+
+
 # ---------------------------------------------------------------- main
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="runthrough", description=f"Vet AI components on your own laptop. {TAGLINE}")
@@ -245,6 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--project", default=".", help="project root (default: current directory)")
     s.add_argument("--add-path", action="append", default=[], help="extra file or folder to include")
     s.add_argument("--config", help="config file with extra locations (see docs)")
+    s.add_argument("--html", help="also write a self-contained HTML report to this file")
     s.set_defaults(fn=cmd_inventory)
 
     s = sub.add_parser("scan", parents=[common], help="scan a file or folder")
@@ -256,6 +273,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--remember", action="store_true", help="remember hosted-judge consent beyond this session")
     s.add_argument("--decisions", help="use only this decisions file")
     s.add_argument("--no-decisions", action="store_true", help="ignore recorded decisions")
+    s.add_argument("--html", help="also write a self-contained HTML report to this file")
     s.set_defaults(fn=cmd_scan)
 
     s = sub.add_parser("raw", parents=[common], help="show a Markdown file rendered vs raw, line by line")
@@ -283,6 +301,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--online", action="store_true", help="allow the download that install needs")
     s.add_argument("--docker", action="store_true", help="build a Docker image for --boxed instead of installing on the host")
     s.set_defaults(fn=cmd_backends)
+
+    s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
+    s.add_argument("--project", default=".")
+    s.add_argument("--port", type=int, help="fixed port instead of a random free one")
+    s.add_argument("--no-browser", action="store_true")
+    s.set_defaults(fn=cmd_ui)
 
     s = sub.add_parser("judges", parents=[common], help="list the AI judges on this machine, or install the fallback judge")
     s.add_argument("action", nargs="?", choices=["list", "install"], default="list")

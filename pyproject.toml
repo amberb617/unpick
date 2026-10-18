@@ -17,7 +17,8 @@ ui = ["flask>=3"]
 yara = ["yara-x>=1.0"]
 # Prebuilt CPU wheels: add --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
 fallback = ["llama-cpp-python>=0.3.17"]
-dev = ["pytest>=8", "jsonschema>=4", "ruff>=0.6"]
+dev = ["pytest>=8", "jsonschema>=4", "ruff>=0.6", "flask>=3"]
+uitest = ["playwright>=1.48"]
 
 [project.scripts]
 runthrough = "runthrough.cli:main"

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="runthrough-token" content="{{TOKEN}}">
+  <title>runthrough</title>
+  <link rel="stylesheet" href="/static/tokens.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="kicker">RUNTHROUGH {{VERSION}}</span><span class="tagline">{{TAGLINE}}</span></div>
+    <nav aria-label="Screens">
+      <a href="#inventory" data-screen="inventory">Inventory</a>
+      <a href="#scan" data-screen="scan">Scan</a>
+      <a href="#backends" data-screen="backends">Backends and judges</a>
+    </nav>
+    <button class="ghost" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
+  </header>
+
+  <main>
+    <section id="screen-inventory" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">STEP 0</p><h1>What is already on this machine</h1></div>
+        <div class="actions">
+          <select id="inv-host" aria-label="Filter by host"><option value="">All hosts</option></select>
+          <select id="inv-kind" aria-label="Filter by kind"><option value="">All kinds</option></select>
+          <button id="inv-scan" class="j-btn" type="button" disabled>Scan selected</button>
+          <a class="j-btn secondary" id="inv-export" href="#" data-export="/api/export/inventory.html">Export HTML</a>
+        </div>
+      </div>
+      <div class="card"><table class="grid" id="inv-table"><thead><tr>
+        <th><input type="checkbox" id="inv-all" aria-label="Select all"></th><th>Kind</th><th>Host</th><th>Scope</th>
+        <th>Name</th><th>Path</th><th>SHA-256</th><th>Modified</th></tr></thead><tbody></tbody></table>
+        <p class="empty" id="inv-empty" hidden>No AI components found in the known locations.</p></div>
+    </section>
+
+    <section id="screen-scan" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">STEPS 2 AND 3</p><h1>Read it raw, then scan it</h1></div>
+        <form class="actions" id="scan-form">
+          <input id="scan-path" type="text" placeholder="Path to a skill, rules file or tools.json" aria-label="Path to scan" size="46">
+          <select id="scan-judge" aria-label="Judge"><option value="">No judge</option></select>
+          <label class="check"><input type="checkbox" id="scan-backends"> Installed scanners</label>
+          <button class="j-btn" type="submit">Scan</button>
+          <a class="j-btn secondary" href="#" data-export="/api/export/scan.json">JSON</a>
+          <a class="j-btn secondary" href="#" data-export="/api/export/scan.html">HTML</a>
+        </form>
+      </div>
+      <div class="runstrip" id="runstrip" aria-live="polite">Nothing scanned yet.</div>
+      <div class="scan-layout">
+        <aside class="card files"><h2>Files</h2><ul id="file-list"></ul></aside>
+        <section class="card split">
+          <h2 id="split-title">Rendered (what you see) <span class="vs">vs</span> raw (what the model reads)</h2>
+          <div class="split-head"><span>#</span><span>Rendered</span><span>Raw</span></div>
+          <div id="split" class="split-body"></div>
+        </section>
+        <aside class="findings" id="findings" aria-label="Findings"></aside>
+      </div>
+    </section>
+
+    <section id="screen-backends" class="screen" hidden>
+      <div class="screen-head"><div><p class="eyebrow">WITNESSES</p><h1>Scanners and judges on this machine</h1></div></div>
+      <div class="card"><h2>Scanner backends <span class="muted">(all optional)</span></h2>
+        <table class="grid" id="be-table"><thead><tr><th>Name</th><th>Installed</th><th>Version</th><th>Tested</th>
+        <th>Maintainer</th><th>Licence</th><th>Network as invoked</th></tr></thead><tbody></tbody></table></div>
+      <div class="card"><h2>Judges <span class="muted">(one witness, never the verdict)</span></h2>
+        <table class="grid" id="ju-table"><thead><tr><th>Id</th><th>Where</th><th>Found by</th><th>Consent</th><th>Usable</th></tr></thead><tbody></tbody></table>
+        <p class="muted" id="ju-default"></p></div>
+      <div class="card"><h2>Agreement in the last scan</h2><table class="grid" id="agree-table"><tbody></tbody></table>
+        <p class="empty" id="agree-empty">Run a scan with more than one source to see where they agree.</p></div>
+    </section>
+  </main>
+
+  <dialog id="consent" aria-labelledby="consent-title">
+    <h2 id="consent-title">Send this to a hosted model?</h2>
+    <p id="consent-text"></p>
+    <div class="actions"><button class="j-btn secondary" id="consent-no" type="button">No</button>
+      <button class="j-btn danger" id="consent-yes" type="button">Yes, send it</button></div>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -34,6 +34,11 @@ Also: `runthrough inventory` lists every AI component already on this machine an
 `runthrough decide <id> accept|reject|ask-author` records what you concluded about a finding, and
 `runthrough demo` writes the talk's demo kit. Every command takes `--json` and `--no-color`.
 
+`runthrough ui` opens a local web app on 127.0.0.1 (random port, localhost-only, per-launch token,
+strict CSP, no external assets, works with Wi-Fi off). It calls the same functions as the CLI; every
+screen exports the same JSON as `--json` and the same HTML as `--html FILE`. Screenshots at 1920x1080 are
+in docs/screenshots/ui/.
+
 Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothing was scanned"),
 3 a requested backend or judge was unavailable.
 

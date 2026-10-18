@@ -34,3 +34,18 @@ jobs:
         run: |
           $env:RT_BACKENDS = ''
           '' | powershell -NoProfile -File demo/run.ps1
+
+  ui-screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev,uitest]"
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest -q tests/test_ui_playwright.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots
+          path: docs/screenshots/ui/

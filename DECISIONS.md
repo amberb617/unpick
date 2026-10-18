@@ -74,6 +74,17 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 ## Phase 2 (looking ahead)
 
-17. **UI fonts.** The spec says system sans and no web fonts; the Jiffy decks use Parkinsans and Albert
-    Sans. Recommendation: vendor both font files (SIL OFL) with the UI so screenshots match the deck while
-    still loading nothing from the network, with system sans as the fallback. **OPEN** until phase 2.
+17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's
+    own tokens (jiffy-base.css) fall back to the same system stack, and no font files are loaded.
+
+18. **UI scope in phase 2.** Inventory, Scan, and Backends and judges are built now. Check, Rehearse,
+    Verify and Recover screens are added in phases 3 and 4 with the engines they drive, because nothing
+    may exist in the UI that the CLI cannot do. "Lock these" on the inventory screen arrives with `lock`.
+
+19. **Localhost hardening.** Besides the Host-header check and strict CSP, every API call needs a random
+    per-launch token in a custom header. A web page on another origin cannot send that header without a
+    CORS preflight, which the server never answers, so it cannot drive the local API (CSRF).
+
+20. **Visual tokens** come from Jiffy-Labs-AI/platform `src/app/styles/jiffy-base.css` @4eb0f40: navy
+    #040E27, pale blue #E7EEFA, pink #FF97BF, red #FF4E4E, lavender, the pill palette, and the `.j-offset`
+    offset shadow (pink on dark, #FFC5C5 on light).
