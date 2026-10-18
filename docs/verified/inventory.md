@@ -1,0 +1,306 @@
+# Verified AI component locations
+
+One claim per line. Generated from data/locations.json plus a few path-less claims.
+
+- claude-code: user skills-root at `~/.claude/skills` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: user skills-root at `%USERPROFILE%\.claude\skills` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: project skills-root at `.claude/skills` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: user skills-root at `/Library/Application Support/ClaudeCode/.claude/skills` on mac — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: user skills-root at `/etc/claude-code/.claude/skills` on linux — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: user skills-root at `C:\Program Files\ClaudeCode\.claude\skills` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/skills
+- claude-code: user plugin-root at `~/.claude/plugins/cache` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `%USERPROFILE%\.claude\plugins\cache` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `~/.claude/plugins/marketplaces` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `%USERPROFILE%\.claude\plugins\marketplaces` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `~/.claude/plugins/synced` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `%USERPROFILE%\.claude\plugins\synced` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `~/.claude/plugins/known_marketplaces.json` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `%USERPROFILE%\.claude\plugins\known_marketplaces.json` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `~/.claude/plugins/installed_plugins.json` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user plugin-root at `%USERPROFILE%\.claude\plugins\installed_plugins.json` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- claude-code: user settings-hooks at `~/.claude/settings.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/hooks
+- claude-code: user settings-hooks at `%USERPROFILE%\.claude\settings.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/hooks
+- claude-code: project settings-hooks at `.claude/settings.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/hooks
+- claude-code: project settings-hooks at `.claude/settings.local.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/hooks
+- claude-code: user mcp-config at `~/.claude.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/mcp
+- claude-code: user mcp-config at `%USERPROFILE%\.claude.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/mcp
+- claude-code: project mcp-config at `.mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/mcp
+- claude-code: user settings-hooks at `/Library/Application Support/ClaudeCode/managed-settings.json` on mac, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-settings
+- claude-code: user mcp-config at `/Library/Application Support/ClaudeCode/managed-mcp.json` on mac, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-mcp
+- claude-code: user instructions-file at `/Library/Application Support/ClaudeCode/CLAUDE.md` on mac — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user settings-hooks at `/etc/claude-code/managed-settings.json` on linux, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-settings
+- claude-code: user mcp-config at `/etc/claude-code/managed-mcp.json` on linux, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-mcp
+- claude-code: user instructions-file at `/etc/claude-code/CLAUDE.md` on linux — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user settings-hooks at `C:\Program Files\ClaudeCode\managed-settings.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-settings
+- claude-code: user mcp-config at `C:\Program Files\ClaudeCode\managed-mcp.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://code.claude.com/docs/en/managed-mcp
+- claude-code: user instructions-file at `C:\Program Files\ClaudeCode\CLAUDE.md` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user instructions-file at `~/.claude/CLAUDE.md` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user instructions-file at `%USERPROFILE%\.claude\CLAUDE.md` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: project instructions-file at `CLAUDE.md` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: project instructions-file at `.claude/CLAUDE.md` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: project instructions-file at `CLAUDE.local.md` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: project rules-dir at `.claude/rules` on mac/linux/windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user rules-dir at `~/.claude/rules` on mac/linux — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-code: user rules-dir at `%USERPROFILE%\.claude\rules` on windows — verified 2026-10-18 against https://code.claude.com/docs/en/memory
+- claude-desktop: user mcp-config at `~/Library/Application Support/Claude/claude_desktop_config.json` on mac, MCP key `mcpServers` — verified 2026-10-18 against https://modelcontextprotocol.io/docs/develop/connect-local-servers
+- claude-desktop: user mcp-config at `%APPDATA%\Claude\claude_desktop_config.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://modelcontextprotocol.io/docs/develop/connect-local-servers
+- claude-desktop: user mcp-config at `~/.config/Claude/claude_desktop_config.json` on linux, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://hooklayer.dev/guides/claude-desktop-config-json (Official MCP doc says Claude Desktop ships for Linux but gives only macOS and Windows paths. Linux path is from third-party guides only.)
+- cursor: project rules-file at `.cursorrules` on mac/linux/windows — verified 2026-10-18 against https://forum.cursor.com/t/project-rule-in-cursorrules-not-applied-in-agent-chat-works-in-cursor-rules/154309/3
+- cursor: project rules-dir at `.cursor/rules/**/*.mdc` on mac/linux/windows — verified 2026-10-18 against https://cursor.com/docs/context/rules
+- cursor: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://cursor.com/docs/context/rules
+- cursor: user mcp-config at `~/.cursor/mcp.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://cursor.com/docs/context/mcp
+- cursor: user mcp-config at `%USERPROFILE%\.cursor\mcp.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://cursor.com/docs/context/mcp
+- cursor: project mcp-config at `.cursor/mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://cursor.com/docs/context/mcp
+- cursor: user skills-root at `~/.cursor/skills` on mac/linux — verified 2026-10-18 against https://cursor.com/help/customization/skills
+- cursor: user skills-root at `%USERPROFILE%\.cursor\skills` on windows — verified 2026-10-18 against https://cursor.com/help/customization/skills
+- cursor: project skills-root at `.cursor/skills` on mac/linux/windows — verified 2026-10-18 against https://cursor.com/help/customization/skills
+- cursor: user settings-hooks at `~/.cursor/hooks.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- cursor: user settings-hooks at `%USERPROFILE%\.cursor\hooks.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- cursor: project settings-hooks at `.cursor/hooks.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- cursor: user settings-hooks at `/Library/Application Support/Cursor/hooks.json` on mac, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- cursor: user settings-hooks at `/etc/cursor/hooks.json` on linux, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- cursor: user settings-hooks at `C:\ProgramData\Cursor\hooks.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://cursor.com/docs/agent/hooks
+- github-copilot: project instructions-file at `.github/copilot-instructions.md` on mac/linux/windows — verified 2026-10-18 against https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions
+- github-copilot: project rules-dir at `.github/instructions/**/*.instructions.md` on mac/linux/windows — verified 2026-10-18 against https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions
+- github-copilot: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions
+- github-copilot: project instructions-file at `CLAUDE.md` on mac/linux/windows — verified 2026-10-18 against https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions
+- github-copilot: project instructions-file at `GEMINI.md` on mac/linux/windows — verified 2026-10-18 against https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions
+- github-copilot: project rules-dir at `.github/prompts/*.prompt.md` on mac/linux/windows — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/prompt-files
+- github-copilot: user instructions-file at `~/.copilot/copilot-instructions.md` on mac/linux — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+- github-copilot: user instructions-file at `%USERPROFILE%\.copilot\copilot-instructions.md` on windows — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+- github-copilot: user rules-dir at `~/.copilot/instructions` on mac/linux — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+- github-copilot: user rules-dir at `%USERPROFILE%\.copilot\instructions` on windows — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+- github-copilot: project skills-root at `.github/skills` on mac/linux/windows — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/agent-skills
+- github-copilot: user skills-root at `~/.copilot/skills` on mac/linux — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/agent-skills
+- github-copilot: user skills-root at `%USERPROFILE%\.copilot\skills` on windows — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/agent-skills
+- github-copilot: user mcp-config at `~/.copilot/mcp-config.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- github-copilot: user mcp-config at `%USERPROFILE%\.copilot\mcp-config.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- vscode: project mcp-config at `.vscode/mcp.json` on mac/linux/windows, MCP key `servers` — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- vscode: project mcp-config at `.mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- vscode: user mcp-config at `~/Library/Application Support/Code/User/mcp.json` on mac, MCP key `servers` — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings
+- vscode: user rules-dir at `~/Library/Application Support/Code/User/prompts` on mac — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files
+- vscode: user mcp-config at `~/Library/Application Support/Code/User/settings.json` on mac, MCP key `mcp` — UNVERIFIED 2026-10-18 against https://code.visualstudio.com/docs/configure/settings (settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway.)
+- vscode: user mcp-config at `~/.config/Code/User/mcp.json` on linux, MCP key `servers` — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings
+- vscode: user rules-dir at `~/.config/Code/User/prompts` on linux — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files
+- vscode: user mcp-config at `~/.config/Code/User/settings.json` on linux, MCP key `mcp` — UNVERIFIED 2026-10-18 against https://code.visualstudio.com/docs/configure/settings (settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway.)
+- vscode: user mcp-config at `%APPDATA%\Code\User\mcp.json` on windows, MCP key `servers` — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings
+- vscode: user rules-dir at `%APPDATA%\Code\User\prompts` on windows — verified 2026-10-18 against microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files
+- vscode: user mcp-config at `%APPDATA%\Code\User\settings.json` on windows, MCP key `mcp` — UNVERIFIED 2026-10-18 against https://code.visualstudio.com/docs/configure/settings (settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway.)
+- vscode: project mcp-config at `.devcontainer/devcontainer.json` on mac/linux/windows, MCP key `customizations.vscode.mcp.servers` — verified 2026-10-18 against https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- codex: user mcp-config at `~/.codex/config.toml` on mac/linux, MCP key `mcp_servers`, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/extend/mcp?surface=cli
+- codex: user mcp-config at `%USERPROFILE%\.codex\config.toml` on windows, MCP key `mcp_servers`, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/extend/mcp?surface=cli
+- codex: project mcp-config at `.codex/config.toml` on mac/linux/windows, MCP key `mcp_servers`, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/extend/mcp?surface=cli
+- codex: user settings-hooks at `~/.codex/hooks.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/hooks
+- codex: user settings-hooks at `%USERPROFILE%\.codex\hooks.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/hooks
+- codex: project settings-hooks at `.codex/hooks.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://learn.chatgpt.com/docs/hooks
+- codex: user instructions-file at `~/.codex/AGENTS.md` on mac/linux — verified 2026-10-18 against https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- codex: user instructions-file at `%USERPROFILE%\.codex\AGENTS.md` on windows — verified 2026-10-18 against https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- codex: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- codex: project instructions-file at `AGENTS.override.md` on mac/linux/windows — verified 2026-10-18 against https://learn.chatgpt.com/docs/agent-configuration/agents-md
+- codex: user skills-root at `~/.agents/skills` on mac/linux — verified 2026-10-18 against https://learn.chatgpt.com/docs/build-skills
+- codex: user skills-root at `%USERPROFILE%\.agents\skills` on windows — verified 2026-10-18 against https://learn.chatgpt.com/docs/build-skills
+- codex: project skills-root at `.agents/skills` on mac/linux/windows — verified 2026-10-18 against https://learn.chatgpt.com/docs/build-skills
+- codex: user skills-root at `/etc/codex/skills` on mac/linux — verified 2026-10-18 against https://learn.chatgpt.com/docs/build-skills
+- codex: user skills-root at `~/.codex/skills` on mac/linux — verified 2026-10-18 against openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/exec-server/src/discoverV2/capability_locations.rs)
+- codex: user skills-root at `%USERPROFILE%\.codex\skills` on windows — verified 2026-10-18 against openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/exec-server/src/discoverV2/capability_locations.rs)
+- codex: user plugin-root at `~/.codex/plugins/cache` on mac/linux — verified 2026-10-18 against openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/core-plugin-common/src/installed.rs PLUGINS_CACHE_DIR)
+- codex: user plugin-root at `%USERPROFILE%\.codex\plugins\cache` on windows — verified 2026-10-18 against openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/core-plugin-common/src/installed.rs PLUGINS_CACHE_DIR)
+- windsurf: user mcp-config at `~/.config/devin/mcp_config.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/mcp
+- windsurf: user mcp-config at `%APPDATA%\devin\mcp_config.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/mcp
+- windsurf: user mcp-config at `~/.codeium/windsurf/mcp_config.json` on mac/linux, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://fast.io/resources/windsurf-mcp-setup-guide/ (Pre-rename Windsurf path. Current official docs no longer list it; only third-party guides do. Whether Devin Desktop still reads it is unconfirmed. Keep scanning: older installs have it.)
+- windsurf: user mcp-config at `%USERPROFILE%\.codeium\windsurf\mcp_config.json` on windows, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://fast.io/resources/windsurf-mcp-setup-guide/ (Pre-rename Windsurf path. Current official docs no longer list it; only third-party guides do. Whether Devin Desktop still reads it is unconfirmed. Keep scanning: older installs have it.)
+- windsurf: user rules-file at `~/.codeium/windsurf/memories/global_rules.md` on mac/linux — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-file at `%USERPROFILE%\.codeium\windsurf\memories\global_rules.md` on windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: project rules-dir at `.devin/rules/*.md` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: project rules-dir at `.windsurf/rules/*.md` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: project rules-file at `.windsurfrules` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `/Library/Application Support/Devin/rules/*.md` on mac — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `/Library/Application Support/Windsurf/rules/*.md` on mac — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `/etc/devin/rules/*.md` on linux — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `/etc/windsurf/rules/*.md` on linux — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `C:\ProgramData\Devin\rules\*.md` on windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user rules-dir at `C:\ProgramData\Windsurf\rules\*.md` on windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/memories
+- windsurf: user skills-root at `~/.codeium/windsurf/skills` on mac/linux — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/skills
+- windsurf: user skills-root at `%USERPROFILE%\.codeium\windsurf\skills` on windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/skills
+- windsurf: user skills-root at `~/.config/devin/skills` on mac/linux — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/skills
+- windsurf: project skills-root at `.devin/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/skills
+- windsurf: project skills-root at `.windsurf/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/skills
+- windsurf: user settings-hooks at `~/.codeium/windsurf/hooks.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/hooks
+- windsurf: user settings-hooks at `%USERPROFILE%\.codeium\windsurf\hooks.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/hooks
+- windsurf: project settings-hooks at `.devin/hooks.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/hooks
+- windsurf: project settings-hooks at `.windsurf/hooks.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/hooks
+- cline: user mcp-config at `~/.cline/data/settings/cline_mcp_settings.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: user mcp-config at `%USERPROFILE%\.cline\data\settings\cline_mcp_settings.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: user mcp-config at `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on mac, MCP key `mcpServers` — verified 2026-10-18 against cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)
+- cline: user mcp-config at `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` on linux, MCP key `mcpServers` — verified 2026-10-18 against cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)
+- cline: user mcp-config at `%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)
+- cline: user mcp-config at `~/Documents/Cline/MCP/cline_mcp_settings.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)
+- cline: user mcp-config at `%USERPROFILE%\Documents\Cline\MCP\cline_mcp_settings.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)
+- cline: project rules-dir at `.clinerules` on mac/linux/windows — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: project rules-dir at `.cline/rules` on mac/linux/windows — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user rules-dir at `~/Documents/Cline/Rules` on mac/linux — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user rules-dir at `%USERPROFILE%\Documents\Cline\Rules` on windows — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user rules-dir at `~/.cline/rules` on mac/linux — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user rules-dir at `%USERPROFILE%\.cline\rules` on windows — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user instructions-file at `~/.agents/AGENTS.md` on mac/linux — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user instructions-file at `%USERPROFILE%\.agents\AGENTS.md` on windows — verified 2026-10-18 against https://docs.cline.bot/features/cline-rules
+- cline: user skills-root at `~/.cline/skills` on mac/linux — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: user skills-root at `%USERPROFILE%\.cline\skills` on windows — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: project skills-root at `.cline/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: user settings-hooks at `~/.cline/hooks` on mac/linux — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: user settings-hooks at `%USERPROFILE%\.cline\hooks` on windows — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- cline: project settings-hooks at `.cline/hooks` on mac/linux/windows — verified 2026-10-18 against https://docs.cline.bot/getting-started/config
+- continue: user mcp-config at `~/.continue/config.yaml` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.continue.dev/customize/deep-dives/configuration
+- continue: user mcp-config at `%USERPROFILE%\.continue\config.yaml` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.continue.dev/customize/deep-dives/configuration
+- continue: project mcp-config at `.continue/mcpServers/*` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.continue.dev/customize/deep-dives/mcp
+- continue: project rules-dir at `.continue/rules` on mac/linux/windows — verified 2026-10-18 against https://docs.continue.dev/customize/deep-dives/rules
+- gemini-cli: user mcp-config at `~/.gemini/settings.json` on mac/linux, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user mcp-config at `%USERPROFILE%\.gemini\settings.json` on windows, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: project mcp-config at `.gemini/settings.json` on mac/linux/windows, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user mcp-config at `/etc/gemini-cli/settings.json` on linux, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user mcp-config at `C:\ProgramData\gemini-cli\settings.json` on windows, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user mcp-config at `/Library/Application Support/GeminiCli/settings.json` on mac, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user instructions-file at `~/.gemini/GEMINI.md` on mac/linux — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user instructions-file at `%USERPROFILE%\.gemini\GEMINI.md` on windows — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: project instructions-file at `GEMINI.md` on mac/linux/windows — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user extension-root at `~/.gemini/extensions` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/reference.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user extension-root at `%USERPROFILE%\.gemini\extensions` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/reference.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user skills-root at `~/.gemini/skills` on mac/linux — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: user skills-root at `%USERPROFILE%\.gemini\skills` on windows — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- gemini-cli: project skills-root at `.gemini/skills` on mac/linux/windows — verified 2026-10-18 against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)
+- jetbrains-junie: user mcp-config at `~/.junie/mcp/mcp.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html
+- jetbrains-junie: user mcp-config at `%USERPROFILE%\.junie\mcp\mcp.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html
+- jetbrains-junie: project mcp-config at `.junie/mcp/mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html
+- jetbrains-junie: project instructions-file at `.junie/AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/guidelines-and-memory.html
+- jetbrains-junie: project rules-dir at `.junie/rules/*.md` on mac/linux/windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/guidelines-and-memory.html
+- jetbrains-junie: project instructions-file at `.junie/guidelines.md` on mac/linux/windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/guidelines-and-memory.html
+- jetbrains-junie: user instructions-file at `~/.junie/AGENTS.md` on mac/linux — verified 2026-10-18 against https://junie.jetbrains.com/docs/guidelines-and-memory.html
+- jetbrains-junie: user instructions-file at `%USERPROFILE%\.junie\AGENTS.md` on windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/guidelines-and-memory.html
+- jetbrains-junie: user skills-root at `~/.junie/skills` on mac/linux — verified 2026-10-18 against https://junie.jetbrains.com/docs/agent-skills.html
+- jetbrains-junie: user skills-root at `%USERPROFILE%\.junie\skills` on windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/agent-skills.html
+- jetbrains-junie: project skills-root at `.junie/skills` on mac/linux/windows — verified 2026-10-18 against https://junie.jetbrains.com/docs/agent-skills.html
+- zed: user mcp-config at `~/.config/zed/settings.json` on mac/linux, MCP key `context_servers` — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user mcp-config at `%APPDATA%\Zed\settings.json` on windows, MCP key `context_servers` — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project mcp-config at `.zed/settings.json` on mac/linux/windows, MCP key `context_servers` — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user instructions-file at `~/.config/zed/AGENTS.md` on mac/linux — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/instructions.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user instructions-file at `%APPDATA%\Zed\AGENTS.md` on windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/instructions.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `.rules` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `.cursorrules` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `.windsurfrules` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `.clinerules` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `.github/copilot-instructions.md` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `CLAUDE.md` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project rules-file at `GEMINI.md` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user skills-root at `~/.agents/skills` on mac/linux — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user skills-root at `%USERPROFILE%\.agents\skills` on windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: project skills-root at `.agents/skills` on mac/linux/windows — verified 2026-10-18 against https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)
+- zed: user extension-root at `~/Library/Application Support/Zed/extensions/installed` on mac — verified 2026-10-18 against https://zed.dev/docs/configuring-zed
+- zed: user extension-root at `~/.local/share/zed/extensions/installed` on linux — verified 2026-10-18 against https://zed.dev/docs/configuring-zed
+- zed: user extension-root at `%LOCALAPPDATA%\Zed\extensions\installed` on windows — verified 2026-10-18 against https://zed.dev/docs/configuring-zed
+- openclaw: project skills-root at `skills` on mac/linux/windows — verified 2026-10-18 against https://docs.openclaw.ai/tools/skills
+- openclaw: project skills-root at `.agents/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.openclaw.ai/tools/skills
+- openclaw: user skills-root at `~/.openclaw/skills` on mac/linux — verified 2026-10-18 against https://docs.openclaw.ai/tools/skills
+- openclaw: user skills-root at `%USERPROFILE%\.openclaw\skills` on windows — verified 2026-10-18 against https://docs.openclaw.ai/tools/skills
+- openclaw: user mcp-config at `~/.openclaw/openclaw.json` on mac/linux, MCP key `mcp.servers` — verified 2026-10-18 against https://docs.openclaw.ai/gateway/configuration + https://docs.openclaw.ai/cli/mcp
+- openclaw: user mcp-config at `%USERPROFILE%\.openclaw\openclaw.json` on windows, MCP key `mcp.servers` — verified 2026-10-18 against https://docs.openclaw.ai/gateway/configuration + https://docs.openclaw.ai/cli/mcp
+- kiro: user mcp-config at `~/.kiro/settings/mcp.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://kiro.dev/docs/mcp/configuration/
+- kiro: user mcp-config at `%USERPROFILE%\.kiro\settings\mcp.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://kiro.dev/docs/mcp/configuration/
+- kiro: project mcp-config at `.kiro/settings/mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://kiro.dev/docs/mcp/configuration/
+- kiro: user rules-dir at `~/.kiro/steering` on mac/linux — verified 2026-10-18 against https://kiro.dev/docs/steering/
+- kiro: user rules-dir at `%USERPROFILE%\.kiro\steering` on windows — verified 2026-10-18 against https://kiro.dev/docs/steering/
+- kiro: project rules-dir at `.kiro/steering` on mac/linux/windows — verified 2026-10-18 against https://kiro.dev/docs/steering/
+- kiro: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://kiro.dev/docs/steering/
+- kiro: user skills-root at `~/.kiro/skills` on mac/linux — verified 2026-10-18 against https://kiro.dev/docs/skills/
+- kiro: user skills-root at `%USERPROFILE%\.kiro\skills` on windows — verified 2026-10-18 against https://kiro.dev/docs/skills/
+- kiro: project skills-root at `.kiro/skills` on mac/linux/windows — verified 2026-10-18 against https://kiro.dev/docs/skills/
+- amazon-q: project rules-dir at `.amazonq/rules` on mac/linux/windows — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/context-project-rules.html
+- amazon-q: user mcp-config at `~/.aws/amazonq/default.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: user mcp-config at `%USERPROFILE%\.aws\amazonq\default.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: project mcp-config at `.amazonq/default.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: user mcp-config at `~/.aws/amazonq/mcp.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: user mcp-config at `%USERPROFILE%\.aws\amazonq\mcp.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: project mcp-config at `.amazonq/mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html
+- amazon-q: user mcp-config at `~/.aws/amazonq/cli-agents` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html
+- amazon-q: user mcp-config at `%USERPROFILE%\.aws\amazonq\cli-agents` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html
+- amazon-q: user mcp-config at `~/.aws/amazonq/agents/default.json` on mac/linux, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html
+- amazon-q: user mcp-config at `%USERPROFILE%\.aws\amazonq\agents\default.json` on windows, MCP key `mcpServers` — verified 2026-10-18 against https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html
+- roo-code: project mcp-config at `.roo/mcp.json` on mac/linux/windows, MCP key `mcpServers` — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo
+- roo-code: user mcp-config at `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json` on mac, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo (Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed.)
+- roo-code: user mcp-config at `~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json` on linux, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo (Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed.)
+- roo-code: user mcp-config at `%APPDATA%\Code\User\globalStorage\rooveterinaryinc.roo-cline\settings\mcp_settings.json` on windows, MCP key `mcpServers` — UNVERIFIED 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo (Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed.)
+- roo-code: project rules-dir at `.roo/rules` on mac/linux/windows — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/custom-instructions
+- roo-code: user rules-dir at `~/.roo/rules` on mac/linux — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/custom-instructions
+- roo-code: user rules-dir at `%USERPROFILE%\.roo\rules` on windows — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/custom-instructions
+- roo-code: project rules-file at `.roorules` on mac/linux/windows — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/custom-instructions
+- roo-code: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://roocodeinc.github.io/Roo-Code/features/custom-instructions
+- opencode: user mcp-config at `~/.config/opencode/opencode.json` on mac/linux, MCP key `mcp` — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: user mcp-config at `%USERPROFILE%\.config\opencode\opencode.json` on windows, MCP key `mcp` — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: project mcp-config at `opencode.json` on mac/linux/windows, MCP key `mcp` — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: user skills-root at `~/.config/opencode/skills` on mac/linux — verified 2026-10-18 against https://opencode.ai/docs/skills/
+- opencode: user skills-root at `%USERPROFILE%\.config\opencode\skills` on windows — verified 2026-10-18 against https://opencode.ai/docs/skills/
+- opencode: project skills-root at `.opencode/skills` on mac/linux/windows — verified 2026-10-18 against https://opencode.ai/docs/skills/
+- opencode: user plugin-root at `~/.config/opencode/plugins` on mac/linux — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: user plugin-root at `%USERPROFILE%\.config\opencode\plugins` on windows — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: project plugin-root at `.opencode/plugins` on mac/linux/windows — verified 2026-10-18 against https://opencode.ai/docs/config/
+- opencode: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://opencode.ai/docs/rules/
+- opencode: user instructions-file at `~/.config/opencode/AGENTS.md` on mac/linux — verified 2026-10-18 against https://opencode.ai/docs/rules/
+- opencode: user instructions-file at `%USERPROFILE%\.config\opencode\AGENTS.md` on windows — verified 2026-10-18 against https://opencode.ai/docs/rules/
+- goose: user mcp-config at `~/.config/goose/config.yaml` on mac/linux, MCP key `extensions` — verified 2026-10-18 against https://goose-docs.ai/docs/guides/config-files/
+- goose: user mcp-config at `%APPDATA%\Block\goose\config\config.yaml` on windows, MCP key `extensions` — verified 2026-10-18 against https://goose-docs.ai/docs/guides/config-files/
+- goose: user instructions-file at `~/.config/goose/.goosehints` on mac/linux — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/
+- goose: project instructions-file at `.goosehints` on mac/linux/windows — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/
+- goose: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/
+- goose: user skills-root at `~/.agents/skills` on mac/linux — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-skills/
+- goose: user skills-root at `%USERPROFILE%\.agents\skills` on windows — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-skills/
+- goose: project skills-root at `.agents/skills` on mac/linux/windows — verified 2026-10-18 against https://goose-docs.ai/docs/guides/context-engineering/using-skills/
+- aider: user instructions-file at `~/.aider.conf.yml` on mac/linux — verified 2026-10-18 against https://aider.chat/docs/config/aider_conf.html
+- aider: user instructions-file at `%USERPROFILE%\.aider.conf.yml` on windows — verified 2026-10-18 against https://aider.chat/docs/config/aider_conf.html
+- aider: project instructions-file at `.aider.conf.yml` on mac/linux/windows — verified 2026-10-18 against https://aider.chat/docs/config/aider_conf.html
+- aider: project instructions-file at `CONVENTIONS.md` on mac/linux/windows — verified 2026-10-18 against https://aider.chat/docs/usage/conventions.html
+- grok-build: user mcp-config at `~/.grok/config.toml` on mac/linux, MCP key `mcp_servers` — verified 2026-10-18 against https://docs.x.ai/build/settings
+- grok-build: user mcp-config at `%USERPROFILE%\.grok\config.toml` on windows, MCP key `mcp_servers` — verified 2026-10-18 against https://docs.x.ai/build/settings
+- grok-build: project mcp-config at `.grok/config.toml` on mac/linux/windows, MCP key `mcp_servers` — verified 2026-10-18 against https://docs.x.ai/build/settings
+- grok-build: user skills-root at `~/.grok/skills` on mac/linux — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: user skills-root at `%USERPROFILE%\.grok\skills` on windows — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: project skills-root at `.grok/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: user plugin-root at `~/.grok/plugins` on mac/linux — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: user plugin-root at `%USERPROFILE%\.grok\plugins` on windows — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: project plugin-root at `.grok/plugins` on mac/linux/windows — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- grok-build: user settings-hooks at `~/.grok/hooks/*.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://docs.x.ai/build/features/hooks
+- grok-build: user settings-hooks at `%USERPROFILE%\.grok\hooks\*.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://docs.x.ai/build/features/hooks
+- grok-build: project settings-hooks at `.grok/hooks/*.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://docs.x.ai/build/features/hooks
+- grok-build: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://docs.x.ai/build/features/skills-plugins-marketplaces
+- augment: user mcp-config at `~/.augment/settings.json` on mac/linux, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/integrations
+- augment: user mcp-config at `%USERPROFILE%\.augment\settings.json` on windows, MCP key `mcpServers`, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/integrations
+- augment: project settings-hooks at `.augment/settings.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/hooks.md
+- augment: project settings-hooks at `.augment/settings.local.json` on mac/linux/windows, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/hooks.md
+- augment: user settings-hooks at `/etc/augment/settings.json` on mac/linux, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/hooks.md
+- augment: user settings-hooks at `C:\ProgramData\Augment\settings.json` on windows, hooks key `hooks` — verified 2026-10-18 against https://docs.augmentcode.com/cli/hooks.md
+- augment: project rules-dir at `.augment/rules` on mac/linux/windows — verified 2026-10-18 against https://docs.augmentcode.com/cli/rules.md
+- augment: user rules-dir at `~/.augment/rules` on mac/linux — verified 2026-10-18 against https://docs.augmentcode.com/cli/rules.md
+- augment: user rules-dir at `%USERPROFILE%\.augment\rules` on windows — verified 2026-10-18 against https://docs.augmentcode.com/cli/rules.md
+- augment: project rules-file at `.augment-guidelines` on mac/linux/windows — verified 2026-10-18 against https://docs.augmentcode.com/cli/rules.md
+- augment: user skills-root at `~/.augment/skills` on mac/linux — verified 2026-10-18 against https://docs.augmentcode.com/cli/skills.md
+- augment: user skills-root at `%USERPROFILE%\.augment\skills` on windows — verified 2026-10-18 against https://docs.augmentcode.com/cli/skills.md
+- augment: project skills-root at `.augment/skills` on mac/linux/windows — verified 2026-10-18 against https://docs.augmentcode.com/cli/skills.md
+- amp: user mcp-config at `~/.config/amp/settings.json` on mac/linux, MCP key `amp.mcpServers` — verified 2026-10-18 against https://ampcode.com/docs/cli/settings + https://ampcode.com/docs/customize/mcp
+- amp: user mcp-config at `%USERPROFILE%\.config\amp\settings.json` on windows, MCP key `amp.mcpServers` — verified 2026-10-18 against https://ampcode.com/docs/cli/settings + https://ampcode.com/docs/customize/mcp
+- amp: project mcp-config at `.amp/settings.json` on mac/linux/windows, MCP key `amp.mcpServers` — verified 2026-10-18 against https://ampcode.com/docs/customize/mcp
+- amp: user instructions-file at `~/.config/amp/AGENTS.md` on mac/linux — verified 2026-10-18 against https://ampcode.com/docs/customize/agents-md
+- amp: user instructions-file at `%USERPROFILE%\.config\amp\AGENTS.md` on windows — verified 2026-10-18 against https://ampcode.com/docs/customize/agents-md
+- amp: project instructions-file at `AGENTS.md` on mac/linux/windows — verified 2026-10-18 against https://ampcode.com/docs/customize/agents-md
+- amp: user skills-root at `~/.config/agents/skills` on mac/linux — verified 2026-10-18 against https://ampcode.com/docs/customize/skills
+- amp: user skills-root at `%USERPROFILE%\.config\agents\skills` on windows — verified 2026-10-18 against https://ampcode.com/docs/customize/skills
+- amp: user skills-root at `~/.config/amp/skills` on mac/linux — verified 2026-10-18 against https://ampcode.com/docs/customize/skills
+- amp: user skills-root at `%USERPROFILE%\.config\amp\skills` on windows — verified 2026-10-18 against https://ampcode.com/docs/customize/skills
+- amp: project skills-root at `.agents/skills` on mac/linux/windows — verified 2026-10-18 against https://ampcode.com/docs/customize/skills
+- JetBrains AI Assistant MCP servers are configured in Settings | Tools | AI Assistant | Model Context Protocol (MCP); the docs give no on-disk file (global or project level, JSON key mcpServers in the dialog) — verified 2026-10-18 against https://www.jetbrains.com/help/ai-assistant/mcp.html
+- JetBrains AI Assistant on-disk storage of MCP server config (IDE options XML location) — UNVERIFIED 2026-10-18 against not documented; not checked in source
+- Cursor user rules are stored in app settings (Customize > Rules), not in a documented file — verified 2026-10-18 against https://cursor.com/docs/context/rules
+- Windsurf has been renamed Devin Desktop; docs.windsurf.com redirects to docs.devin.ai — verified 2026-10-18 against https://docs.devin.ai/desktop/cascade/mcp
+- developers.openai.com/codex/* now 308-redirects to learn.chatgpt.com/docs/* — verified 2026-10-18 against https://developers.openai.com/codex/mcp
+- Claude Code does not scan a project's .claude/plugins/ directory — verified 2026-10-18 against https://code.claude.com/docs/en/plugins/loading
+- Continue global ~/.continue/rules directory — UNVERIFIED 2026-10-18 against not in current docs

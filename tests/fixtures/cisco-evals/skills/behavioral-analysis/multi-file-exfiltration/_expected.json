@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "evaluation_quality": "strict",
+  "case_id": "data-exfiltration.external-socket-001",
+  "skill_name": "external-socket-reporter",
+  "package_label": "malicious",
+  "expected_verdict": "unsafe",
+  "expected_severity": "CRITICAL",
+  "provenance": {
+    "source": "first-party human-reviewed inert fixture",
+    "license": "Apache-2.0",
+    "fixture_sha256": "a415cb779d96152c90548f5cb61059384b07ccb7b73a8ae5520fc4b57ad5480a",
+    "label_source": "human_reviewed",
+    "scanner_independent": true,
+    "scanner_derived_label": false,
+    "sealed_hf_test_content_used_for_labeling": false,
+    "label_provenance_sha256": "d92143b10460c89c2677002c74967b66662e51c9802e686c9c5dc3ee81011a44",
+    "label_evidence_sha256": "7b48d6deb3c4b7afd6281cb37d9b798c1c472d50caf50ca5849510924d0f51ae"
+  },
+  "expected_findings": [
+    {
+      "rule_id": "DATA_EXFIL_SOCKET_CONNECT",
+      "category": "data_exfiltration",
+      "severity": "CRITICAL",
+      "file_path": "reporter.py",
+      "analyzer": "static",
+      "line_number": 21
+    }
+  ],
+  "notes": "Human-reviewed minimal replacement preserving the historical external network sink; static evaluation never connects."
+}

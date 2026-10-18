@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check runthrough tests
+      - run: python -m pytest -q
+      # Dogfood: the repository must scan clean with its own recorded decisions.
+      - run: runthrough scan . --no-color
+      # The demo kit must pass once its planted findings are accepted.
+      - run: runthrough scan demo --decisions demo/accepted.decisions.json --no-color
+      - name: PowerShell demo (Windows PowerShell 5.1)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $env:RT_BACKENDS = ''
+          '' | powershell -NoProfile -File demo/run.ps1

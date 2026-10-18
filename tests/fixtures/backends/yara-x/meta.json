@@ -1,0 +1,34 @@
+{
+  "backend": "yara-x",
+  "argv": [
+    "yr",
+    "scan",
+    "--output-format",
+    "json",
+    "--print-meta",
+    "--print-strings",
+    "--recursive",
+    "input/rules.yar",
+    "input/targets"
+  ],
+  "wrapper": [
+    "sandbox-exec",
+    "-p",
+    "(version 1)(allow default)(deny network*)"
+  ],
+  "cwd": "tests/fixtures/backends/yara-x",
+  "env": {
+    "PATH": "{VENV}/bin:/usr/bin:/bin",
+    "LANG": "en_US.UTF-8",
+    "NO_COLOR": "1",
+    "HOME": "<scratch dir>"
+  },
+  "api_keys_set": false,
+  "network": "denied (sandbox-exec deny network*)",
+  "version": "yara-x-cli 1.21.0 (GitHub release yara-x-v1.21.0-aarch64-apple-darwin.tar.gz, sha256 03ba0bc3...7451a)",
+  "date": "2026-10-18",
+  "observed_network_attempts": [],
+  "observed_network_attempts_note": "yr is a Rust binary; Python audit hook does not apply. Ran under sandbox-exec deny network*; cli/Cargo.toml has no HTTP client dependency.",
+  "exit_code": 0,
+  "stderr": ""
+}

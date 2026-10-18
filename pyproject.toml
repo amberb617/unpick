@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "runthrough"
+version = "0.1.0"
+description = "Vet AI components (skills, rules files, MCP servers, plugins) on your own laptop, offline by default."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = ["rich>=13", "pyyaml>=6"]
+
+[project.optional-dependencies]
+watch = ["watchdog>=4"]
+ui = ["flask>=3"]
+yara = ["yara-x>=1.0"]
+# Prebuilt CPU wheels: add --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+fallback = ["llama-cpp-python>=0.3.17"]
+dev = ["pytest>=8", "jsonschema>=4", "ruff>=0.6"]
+
+[project.scripts]
+runthrough = "runthrough.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["runthrough"]
+
+# data/ and schemas/ live at the repo root so contributors find them; ship them inside the wheel.
+[tool.hatch.build.targets.wheel.force-include]
+"data" = "runthrough/_data"
+"schemas" = "runthrough/_schemas"
+"shims" = "runthrough/_shims"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# Mirrors the Jiffy pre-PR gate: unused imports (Sonar S1128), complexity <= 15 (S3776),
+# no empty except (S8657-style). Nested ternaries (S3358) are caught by tests/test_style.py.
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "E9", "C901", "S110", "B", "UP", "I"]
+ignore = ["B008"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15

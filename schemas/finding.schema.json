@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amberb617/runthrough/schemas/finding.schema.json",
+  "title": "runthrough finding",
+  "description": "A question for a person, not a verdict. Every source (built-in check, scanner backend, judge, rehearse) produces this shape.",
+  "type": "object",
+  "required": ["id", "rule_id", "source", "severity", "path", "line", "message", "why", "false_positive", "matched", "context", "line_hash"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[0-9a-f]{10}$"},
+    "rule_id": {"type": "string"},
+    "source": {"type": "string", "pattern": "^(builtin|rehearse|backend:.+|judge:.+)$"},
+    "severity": {"enum": ["info", "low", "medium", "high"]},
+    "path": {"type": "string"},
+    "line": {"type": "integer", "minimum": 0},
+    "message": {"type": "string"},
+    "why": {"type": "string", "description": "One sentence: why this fires."},
+    "false_positive": {"type": "string", "description": "One sentence: when this is a false positive."},
+    "matched": {"type": "string"},
+    "line_hash": {"type": "string"},
+    "context": {"type": "array", "items": {"type": "object", "required": ["line", "text"], "properties": {"line": {"type": "integer"}, "text": {"type": "string"}}}},
+    "extra": {"type": "object"},
+    "original_rule_id": {"type": ["string", "null"], "description": "The backend's own rule id, verbatim."},
+    "original_message": {"type": ["string", "null"], "description": "The backend's own message, verbatim."},
+    "agreed_by": {"type": "array", "items": {"type": "string"}},
+    "decision": {"enum": ["accept", "reject", "ask-author", null]}
+  }
+}

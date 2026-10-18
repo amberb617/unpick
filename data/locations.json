@@ -1,0 +1,4699 @@
+[
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "One <name>/SKILL.md per skill. ~/.claude/skills/synced/ is reserved for claude.ai-synced skills. A dir with .claude-plugin/plugin.json here loads as a @skills-dir plugin."
+  },
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "One <name>/SKILL.md per skill. ~/.claude/skills/synced/ is reserved for claude.ai-synced skills. A dir with .claude-plugin/plugin.json here loads as a @skills-dir plugin."
+  },
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".claude/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "Also loaded from every parent dir up to repo root, and on demand from nested <subdir>/.claude/skills."
+  },
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/ClaudeCode/.claude/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "Enterprise skills live in .claude/skills under the managed settings directory; the docs give the Linux path explicitly, macOS/Windows are that directory joined with .claude/skills."
+  },
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/claude-code/.claude/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "Enterprise (managed) skills; path quoted in the docs."
+  },
+  {
+    "host": "claude-code",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\Program Files\\ClaudeCode\\.claude\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/skills",
+    "verified": true,
+    "note": "Enterprise skills: managed settings directory + .claude\\skills."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/plugins/cache",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "cache/<marketplace>/<plugin>/<version>/ = ${CLAUDE_PLUGIN_ROOT}. Root moves if CLAUDE_CODE_PLUGIN_CACHE_DIR is set. Each plugin may carry skills/, agents/, hooks/hooks.json (key hooks), .mcp.json (key mcpServers), bin/."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\plugins\\cache",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "cache/<marketplace>/<plugin>/<version>/ = ${CLAUDE_PLUGIN_ROOT}. Root moves if CLAUDE_CODE_PLUGIN_CACHE_DIR is set. Each plugin may carry skills/, agents/, hooks/hooks.json (key hooks), .mcp.json (key mcpServers), bin/."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/plugins/marketplaces",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Clones of marketplaces added from GitHub/git/URL. Local-path marketplaces load in place from their installLocation."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\plugins\\marketplaces",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Clones of marketplaces added from GitHub/git/URL. Local-path marketplaces load in place from their installLocation."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/plugins/synced",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Plugins synced from the claude.ai account (@synced)."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\plugins\\synced",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Plugins synced from the claude.ai account (@synced)."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/plugins/known_marketplaces.json",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Marketplace registry: source, installLocation, lastUpdated, autoUpdate. claude.ai-hosted marketplaces go in known_marketplaces_claudeai.json."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\plugins\\known_marketplaces.json",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Marketplace registry: source, installLocation, lastUpdated, autoUpdate. claude.ai-hosted marketplaces go in known_marketplaces_claudeai.json."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/plugins/installed_plugins.json",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Install records: scope, installPath, version."
+  },
+  {
+    "host": "claude-code",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\plugins\\installed_plugins.json",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/plugins/loading",
+    "verified": true,
+    "note": "Install records: scope, installPath, version."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "verified": true,
+    "note": "Also enabledPlugins and extraKnownMarketplaces (marketplace config). No mcpServers here; MCP is in ~/.claude.json."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "verified": true,
+    "note": "Also enabledPlugins and extraKnownMarketplaces (marketplace config). No mcpServers here; MCP is in ~/.claude.json."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".claude/settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "verified": true,
+    "note": "Shared/committed. Also enabledPlugins and extraKnownMarketplaces (apply after workspace trust)."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".claude/settings.local.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/hooks",
+    "verified": true,
+    "note": "Personal, gitignored. Also enabledPlugins."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/mcp",
+    "verified": true,
+    "note": "User-scope servers at top-level mcpServers; local-scope servers at projects[\"<abs project path>\"].mcpServers. Also holds auth session and trust state."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/mcp",
+    "verified": true,
+    "note": "User-scope servers at top-level mcpServers; local-scope servers at projects[\"<abs project path>\"].mcpServers. Also holds auth session and trust state."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/mcp",
+    "verified": true,
+    "note": "Project scope; Claude Code asks for approval before use."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/ClaudeCode/managed-settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-settings",
+    "verified": true,
+    "note": "Managed policy; drop-ins in managed-settings.d/*.json next to it. Can carry hooks, enabledPlugins, managedMcpServers. Legacy C:\\ProgramData\\ClaudeCode is NOT read."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/ClaudeCode/managed-mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-mcp",
+    "verified": true,
+    "note": "Managed MCP, exclusive control over all other servers."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/ClaudeCode/CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Managed policy CLAUDE.md."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/claude-code/managed-settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-settings",
+    "verified": true,
+    "note": "Managed policy; drop-ins in managed-settings.d/*.json next to it. Can carry hooks, enabledPlugins, managedMcpServers. Legacy C:\\ProgramData\\ClaudeCode is NOT read."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/claude-code/managed-mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-mcp",
+    "verified": true,
+    "note": "Managed MCP, exclusive control over all other servers."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/claude-code/CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Managed policy CLAUDE.md."
+  },
+  {
+    "host": "claude-code",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\Program Files\\ClaudeCode\\managed-settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-settings",
+    "verified": true,
+    "note": "Managed policy; drop-ins in managed-settings.d/*.json next to it. Can carry hooks, enabledPlugins, managedMcpServers. Legacy C:\\ProgramData\\ClaudeCode is NOT read."
+  },
+  {
+    "host": "claude-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\Program Files\\ClaudeCode\\managed-mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.claude.com/docs/en/managed-mcp",
+    "verified": true,
+    "note": "Managed MCP, exclusive control over all other servers."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\Program Files\\ClaudeCode\\CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Managed policy CLAUDE.md."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Loaded from cwd and every parent; nested subdir files load on demand."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".claude/CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "CLAUDE.local.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Personal, gitignored."
+  },
+  {
+    "host": "claude-code",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "Read only when no CLAUDE.md/.claude/CLAUDE.md/CLAUDE.local.md in cwd or above (v2.1.277+). .claude/AGENTS.md also read."
+  },
+  {
+    "host": "claude-code",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".claude/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": "*.md discovered recursively; optional paths: frontmatter."
+  },
+  {
+    "host": "claude-code",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.claude/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-code",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.claude\\rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.claude.com/docs/en/memory",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-desktop",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Claude/claude_desktop_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://modelcontextprotocol.io/docs/develop/connect-local-servers",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-desktop",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Claude\\claude_desktop_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://modelcontextprotocol.io/docs/develop/connect-local-servers",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "claude-desktop",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Claude/claude_desktop_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://hooklayer.dev/guides/claude-desktop-config-json",
+    "verified": false,
+    "note": "Official MCP doc says Claude Desktop ships for Linux but gives only macOS and Windows paths. Linux path is from third-party guides only."
+  },
+  {
+    "host": "cursor",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursorrules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://forum.cursor.com/t/project-rule-in-cursorrules-not-applied-in-agent-chat-works-in-cursor-rules/154309/3",
+    "verified": true,
+    "note": "Legacy, planned for deprecation, still read (Cursor staff, forum). Not mentioned in current rules docs."
+  },
+  {
+    "host": "cursor",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursor/rules/**/*.mdc",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://cursor.com/docs/context/rules",
+    "verified": true,
+    "note": "Must be .mdc; plain .md in .cursor/rules is ignored. Subfolders allowed. User rules live in app settings (no file); team rules in dashboard."
+  },
+  {
+    "host": "cursor",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://cursor.com/docs/context/rules",
+    "verified": true,
+    "note": "Root and nested subdirectories."
+  },
+  {
+    "host": "cursor",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cursor/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://cursor.com/docs/context/mcp",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cursor\\mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://cursor.com/docs/context/mcp",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursor/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://cursor.com/docs/context/mcp",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cursor/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://cursor.com/help/customization/skills",
+    "verified": true,
+    "note": "Also reads ~/.agents/skills, ~/.claude/skills, ~/.codex/skills."
+  },
+  {
+    "host": "cursor",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cursor\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://cursor.com/help/customization/skills",
+    "verified": true,
+    "note": "Also reads ~/.agents/skills, ~/.claude/skills, ~/.codex/skills."
+  },
+  {
+    "host": "cursor",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursor/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://cursor.com/help/customization/skills",
+    "verified": true,
+    "note": "Also .agents/skills, .claude/skills, .codex/skills; nested e.g. apps/web/.cursor/skills."
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cursor/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cursor\\hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursor/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/Cursor/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": "Enterprise/MDM hooks."
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/cursor/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": "Enterprise/MDM hooks."
+  },
+  {
+    "host": "cursor",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\ProgramData\\Cursor\\hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://cursor.com/docs/agent/hooks",
+    "verified": true,
+    "note": "Enterprise/MDM hooks."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".github/copilot-instructions.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "github-copilot",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".github/instructions/**/*.instructions.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions",
+    "verified": true,
+    "note": "applyTo frontmatter globs; VS Code searches recursively."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions",
+    "verified": true,
+    "note": "Anywhere in repo; nearest wins. VS Code: chat.useAgentsMdFile, nested via chat.useNestedAgentsMdFiles (off by default)."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions",
+    "verified": true,
+    "note": "Root CLAUDE.md or GEMINI.md accepted as alternatives."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "GEMINI.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "github-copilot",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".github/prompts/*.prompt.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/prompt-files",
+    "verified": true,
+    "note": "Prompt files."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.copilot/copilot-instructions.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/custom-instructions",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "github-copilot",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.copilot\\copilot-instructions.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/custom-instructions",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "github-copilot",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.copilot/instructions",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/custom-instructions",
+    "verified": true,
+    "note": "*.instructions.md, recursive."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.copilot\\instructions",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/custom-instructions",
+    "verified": true,
+    "note": "*.instructions.md, recursive."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".github/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+    "verified": true,
+    "note": "Also .claude/skills and .agents/skills."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.copilot/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+    "verified": true,
+    "note": "Also ~/.claude/skills and ~/.agents/skills."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.copilot\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+    "verified": true,
+    "note": "Also ~/.claude/skills and ~/.agents/skills."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.copilot/mcp-config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
+    "verified": true,
+    "note": "Path is $COPILOT_HOME/mcp-config.json when COPILOT_HOME is set. Read by Copilot harness/CLI."
+  },
+  {
+    "host": "github-copilot",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.copilot\\mcp-config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
+    "verified": true,
+    "note": "Path is $COPILOT_HOME/mcp-config.json when COPILOT_HOME is set. Read by Copilot harness/CLI."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".vscode/mcp.json",
+    "mcp_key": "servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
+    "verified": true,
+    "note": "Labelled deprecated in the add-server flow but still documented for inputs/dev mode/sandboxing. Copilot harness does not read it directly."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
+    "verified": true,
+    "note": "Portable workspace-root file; shown when chat.mcp.workspaceRootConfig.enabled is on."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Code/User/mcp.json",
+    "mcp_key": "servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings",
+    "verified": true,
+    "note": "Default profile. Non-default profiles: User/profiles/<id>/mcp.json. Insiders uses 'Code - Insiders'. Docs give the settings.json dir per OS; source joins mcp.json to the same profile dir."
+  },
+  {
+    "host": "vscode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Code/User/prompts",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files",
+    "verified": true,
+    "note": "User-profile prompt files (*.prompt.md) and local-harness user instructions. promptsHome = <profile>/prompts in source."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Code/User/settings.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/configure/settings",
+    "verified": false,
+    "note": "settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Code/User/mcp.json",
+    "mcp_key": "servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings",
+    "verified": true,
+    "note": "Default profile. Non-default profiles: User/profiles/<id>/mcp.json. Insiders uses 'Code - Insiders'. Docs give the settings.json dir per OS; source joins mcp.json to the same profile dir."
+  },
+  {
+    "host": "vscode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Code/User/prompts",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files",
+    "verified": true,
+    "note": "User-profile prompt files (*.prompt.md) and local-harness user instructions. promptsHome = <profile>/prompts in source."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Code/User/settings.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/configure/settings",
+    "verified": false,
+    "note": "settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Code\\User\\mcp.json",
+    "mcp_key": "servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/configure/settings",
+    "verified": true,
+    "note": "Default profile. Non-default profiles: User/profiles/<id>/mcp.json. Insiders uses 'Code - Insiders'. Docs give the settings.json dir per OS; source joins mcp.json to the same profile dir."
+  },
+  {
+    "host": "vscode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Code\\User\\prompts",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "microsoft/vscode@1694e2264f0a4406d813d50aa23f176e5484b344 (src/vs/platform/userDataProfile/common/userDataProfile.ts) + https://code.visualstudio.com/docs/copilot/customization/prompt-files",
+    "verified": true,
+    "note": "User-profile prompt files (*.prompt.md) and local-harness user instructions. promptsHome = <profile>/prompts in source."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Code\\User\\settings.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/configure/settings",
+    "verified": false,
+    "note": "settings.json path verified. A legacy 'mcp' key inside settings.json is not confirmed in current docs; scan it anyway."
+  },
+  {
+    "host": "vscode",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".devcontainer/devcontainer.json",
+    "mcp_key": "customizations.vscode.mcp.servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codex/config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": "hooks",
+    "format": "toml",
+    "source": "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+    "verified": true,
+    "note": "[mcp_servers.<name>] tables; plugin servers at plugins.<plugin>.mcp_servers.<server>. Inline [hooks] tables allowed. Dir moves with CODEX_HOME. Shared by CLI, IDE extension, ChatGPT desktop."
+  },
+  {
+    "host": "codex",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codex\\config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": "hooks",
+    "format": "toml",
+    "source": "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+    "verified": true,
+    "note": "[mcp_servers.<name>] tables; plugin servers at plugins.<plugin>.mcp_servers.<server>. Inline [hooks] tables allowed. Dir moves with CODEX_HOME. Shared by CLI, IDE extension, ChatGPT desktop."
+  },
+  {
+    "host": "codex",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".codex/config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": "hooks",
+    "format": "toml",
+    "source": "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+    "verified": true,
+    "note": "Trusted projects only."
+  },
+  {
+    "host": "codex",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codex/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codex\\hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".codex/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://learn.chatgpt.com/docs/hooks",
+    "verified": true,
+    "note": "Loads only if project .codex/ layer is trusted."
+  },
+  {
+    "host": "codex",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codex/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "verified": true,
+    "note": "~/.codex/AGENTS.override.md wins if present."
+  },
+  {
+    "host": "codex",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codex\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "verified": true,
+    "note": "~/.codex/AGENTS.override.md wins if present."
+  },
+  {
+    "host": "codex",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "verified": true,
+    "note": "Per dir from repo root to cwd: AGENTS.override.md, then AGENTS.md, then project_doc_fallback_filenames."
+  },
+  {
+    "host": "codex",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.override.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://learn.chatgpt.com/docs/build-skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.agents\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://learn.chatgpt.com/docs/build-skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://learn.chatgpt.com/docs/build-skills",
+    "verified": true,
+    "note": "Every dir from cwd up to repo root."
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "/etc/codex/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://learn.chatgpt.com/docs/build-skills",
+    "verified": true,
+    "note": "ADMIN scope."
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codex/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/exec-server/src/discoverV2/capability_locations.rs)",
+    "verified": true,
+    "note": "Not in current docs, but source still scans codex_home.join(\"skills\") as 'codex-home-skills'."
+  },
+  {
+    "host": "codex",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codex\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/exec-server/src/discoverV2/capability_locations.rs)",
+    "verified": true,
+    "note": "Not in current docs, but source still scans codex_home.join(\"skills\") as 'codex-home-skills'."
+  },
+  {
+    "host": "codex",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codex/plugins/cache",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/core-plugin-common/src/installed.rs PLUGINS_CACHE_DIR)",
+    "verified": true,
+    "note": "Plugins can ship hooks/hooks.json and skills."
+  },
+  {
+    "host": "codex",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codex\\plugins\\cache",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "openai/codex@8c076942cb70fba8e5c4732c23f1faabc4aed484 (codex-rs/core-plugin-common/src/installed.rs PLUGINS_CACHE_DIR)",
+    "verified": true,
+    "note": "Plugins can ship hooks/hooks.json and skills."
+  },
+  {
+    "host": "windsurf",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/devin/mcp_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/mcp",
+    "verified": true,
+    "note": "Windsurf is now Devin Desktop. $XDG_CONFIG_HOME/devin/mcp_config.json if XDG_CONFIG_HOME set."
+  },
+  {
+    "host": "windsurf",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\devin\\mcp_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/mcp",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "windsurf",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codeium/windsurf/mcp_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://fast.io/resources/windsurf-mcp-setup-guide/",
+    "verified": false,
+    "note": "Pre-rename Windsurf path. Current official docs no longer list it; only third-party guides do. Whether Devin Desktop still reads it is unconfirmed. Keep scanning: older installs have it."
+  },
+  {
+    "host": "windsurf",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codeium\\windsurf\\mcp_config.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://fast.io/resources/windsurf-mcp-setup-guide/",
+    "verified": false,
+    "note": "Pre-rename Windsurf path. Current official docs no longer list it; only third-party guides do. Whether Devin Desktop still reads it is unconfirmed. Keep scanning: older installs have it."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codeium/windsurf/memories/global_rules.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Global rules, 6,000 char cap. Memories also stored in ~/.codeium/windsurf/memories/."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codeium\\windsurf\\memories\\global_rules.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Global rules, 6,000 char cap. Memories also stored in ~/.codeium/windsurf/memories/."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".devin/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Preferred; also searched in subdirs and parents up to git root."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".windsurf/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Fallback."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".windsurfrules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Legacy, still read."
+  },
+  {
+    "host": "windsurf",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "Any directory."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/Devin/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/Windsurf/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/devin/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/windsurf/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\ProgramData\\Devin\\rules\\*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\ProgramData\\Windsurf\\rules\\*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.devin.ai/desktop/cascade/memories",
+    "verified": true,
+    "note": "System-level enterprise rules."
+  },
+  {
+    "host": "windsurf",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codeium/windsurf/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.devin.ai/desktop/cascade/skills",
+    "verified": true,
+    "note": "Also ~/.config/devin/skills, ~/.agents/skills, and ~/.claude/skills if Claude config reading is on."
+  },
+  {
+    "host": "windsurf",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codeium\\windsurf\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.devin.ai/desktop/cascade/skills",
+    "verified": true,
+    "note": "Also ~/.config/devin/skills, ~/.agents/skills, and ~/.claude/skills if Claude config reading is on."
+  },
+  {
+    "host": "windsurf",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/devin/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.devin.ai/desktop/cascade/skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "windsurf",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".devin/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.devin.ai/desktop/cascade/skills",
+    "verified": true,
+    "note": "Also .windsurf/skills (legacy), .agents/skills, .claude/skills."
+  },
+  {
+    "host": "windsurf",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".windsurf/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.devin.ai/desktop/cascade/skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "windsurf",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.codeium/windsurf/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/hooks",
+    "verified": true,
+    "note": "JetBrains plugin uses ~/.codeium/hooks.json."
+  },
+  {
+    "host": "windsurf",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.codeium\\windsurf\\hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/hooks",
+    "verified": true,
+    "note": "JetBrains plugin uses ~/.codeium/hooks.json."
+  },
+  {
+    "host": "windsurf",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".devin/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/hooks",
+    "verified": true,
+    "note": ".windsurf/hooks.json used only when .devin file missing/empty."
+  },
+  {
+    "host": "windsurf",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".windsurf/hooks.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.devin.ai/desktop/cascade/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cline/data/settings/cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Shared by IDE, CLI, SDK. Overrides: CLINE_MCP_SETTINGS_PATH, CLINE_DATA_DIR, CLINE_DIR."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cline\\data\\settings\\cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Shared by IDE, CLI, SDK. Overrides: CLINE_MCP_SETTINGS_PATH, CLINE_DATA_DIR, CLINE_DIR."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)",
+    "verified": true,
+    "note": "Legacy VS Code extension location; current builds migrate it into ~/.cline/data/settings. Other VS Code forks use their own User dir."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)",
+    "verified": true,
+    "note": "Legacy VS Code extension location; current builds migrate it into ~/.cline/data/settings. Other VS Code forks use their own User dir."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Code\\User\\globalStorage\\saoudrizwan.claude-dev\\settings\\cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)",
+    "verified": true,
+    "note": "Legacy VS Code extension location; current builds migrate it into ~/.cline/data/settings. Other VS Code forks use their own User dir."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/Documents/Cline/MCP/cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)",
+    "verified": true,
+    "note": "Legacy, migrated by current builds."
+  },
+  {
+    "host": "cline",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\Documents\\Cline\\MCP\\cline_mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "cline/cline@a42df8c8d5fd9d9f9a9073589baffe32ea9bb2f0 (apps/vscode/src/hosts/vscode/mcp-settings-legacy-migration.ts)",
+    "verified": true,
+    "note": "Legacy, migrated by current builds."
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".clinerules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": "File or dir (legacy layout may contain workflows/, skills/, hooks/)."
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cline/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/Documents/Cline/Rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": "Windows: Documents\\Cline\\Rules, also under OneDrive dirs."
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\Documents\\Cline\\Rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": "Windows: Documents\\Cline\\Rules, also under OneDrive dirs."
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cline/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": "Also ~/Cline/Rules."
+  },
+  {
+    "host": "cline",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cline\\rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": "Also ~/Cline/Rules."
+  },
+  {
+    "host": "cline",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.agents/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cline",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.agents\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.cline.bot/features/cline-rules",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "cline",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cline/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also ~/.agents/skills."
+  },
+  {
+    "host": "cline",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cline\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also ~/.agents/skills."
+  },
+  {
+    "host": "cline",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cline/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also .clinerules/skills and .agents/skills."
+  },
+  {
+    "host": "cline",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.cline/hooks",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also ~/Documents/Cline/Hooks and $CLINE_HOOKS_DIR. Hook scripts, not a JSON key."
+  },
+  {
+    "host": "cline",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.cline\\hooks",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also ~/Documents/Cline/Hooks and $CLINE_HOOKS_DIR. Hook scripts, not a JSON key."
+  },
+  {
+    "host": "cline",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cline/hooks",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.cline.bot/getting-started/config",
+    "verified": true,
+    "note": "Also .clinerules/hooks."
+  },
+  {
+    "host": "continue",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.continue/config.yaml",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://docs.continue.dev/customize/deep-dives/configuration",
+    "verified": true,
+    "note": "Also holds rules key."
+  },
+  {
+    "host": "continue",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.continue\\config.yaml",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://docs.continue.dev/customize/deep-dives/configuration",
+    "verified": true,
+    "note": "Also holds rules key."
+  },
+  {
+    "host": "continue",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".continue/mcpServers/*",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://docs.continue.dev/customize/deep-dives/mcp",
+    "verified": true,
+    "note": "YAML blocks or JSON files copied from Claude Desktop/Cursor/Cline (e.g. .continue/mcpServers/mcp.json)."
+  },
+  {
+    "host": "continue",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".continue/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.continue.dev/customize/deep-dives/rules",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.gemini/settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.gemini\\settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".gemini/settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/gemini-cli/settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "System settings; override with GEMINI_CLI_SYSTEM_SETTINGS_PATH."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\ProgramData\\gemini-cli\\settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "System settings; override with GEMINI_CLI_SYSTEM_SETTINGS_PATH."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/GeminiCli/settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "System settings; override with GEMINI_CLI_SYSTEM_SETTINGS_PATH."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.gemini/GEMINI.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Filename configurable via context.fileName."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.gemini\\GEMINI.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Filename configurable via context.fileName."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "GEMINI.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Workspace dirs and parents; JIT in accessed dirs."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "extension-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.gemini/extensions",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/reference.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Each extension has gemini-extension.json (keys mcpServers, contextFileName); hooks in hooks/hooks.json; can bundle skills."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "extension-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.gemini\\extensions",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/reference.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Each extension has gemini-extension.json (keys mcpServers, contextFileName); hooks in hooks/hooks.json; can bundle skills."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.gemini/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Alias ~/.agents/skills takes precedence."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.gemini\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Alias ~/.agents/skills takes precedence."
+  },
+  {
+    "host": "gemini-cli",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".gemini/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md (google-gemini/gemini-cli@ed96faedfd5571f055c44f2c9509d62321d1138d)",
+    "verified": true,
+    "note": "Alias .agents/skills takes precedence."
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.junie/mcp/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.junie\\mcp\\mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".junie/mcp/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://junie.jetbrains.com/docs/junie-cli-mcp-configuration.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".junie/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://junie.jetbrains.com/docs/guidelines-and-memory.html",
+    "verified": true,
+    "note": "Then root AGENTS.md + .junie/playbook.md + .junie/rules/*.md, then legacy .junie/guidelines.md or .junie/guidelines/."
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".junie/rules/*.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://junie.jetbrains.com/docs/guidelines-and-memory.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".junie/guidelines.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://junie.jetbrains.com/docs/guidelines-and-memory.html",
+    "verified": true,
+    "note": "Legacy, still supported."
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.junie/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://junie.jetbrains.com/docs/guidelines-and-memory.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.junie\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://junie.jetbrains.com/docs/guidelines-and-memory.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.junie/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://junie.jetbrains.com/docs/agent-skills.html",
+    "verified": true,
+    "note": "CLI also reads ~/.agents/skills."
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.junie\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://junie.jetbrains.com/docs/agent-skills.html",
+    "verified": true,
+    "note": "CLI also reads ~/.agents/skills."
+  },
+  {
+    "host": "jetbrains-junie",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".junie/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://junie.jetbrains.com/docs/agent-skills.html",
+    "verified": true,
+    "note": "CLI also reads .agents/skills in trusted projects."
+  },
+  {
+    "host": "zed",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/zed/settings.json",
+    "mcp_key": "context_servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Linux honours $XDG_CONFIG_HOME/zed/settings.json."
+  },
+  {
+    "host": "zed",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Zed\\settings.json",
+    "mcp_key": "context_servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "zed",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".zed/settings.json",
+    "mcp_key": "context_servers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/configuring-zed.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "zed",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/zed/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/instructions.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "zed",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Zed\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/instructions.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".cursorrules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".windsurfrules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".clinerules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".github/copilot-instructions.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "CLAUDE.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "GEMINI.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/rules.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Zed reads the first match in its priority list."
+  },
+  {
+    "host": "zed",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Flat layout only."
+  },
+  {
+    "host": "zed",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.agents\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": "Flat layout only."
+  },
+  {
+    "host": "zed",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://github.com/zed-industries/zed/blob/main/docs/src/ai/skills.md (zed-industries/zed@56934ec0560bce8929025497411de7f5322fb6ca)",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "zed",
+    "kind": "extension-root",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Zed/extensions/installed",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://zed.dev/docs/configuring-zed",
+    "verified": true,
+    "note": "Extensions can provide MCP context servers."
+  },
+  {
+    "host": "zed",
+    "kind": "extension-root",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.local/share/zed/extensions/installed",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://zed.dev/docs/configuring-zed",
+    "verified": true,
+    "note": "Extensions can provide MCP context servers."
+  },
+  {
+    "host": "zed",
+    "kind": "extension-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%LOCALAPPDATA%\\Zed\\extensions\\installed",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://zed.dev/docs/configuring-zed",
+    "verified": true,
+    "note": "Extensions can provide MCP context servers."
+  },
+  {
+    "host": "openclaw",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.openclaw.ai/tools/skills",
+    "verified": true,
+    "note": "<workspace>/skills; default target of `openclaw skills install` (ClawHub). Lock in .clawhub/lock.json."
+  },
+  {
+    "host": "openclaw",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.openclaw.ai/tools/skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "openclaw",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.openclaw/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.openclaw.ai/tools/skills",
+    "verified": true,
+    "note": "Managed skills; `openclaw skills install --global` target. Moves with OPENCLAW_STATE_DIR. Also ~/.agents/skills and ~/.openclaw/agents/<id>/agent/workshop-skills."
+  },
+  {
+    "host": "openclaw",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.openclaw\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.openclaw.ai/tools/skills",
+    "verified": true,
+    "note": "Managed skills; `openclaw skills install --global` target. Moves with OPENCLAW_STATE_DIR. Also ~/.agents/skills and ~/.openclaw/agents/<id>/agent/workshop-skills."
+  },
+  {
+    "host": "openclaw",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.openclaw/openclaw.json",
+    "mcp_key": "mcp.servers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.openclaw.ai/gateway/configuration + https://docs.openclaw.ai/cli/mcp",
+    "verified": true,
+    "note": "JSON5. skills.entries and skills.load.extraDirs here too. Override with OPENCLAW_CONFIG_PATH."
+  },
+  {
+    "host": "openclaw",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.openclaw\\openclaw.json",
+    "mcp_key": "mcp.servers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.openclaw.ai/gateway/configuration + https://docs.openclaw.ai/cli/mcp",
+    "verified": true,
+    "note": "JSON5. skills.entries and skills.load.extraDirs here too. Override with OPENCLAW_CONFIG_PATH."
+  },
+  {
+    "host": "kiro",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.kiro/settings/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://kiro.dev/docs/mcp/configuration/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.kiro\\settings\\mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://kiro.dev/docs/mcp/configuration/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".kiro/settings/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://kiro.dev/docs/mcp/configuration/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.kiro/steering",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/steering/",
+    "verified": true,
+    "note": "Global steering *.md and AGENTS.md."
+  },
+  {
+    "host": "kiro",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.kiro\\steering",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/steering/",
+    "verified": true,
+    "note": "Global steering *.md and AGENTS.md."
+  },
+  {
+    "host": "kiro",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".kiro/steering",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/steering/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://kiro.dev/docs/steering/",
+    "verified": true,
+    "note": "Root and subdirectories."
+  },
+  {
+    "host": "kiro",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.kiro/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/skills/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.kiro\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/skills/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "kiro",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".kiro/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://kiro.dev/docs/skills/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amazon-q",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".amazonq/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/context-project-rules.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.aws/amazonq/default.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": "IDE global. mcp_key inferred from the agent-config example on the CLI page."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.aws\\amazonq\\default.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": "IDE global. mcp_key inferred from the agent-config example on the CLI page."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".amazonq/default.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.aws/amazonq/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": "Legacy, still accepted."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.aws\\amazonq\\mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": "Legacy, still accepted."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".amazonq/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/mcp-ide.html",
+    "verified": true,
+    "note": "Legacy, still accepted."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.aws/amazonq/cli-agents",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html",
+    "verified": true,
+    "note": "Q CLI agent configs (*.json) with mcpServers."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.aws\\amazonq\\cli-agents",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html",
+    "verified": true,
+    "note": "Q CLI agent configs (*.json) with mcpServers."
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.aws/amazonq/agents/default.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amazon-q",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.aws\\amazonq\\agents\\default.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/qdev-mcp.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "roo-code",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".roo/mcp.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "roo-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo",
+    "verified": false,
+    "note": "Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed."
+  },
+  {
+    "host": "roo-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo",
+    "verified": false,
+    "note": "Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed."
+  },
+  {
+    "host": "roo-code",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Code\\User\\globalStorage\\rooveterinaryinc.roo-cline\\settings\\mcp_settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/mcp/using-mcp-in-roo",
+    "verified": false,
+    "note": "Docs name the file mcp_settings.json but give no path; extension ID and directory not confirmed."
+  },
+  {
+    "host": "roo-code",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".roo/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/custom-instructions",
+    "verified": true,
+    "note": "Also .roo/rules-{mode}/."
+  },
+  {
+    "host": "roo-code",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.roo/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/custom-instructions",
+    "verified": true,
+    "note": "Also ~/.roo/rules-{mode}/."
+  },
+  {
+    "host": "roo-code",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.roo\\rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/custom-instructions",
+    "verified": true,
+    "note": "Also ~/.roo/rules-{mode}/."
+  },
+  {
+    "host": "roo-code",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".roorules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/custom-instructions",
+    "verified": true,
+    "note": "Fallback; also .roorules-{mode}, legacy .clinerules."
+  },
+  {
+    "host": "roo-code",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://roocodeinc.github.io/Roo-Code/features/custom-instructions",
+    "verified": true,
+    "note": "AGENT.md fallback; toggle roo-cline.useAgentRules."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Searched from cwd up to nearest git dir."
+  },
+  {
+    "host": "opencode",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/skills/",
+    "verified": true,
+    "note": "Also ~/.claude/skills, ~/.agents/skills."
+  },
+  {
+    "host": "opencode",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/skills/",
+    "verified": true,
+    "note": "Also ~/.claude/skills, ~/.agents/skills."
+  },
+  {
+    "host": "opencode",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/skills/",
+    "verified": true,
+    "note": "Also .claude/skills, .agents/skills, walked up to git worktree."
+  },
+  {
+    "host": "opencode",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "JS/TS plugins. npm plugins via 'plugin' key."
+  },
+  {
+    "host": "opencode",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "JS/TS plugins. npm plugins via 'plugin' key."
+  },
+  {
+    "host": "opencode",
+    "kind": "plugin-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "opencode",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://opencode.ai/docs/rules/",
+    "verified": true,
+    "note": "CLAUDE.md fallback."
+  },
+  {
+    "host": "opencode",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://opencode.ai/docs/rules/",
+    "verified": true,
+    "note": "~/.claude/CLAUDE.md fallback."
+  },
+  {
+    "host": "opencode",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://opencode.ai/docs/rules/",
+    "verified": true,
+    "note": "~/.claude/CLAUDE.md fallback."
+  },
+  {
+    "host": "goose",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/goose/config.yaml",
+    "mcp_key": "extensions",
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://goose-docs.ai/docs/guides/config-files/",
+    "verified": true,
+    "note": "Goose moved to the Agentic AI Foundation (AAIF)."
+  },
+  {
+    "host": "goose",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%APPDATA%\\Block\\goose\\config\\config.yaml",
+    "mcp_key": "extensions",
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://goose-docs.ai/docs/guides/config-files/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "goose",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/goose/.goosehints",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "goose",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".goosehints",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/",
+    "verified": true,
+    "note": "Default CONTEXT_FILE_NAMES = [AGENTS.md, .goosehints], any dir in hierarchy."
+  },
+  {
+    "host": "goose",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-goosehints/",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "goose",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/",
+    "verified": true,
+    "note": "Also plugin skills in ~/.agents/plugins/<name>/, legacy ~/.claude/skills."
+  },
+  {
+    "host": "goose",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.agents\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/",
+    "verified": true,
+    "note": "Also plugin skills in ~/.agents/plugins/<name>/, legacy ~/.claude/skills."
+  },
+  {
+    "host": "goose",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/",
+    "verified": true,
+    "note": "Legacy .goose/skills and .claude/skills also read."
+  },
+  {
+    "host": "aider",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.aider.conf.yml",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://aider.chat/docs/config/aider_conf.html",
+    "verified": true,
+    "note": "Also at git root and cwd. 'read:' key lists conventions files (e.g. CONVENTIONS.md). No MCP."
+  },
+  {
+    "host": "aider",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.aider.conf.yml",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://aider.chat/docs/config/aider_conf.html",
+    "verified": true,
+    "note": "Also at git root and cwd. 'read:' key lists conventions files (e.g. CONVENTIONS.md). No MCP."
+  },
+  {
+    "host": "aider",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".aider.conf.yml",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "yaml",
+    "source": "https://aider.chat/docs/config/aider_conf.html",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "aider",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "CONVENTIONS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://aider.chat/docs/usage/conventions.html",
+    "verified": true,
+    "note": "Convention only; loaded only via --read or read: in .aider.conf.yml."
+  },
+  {
+    "host": "grok-build",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.grok/config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": null,
+    "format": "toml",
+    "source": "https://docs.x.ai/build/settings",
+    "verified": true,
+    "note": "Moves with $GROK_HOME. Also ~/.grok/managed_config.toml, /etc/grok/managed_config.toml."
+  },
+  {
+    "host": "grok-build",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.grok\\config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": null,
+    "format": "toml",
+    "source": "https://docs.x.ai/build/settings",
+    "verified": true,
+    "note": "Moves with $GROK_HOME. Also ~/.grok/managed_config.toml, /etc/grok/managed_config.toml."
+  },
+  {
+    "host": "grok-build",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".grok/config.toml",
+    "mcp_key": "mcp_servers",
+    "hooks_key": null,
+    "format": "toml",
+    "source": "https://docs.x.ai/build/settings",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "grok-build",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.grok/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": "Also ~/.agents/skills; reads Claude Code skills/plugins/MCP/hooks too."
+  },
+  {
+    "host": "grok-build",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.grok\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": "Also ~/.agents/skills; reads Claude Code skills/plugins/MCP/hooks too."
+  },
+  {
+    "host": "grok-build",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".grok/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "grok-build",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.grok/plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": "Marketplace installs in ~/.grok/plugins/marketplaces/."
+  },
+  {
+    "host": "grok-build",
+    "kind": "plugin-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.grok\\plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": "Marketplace installs in ~/.grok/plugins/marketplaces/."
+  },
+  {
+    "host": "grok-build",
+    "kind": "plugin-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".grok/plugins",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "grok-build",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.grok/hooks/*.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.x.ai/build/features/hooks",
+    "verified": true,
+    "note": "Also reads .claude/settings.json and .cursor/hooks.json hooks."
+  },
+  {
+    "host": "grok-build",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.grok\\hooks\\*.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.x.ai/build/features/hooks",
+    "verified": true,
+    "note": "Also reads .claude/settings.json and .cursor/hooks.json hooks."
+  },
+  {
+    "host": "grok-build",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".grok/hooks/*.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.x.ai/build/features/hooks",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "grok-build",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
+    "verified": true,
+    "note": "Also Agents.md, AGENT.md, CLAUDE.md, CLAUDE.local.md, .claude/rules/."
+  },
+  {
+    "host": "augment",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.augment/settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/integrations",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.augment\\settings.json",
+    "mcp_key": "mcpServers",
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/integrations",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".augment/settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/hooks.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "settings-hooks",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".augment/settings.local.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/hooks.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "/etc/augment/settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/hooks.md",
+    "verified": true,
+    "note": "System policy."
+  },
+  {
+    "host": "augment",
+    "kind": "settings-hooks",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "C:\\ProgramData\\Augment\\settings.json",
+    "mcp_key": null,
+    "hooks_key": "hooks",
+    "format": "json",
+    "source": "https://docs.augmentcode.com/cli/hooks.md",
+    "verified": true,
+    "note": "System policy."
+  },
+  {
+    "host": "augment",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".augment/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/rules.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.augment/rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/rules.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.augment\\rules",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/rules.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "rules-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".augment-guidelines",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://docs.augmentcode.com/cli/rules.md",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "augment",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.augment/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/skills.md",
+    "verified": true,
+    "note": "Also ~/.claude/skills, ~/.agents/skills."
+  },
+  {
+    "host": "augment",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.augment\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/skills.md",
+    "verified": true,
+    "note": "Also ~/.claude/skills, ~/.agents/skills."
+  },
+  {
+    "host": "augment",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".augment/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://docs.augmentcode.com/cli/skills.md",
+    "verified": true,
+    "note": "Also .claude/skills, .agents/skills."
+  },
+  {
+    "host": "amp",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/amp/settings.json",
+    "mcp_key": "amp.mcpServers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://ampcode.com/docs/cli/settings + https://ampcode.com/docs/customize/mcp",
+    "verified": true,
+    "note": "Or settings.jsonc. Windows path is %USERPROFILE%\\.config\\amp\\settings.json."
+  },
+  {
+    "host": "amp",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\amp\\settings.json",
+    "mcp_key": "amp.mcpServers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://ampcode.com/docs/cli/settings + https://ampcode.com/docs/customize/mcp",
+    "verified": true,
+    "note": "Or settings.jsonc. Windows path is %USERPROFILE%\\.config\\amp\\settings.json."
+  },
+  {
+    "host": "amp",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".amp/settings.json",
+    "mcp_key": "amp.mcpServers",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://ampcode.com/docs/customize/mcp",
+    "verified": true,
+    "note": "Nearest upward to repo root; servers need `amp mcp approve`."
+  },
+  {
+    "host": "amp",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/amp/AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://ampcode.com/docs/customize/agents-md",
+    "verified": true,
+    "note": "Also ~/.config/AGENTS.md."
+  },
+  {
+    "host": "amp",
+    "kind": "instructions-file",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\amp\\AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://ampcode.com/docs/customize/agents-md",
+    "verified": true,
+    "note": "Also ~/.config/AGENTS.md."
+  },
+  {
+    "host": "amp",
+    "kind": "instructions-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "AGENTS.md",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "md",
+    "source": "https://ampcode.com/docs/customize/agents-md",
+    "verified": true,
+    "note": "cwd and parents up to $HOME; AGENT.md / CLAUDE.md fallback."
+  },
+  {
+    "host": "amp",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://ampcode.com/docs/customize/skills",
+    "verified": true,
+    "note": "Also ~/.agents/skills, ~/.config/amp/skills, ~/.claude/skills, ~/.claude/plugins/cache."
+  },
+  {
+    "host": "amp",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\agents\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://ampcode.com/docs/customize/skills",
+    "verified": true,
+    "note": "Also ~/.agents/skills, ~/.config/amp/skills, ~/.claude/skills, ~/.claude/plugins/cache."
+  },
+  {
+    "host": "amp",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/amp/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://ampcode.com/docs/customize/skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amp",
+    "kind": "skills-root",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\amp\\skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://ampcode.com/docs/customize/skills",
+    "verified": true,
+    "note": ""
+  },
+  {
+    "host": "amp",
+    "kind": "skills-root",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".agents/skills",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://ampcode.com/docs/customize/skills",
+    "verified": true,
+    "note": "Also .claude/skills."
+  }
+]

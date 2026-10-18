@@ -1,0 +1,26 @@
+# Paths and names of files that hold credentials or private data. Regular expressions, case-insensitive.
+# A component that mentions these may be asking an agent to read them.
+~/\.ssh\b|\.ssh/                          # SSH keys and config
+\bid_(rsa|ed25519|ecdsa|dsa)\b            # private SSH key file names
+(?<![\w.])\.env(\.[\w-]+)?\b              # dotenv files with API keys
+\.aws/(credentials|config)\b              # AWS CLI credentials
+\.azure/                                  # Azure CLI credentials
+application_default_credentials\.json     # Google Cloud ADC
+\.config/gcloud\b                         # Google Cloud CLI credentials
+\.kube/config\b                           # Kubernetes credentials
+\.docker/config\.json                     # Docker registry credentials
+\.npmrc\b                                 # npm registry token
+\.pypirc\b                                # PyPI upload token
+\.netrc\b                                 # stored login for many tools
+\.git-credentials\b                       # git HTTPS credentials
+\.config/gh/hosts\.yml                    # GitHub CLI token
+\bkeychain\b|login\.keychain              # macOS Keychain
+\bsecurity\s+find-(generic|internet)-password   # macOS Keychain CLI read
+[/\\](Login Data|Local State|Cookies)\b    # Chromium browser password and cookie stores (as path components)
+Library/Application Support/(Google/Chrome|BraveSoftware|Microsoft Edge|Firefox)   # browser profiles (macOS)
+AppData\\(Local|Roaming)\\(Google\\Chrome|Microsoft\\Edge|Mozilla\\Firefox)          # browser profiles (Windows)
+\.mozilla/firefox|\.config/(google-chrome|chromium|BraveSoftware)                    # browser profiles (Linux)
+\b(metamask|exodus|electrum|phantom)\b.{0,30}\b(wallet|vault|seed)\b               # crypto wallet stores
+\b(seed phrase|mnemonic phrase|private key)\b                                        # wallet secrets
+\b(GITHUB|GH|NPM|PYPI|OPENAI|ANTHROPIC|AWS_SECRET_ACCESS|SLACK|STRIPE|GOOGLE)_?(API_)?(TOKEN|KEY)\b   # env var: common secret environment variable names
+\bmcp\.json\b|claude_desktop_config\.json # MCP configs hold other servers' tokens (Invariant Labs PoC read mcp.json)

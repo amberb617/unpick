@@ -1,0 +1,30 @@
+{
+  "backend": "skillspector",
+  "argv": [
+    "skillspector",
+    "scan",
+    "input/defanged-test-skill",
+    "--no-llm",
+    "--format",
+    "json"
+  ],
+  "wrapper": [
+    "sandbox-exec",
+    "-p",
+    "(version 1)(allow default)(deny network*)"
+  ],
+  "cwd": "tests/fixtures/backends/skillspector",
+  "env": {
+    "PATH": "{VENV}/bin:/usr/bin:/bin",
+    "LANG": "en_US.UTF-8",
+    "NO_COLOR": "1",
+    "HOME": "<scratch dir>"
+  },
+  "api_keys_set": false,
+  "network": "denied (sandbox-exec deny network*)",
+  "version": "2.12.0 (git NVIDIA/skillspector@cf5cac7ba5c756a6e0ebf52dc9763f49422f889f)",
+  "date": "2026-10-18",
+  "observed_network_attempts": [],
+  "exit_code": 1,
+  "stderr": ""
+}

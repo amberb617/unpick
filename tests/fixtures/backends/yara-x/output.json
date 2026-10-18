@@ -1,0 +1,95 @@
+{
+  "version": "1.21.0",
+  "matches": [
+    {
+      "rule": "ssh_key_exfil_instruction",
+      "file": "{FIXTURE}/input/targets/tools.json",
+      "meta": {
+        "description": "instruction to read an SSH private key",
+        "severity": "HIGH"
+      },
+      "strings": [
+        {
+          "identifier": "$a",
+          "offset": 111,
+          "match": "~/.ssh/id_rsa"
+        }
+      ]
+    },
+    {
+      "rule": "base64_pipe_to_shell",
+      "file": "{FIXTURE}/input/targets/defanged-test-skill/SKILL.md",
+      "meta": {
+        "description": "base64-decoded data piped into a shell",
+        "severity": "HIGH"
+      },
+      "strings": [
+        {
+          "identifier": "$a",
+          "offset": 340,
+          "match": "base64 -d | bash"
+        }
+      ]
+    },
+    {
+      "rule": "zero_width_space",
+      "file": "{FIXTURE}/input/targets/defanged-test-skill/SKILL.md",
+      "meta": {
+        "description": "U+200B zero-width space",
+        "severity": "MEDIUM"
+      },
+      "strings": [
+        {
+          "identifier": "$a",
+          "offset": 436,
+          "match": "\\xe2\\x80\\x8b"
+        }
+      ]
+    },
+    {
+      "rule": "invalid_tld_domain",
+      "file": "{FIXTURE}/input/targets/defanged-test-skill/SKILL.md",
+      "meta": {
+        "description": "reference to a .invalid domain",
+        "severity": "LOW"
+      },
+      "strings": [
+        {
+          "identifier": "$a",
+          "offset": 391,
+          "match": "example.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 392,
+          "match": "xample.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 393,
+          "match": "ample.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 394,
+          "match": "mple.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 395,
+          "match": "ple.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 396,
+          "match": "le.invalid"
+        },
+        {
+          "identifier": "$a",
+          "offset": 397,
+          "match": "e.invalid"
+        }
+      ]
+    }
+  ]
+}

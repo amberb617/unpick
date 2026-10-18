@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "evaluation_quality": "strict",
+  "case_id": "data-exfiltration.sensitive-file-001",
+  "skill_name": "sensitive-file-reader",
+  "package_label": "malicious",
+  "expected_verdict": "unsafe",
+  "expected_severity": "HIGH",
+  "provenance": {
+    "source": "first-party human-reviewed inert fixture",
+    "license": "Apache-2.0",
+    "fixture_sha256": "7f9b2a12db7daf77cad7fd7c5145fd7a29c89c93e6c60feeeba34d618b30659f",
+    "label_source": "human_reviewed",
+    "scanner_independent": true,
+    "scanner_derived_label": false,
+    "sealed_hf_test_content_used_for_labeling": false,
+    "label_provenance_sha256": "2b6c33e1739cf0d0cd35f2ec8de23a95c8feb7911773b370fffcb9cb7dd65342",
+    "label_evidence_sha256": "5cd0dab09790495c9dfdfece5d41f10c82ee9c2bcde44d5433564456590dd56d"
+  },
+  "expected_findings": [
+    {
+      "rule_id": "DATA_EXFIL_SENSITIVE_FILES",
+      "category": "data_exfiltration",
+      "severity": "HIGH",
+      "file_path": "get_info.py",
+      "analyzer": "static",
+      "line_number": 18
+    }
+  ],
+  "notes": "Human-reviewed minimal replacement for the historical secret-access case; the file is never opened."
+}

@@ -1,0 +1,422 @@
+{
+  "skill_name": "defanged-test-skill",
+  "skill_path": "{FIXTURE}/input/defanged-test-skill",
+  "is_safe": false,
+  "max_severity": "HIGH",
+  "findings_count": 3,
+  "findings": [
+    {
+      "id": "PIPELINE_TAINT_e9f302646a",
+      "rule_id": "PIPELINE_TAINT_FLOW",
+      "category": "data_exfiltration",
+      "severity": "HIGH",
+      "title": "Dangerous data flow in command pipeline",
+      "description": "Pipeline uses obfuscation before code execution: `echo aGVsbG8K | base64 -d | bash`. Obfuscated execution hides malicious intent.",
+      "file_path": "SKILL.md",
+      "line_number": 1,
+      "snippet": "echo aGVsbG8K | base64 -d | bash",
+      "remediation": "Review the command pipeline. Avoid piping sensitive data to network commands or shell execution.",
+      "analyzer": "pipeline",
+      "metadata": {
+        "pipeline": "echo aGVsbG8K | base64 -d | bash",
+        "source_taints": [
+          "OBFUSCATION"
+        ],
+        "sink_command": "bash",
+        "chain_length": 3,
+        "in_documentation": false,
+        "behavior_category": "obfuscation",
+        "semantic_facts": {
+          "evidence_kind": "command_pipeline",
+          "evidence_value_class": "non_fetch_execute",
+          "evidence_count": 3,
+          "context_kind": "instruction",
+          "signal_kind": "taint_flow",
+          "commands": [
+            {
+              "executable": "echo",
+              "argument_classes": [],
+              "downloads": false,
+              "executes": false,
+              "destructive": false,
+              "privilege_change": false,
+              "source_class": "",
+              "sink_class": "",
+              "file_path": "SKILL.md"
+            },
+            {
+              "executable": "base64",
+              "argument_classes": [
+                "request_body"
+              ],
+              "downloads": false,
+              "executes": false,
+              "destructive": false,
+              "privilege_change": false,
+              "source_class": "",
+              "sink_class": "",
+              "file_path": "SKILL.md"
+            },
+            {
+              "executable": "bash",
+              "argument_classes": [],
+              "downloads": false,
+              "executes": true,
+              "destructive": false,
+              "privilege_change": false,
+              "source_class": "",
+              "sink_class": "execution",
+              "file_path": "SKILL.md"
+            }
+          ],
+          "urls": [],
+          "flows": [
+            {
+              "source_class": "",
+              "sink_class": "execution",
+              "transforms": [
+                "obfuscation"
+              ],
+              "cross_file": false,
+              "source_path": "SKILL.md",
+              "sink_path": "SKILL.md"
+            }
+          ],
+          "candidate_command": {
+            "executable": "bash",
+            "argument_classes": [],
+            "downloads": false,
+            "executes": true,
+            "destructive": false,
+            "privilege_change": false,
+            "source_class": "",
+            "sink_class": "execution",
+            "file_path": "SKILL.md"
+          },
+          "candidate_flow": {
+            "source_class": "",
+            "sink_class": "execution",
+            "transforms": [
+              "obfuscation"
+            ],
+            "cross_file": false,
+            "source_path": "SKILL.md",
+            "sink_path": "SKILL.md"
+          }
+        },
+        "aitech": "AITech-8.2",
+        "aitech_name": "Data Exfiltration / Exposure",
+        "aisubtech": "AISubtech-8.2.3",
+        "aisubtech_name": "Data Exfiltration via Agent Tooling",
+        "aitech_mappings": [
+          "OWASP: LLM02:2026: Sensitive Information Disclosure",
+          "OWASP: ASI09: Human-Agent Trust Exploitation",
+          "MITRE ATLAS: AML.T0024.000: Exfiltration via AI Inference API: Infer Training Data Membership",
+          "MITRE ATLAS: AML.T0035: AI Artifact Collection",
+          "MITRE ATLAS: AML.T0037: Data From Local System",
+          "MITRE ATLAS: AML.T0057: LLM Data Leakage",
+          "NIST AML: NISTAML.037: Training Data Attacks"
+        ],
+        "aisubtech_mappings": [
+          "OWASP: LLM02:2026: Sensitive Information Disclosure",
+          "OWASP: ASI02: Tool Misuse & Exploitation",
+          "OWASP: ASI09: Human-Agent Trust Exploitation",
+          "MITRE ATLAS: AML.T0086: Exfiltration via AI Agent Tool Invocation",
+          "NIST AML: N/A"
+        ],
+        "framework_mappings": [
+          "OWASP: LLM02:2026: Sensitive Information Disclosure",
+          "OWASP: ASI02: Tool Misuse & Exploitation",
+          "OWASP: ASI09: Human-Agent Trust Exploitation",
+          "MITRE ATLAS: AML.T0086: Exfiltration via AI Agent Tool Invocation",
+          "NIST AML: N/A"
+        ],
+        "taxonomy_status": "mapped",
+        "taxonomy_source": "rule"
+      }
+    },
+    {
+      "id": "YARA_SUSP_Lnx_EncodedShell_DecodeExec_Sep26_4134766ed0",
+      "rule_id": "YARA_SUSP_Lnx_EncodedShell_DecodeExec_Sep26",
+      "category": "obfuscation",
+      "severity": "HIGH",
+      "title": "OBFUSCATION detected by YARA",
+      "description": "Detects an encoded shell payload decoded directly into a command interpreter: base64 -d | bash",
+      "file_path": "SKILL.md",
+      "line_number": 10,
+      "snippet": "echo aGVsbG8K | base64 -d | bash",
+      "remediation": "Review and remove obfuscation pattern",
+      "analyzer": "static",
+      "metadata": {
+        "yara_rule": "SUSP_Lnx_EncodedShell_DecodeExec_Sep26",
+        "yara_namespace": "behavior_chain_detection",
+        "matched_string": "$base64_to_shell",
+        "threat_type": "OBFUSCATION",
+        "semantic_facts": {
+          "evidence_kind": "command_pipeline",
+          "context_kind": "code",
+          "signals": [
+            {
+              "rule_id": "YARA_SUSP_Lnx_EncodedShell_DecodeExec_Sep26",
+              "kind": "compound_flow",
+              "file_path": "SKILL.md",
+              "value_class": "encoded_shell_decode_execute"
+            }
+          ],
+          "evidence_value_class": "encoded_shell_decode_execute",
+          "evidence_count": 1,
+          "candidate_flow": {
+            "source_class": "obfuscation",
+            "sink_class": "process_execution",
+            "transforms": [
+              "decode",
+              "pipe"
+            ],
+            "cross_file": false,
+            "source_path": "SKILL.md",
+            "sink_path": "SKILL.md"
+          },
+          "flows": [
+            {
+              "source_class": "obfuscation",
+              "sink_class": "process_execution",
+              "transforms": [
+                "decode",
+                "pipe"
+              ],
+              "cross_file": false,
+              "source_path": "SKILL.md",
+              "sink_path": "SKILL.md"
+            }
+          ]
+        },
+        "aitech": "AITech-9.2",
+        "aitech_name": "Detection Evasion",
+        "aisubtech": "AISubtech-9.2.1",
+        "aisubtech_name": "Obfuscation Vulnerabilities",
+        "aitech_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "MITRE ATLAS: AML.T0107: Exploitation for Defense Evasion",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "aisubtech_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "framework_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "taxonomy_status": "mapped",
+        "taxonomy_source": "rule"
+      }
+    },
+    {
+      "id": "CORRELATED_OBFUSCATION_EXECUTION_FLOW_26f7d3bffc80",
+      "rule_id": "CORRELATED_OBFUSCATION_EXECUTION_FLOW",
+      "category": "obfuscation",
+      "severity": "HIGH",
+      "title": "Decoded or unpacked content reaches code execution",
+      "description": "Correlated obfuscation → code_execution behavior across SKILL.md.",
+      "file_path": "SKILL.md",
+      "line_number": 16,
+      "snippet": null,
+      "remediation": "Remove dynamic decoding/execution and ship reviewable source code instead.",
+      "analyzer": "correlation",
+      "metadata": {
+        "files_involved": [
+          "SKILL.md"
+        ],
+        "semantic_facts": {
+          "evidence_kind": "fenced_code_flow",
+          "context_kind": "code",
+          "commands": [
+            {
+              "executable": "bash",
+              "argument_classes": [
+                "literal"
+              ],
+              "downloads": false,
+              "executes": true,
+              "destructive": false,
+              "privilege_change": false,
+              "source_class": "",
+              "sink_class": "code_execution",
+              "file_path": "SKILL.md"
+            }
+          ],
+          "urls": [],
+          "flows": [
+            {
+              "source_class": "obfuscation",
+              "sink_class": "code_execution",
+              "transforms": [
+                "decode"
+              ],
+              "cross_file": false,
+              "source_path": "SKILL.md",
+              "sink_path": "SKILL.md"
+            }
+          ],
+          "reference_edges": [],
+          "signals": [
+            {
+              "rule_id": "CORRELATION_SIGNAL",
+              "kind": "correlated_behavior",
+              "file_path": "SKILL.md",
+              "value_class": "code_execution"
+            },
+            {
+              "rule_id": "CORRELATION_SIGNAL",
+              "kind": "fenced_code_language",
+              "file_path": "SKILL.md",
+              "value_class": "bash"
+            }
+          ],
+          "candidate_flow": {
+            "source_class": "obfuscation",
+            "sink_class": "code_execution",
+            "transforms": [
+              "decode"
+            ],
+            "cross_file": false,
+            "source_path": "SKILL.md",
+            "sink_path": "SKILL.md"
+          }
+        },
+        "aitech": "AITech-9.2",
+        "aitech_name": "Detection Evasion",
+        "aisubtech": "AISubtech-9.2.1",
+        "aisubtech_name": "Obfuscation Vulnerabilities",
+        "aitech_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "MITRE ATLAS: AML.T0107: Exploitation for Defense Evasion",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "aisubtech_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "framework_mappings": [
+          "OWASP: LLM09:2026: Vector and Embedding Weaknesses",
+          "OWASP: ASI04: Agentic Supply Chain Vulnerabilities",
+          "MITRE ATLAS: AML.T0074: Masquerading",
+          "MITRE ATLAS: AML.T0068: LLM Prompt Obfuscation",
+          "NIST AML: N/A",
+          "Cisco AI MDL Code: MDL-001",
+          "Cisco AI MDL Code: MDL-003",
+          "Cisco AI MDL Code: MDL-009",
+          "Cisco AI MDL Code: MDL-011",
+          "Cisco AI MDL Code: MDL-016",
+          "Cisco AI MDL Code: MDL-017",
+          "Cisco AI MDL Code: MDL-019"
+        ],
+        "taxonomy_status": "mapped",
+        "taxonomy_source": "rule"
+      }
+    }
+  ],
+  "scan_duration_seconds": 0.07877087593078613,
+  "duration_ms": 78,
+  "analyzers_used": [
+    "static_analyzer",
+    "bytecode",
+    "pipeline",
+    "correlation"
+  ],
+  "timestamp": "2026-10-18T21:44:51.524459+00:00",
+  "scan_metadata": {
+    "policy_name": "default",
+    "policy_version": "1.0",
+    "policy_preset_base": "balanced",
+    "policy_fingerprint_sha256": "3f48e661bfbc54597f97bbf3dcf2c1cbae2f596ddc79c0b44784efea326b3d1d",
+    "cel": {
+      "mode": "shadow",
+      "runtime": "cel-go",
+      "runtime_version": "v0.32.0;helper=2.3.0",
+      "fact_schema": "v1",
+      "expression_set_hash": "f26459b8f4a46a974d7ab0aaae34127b5b6a40d693e266e12fca03a69a6d26aa",
+      "evaluated": 0,
+      "retained": 3,
+      "would_suppress": 0,
+      "suppressed": 0,
+      "fallbacks": 0,
+      "projection_incomplete": 0,
+      "elapsed_ms": 0.0,
+      "projection_ms": 0.0,
+      "evaluation_ms": 0.0,
+      "errors": [],
+      "per_rule": {},
+      "suppressed_candidates": []
+    },
+    "rule_contract": {
+      "status": "passed",
+      "schema_version": 2,
+      "checked": 2,
+      "invalid_findings": 0,
+      "errors": []
+    },
+    "taxonomy": {
+      "source": "builtin",
+      "version": "2.0.0",
+      "name": "Cisco AI Security and Safety Taxonomy",
+      "revision": "655a343ac943a51b6f61f86e47156e7752c15dc6",
+      "snapshot_sha256": "3df746f05470b0766ded4714e992182e73c8a5d9945d42354f176f5c90007071",
+      "findings": {
+        "mapped": 3,
+        "not_applicable": 0,
+        "unmapped": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+# Well-known vendor and package names that look-alike components imitate.
+# A component named like one of these but published by someone else is the postmark-mcp pattern
+# (an unofficial "postmark-mcp" on npm added a BCC to every email in v1.0.16;
+# https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html).
+anthropic     # AI vendor
+claude        # Anthropic product
+openai        # AI vendor
+codex         # OpenAI product
+chatgpt       # OpenAI product
+github        # code host
+copilot       # GitHub product
+microsoft     # vendor
+google        # vendor
+gemini        # Google product
+cursor        # editor vendor
+windsurf      # editor vendor
+postmark      # email API; impersonated by postmark-mcp
+sendgrid      # email API
+mailgun       # email API
+resend        # email API
+stripe        # payments API
+paypal        # payments
+slack         # chat
+discord       # chat
+notion        # docs
+linear        # issue tracker
+jira          # issue tracker
+atlassian     # vendor
+supabase      # database platform
+vercel        # hosting
+cloudflare    # CDN and DNS
+netlify       # hosting
+docker        # containers
+kubernetes    # orchestration
+terraform     # infra as code
+playwright    # browser automation
+puppeteer     # browser automation
+filesystem    # reference MCP server name
+modelcontextprotocol  # MCP project namespace
+sentry        # error tracking
+datadog       # monitoring
+figma         # design
+shopify       # commerce
+twilio        # messaging API
+dropbox       # storage
+gmail         # Google product
+outlook       # Microsoft product
+salesforce    # CRM
+hubspot       # CRM
+zapier        # automation

@@ -1,0 +1,42 @@
+# Paste sites, throwaway file hosts, request catchers and tunnels.
+# One domain per line; subdomains match too. Each entry says why it is here.
+# These are legitimate services. A skill or rules file that points at one is still worth a second look,
+# because code fetched from them can change after you review it and nobody vouches for it.
+glot.io            # code-paste site; ClawHavoc lure fetched its payload here (Unit 42, https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/)
+pastebin.com       # public paste site; long-standing malware staging host
+paste.ee           # public paste site
+hastebin.com       # public paste site
+rentry.co          # public Markdown paste site
+rentry.org         # public Markdown paste site
+controlc.com       # public paste site
+dpaste.com         # public paste site
+dpaste.org         # public paste site
+paste.rs           # public paste site
+termbin.com        # netcat-to-paste service
+ix.io              # command-line paste service
+sprunge.us         # command-line paste service
+0x0.st             # anonymous file host
+transfer.sh        # anonymous file host
+file.io            # one-time anonymous file host
+temp.sh            # anonymous temporary file host
+gofile.io          # anonymous file host
+catbox.moe         # anonymous file host
+litter.catbox.moe  # temporary anonymous file host
+anonfiles.com      # anonymous file host (defunct; still appears in old payloads)
+mediafire.com      # file host often used to stage archives
+mega.nz            # file host often used to stage archives
+webhook.site       # request catcher; anything sent there is readable by whoever made the URL
+requestbin.com     # request catcher
+pipedream.net      # request catcher endpoints (*.m.pipedream.net)
+beeceptor.com      # request catcher
+interact.sh        # out-of-band interaction catcher used in security testing
+oast.fun           # out-of-band interaction catcher
+burpcollaborator.net  # out-of-band interaction catcher
+ngrok.io           # tunnel to someone's machine
+ngrok-free.app     # tunnel to someone's machine
+ngrok.app          # tunnel to someone's machine
+trycloudflare.com  # quick tunnel to someone's machine
+loca.lt            # localtunnel endpoint
+serveo.net         # SSH tunnel endpoint
+discord.com/api/webhooks   # chat webhook; common exfiltration sink
+api.telegram.org   # bot API; common exfiltration sink

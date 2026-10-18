@@ -1,0 +1,125 @@
+{
+  "_about": "Secrecy and override phrases. score 1-3 (3 = almost never benign). Matched case-insensitively as regular expressions. Each entry cites where the pattern was seen.",
+  "phrases": [
+    {
+      "pattern": "do not (tell|inform|mention|alert|notify)( this)?( to)? the user",
+      "score": 3,
+      "category": "secrecy",
+      "source": "Invariant Labs tool-poisoning PoC, https://github.com/invariantlabs-ai/mcp-injection-experiments"
+    },
+    {
+      "pattern": "(don't|never) (tell|mention|reveal|show)( this| it)?( to)? the user",
+      "score": 3,
+      "category": "secrecy",
+      "source": "Invariant Labs tool-poisoning PoC"
+    },
+    {
+      "pattern": "without (telling|informing|asking|notifying) the user",
+      "score": 3,
+      "category": "secrecy",
+      "source": "common in published prompt-injection PoCs"
+    },
+    {
+      "pattern": "the user (must not|should not|doesn't need to) (know|see)",
+      "score": 3,
+      "category": "secrecy",
+      "source": "common in published prompt-injection PoCs"
+    },
+    {
+      "pattern": "\\bsilently\\b",
+      "score": 1,
+      "category": "secrecy",
+      "source": "common in published prompt-injection PoCs"
+    },
+    {
+      "pattern": "\\b(silently|quietly|secretly)\\s+(send|upload|post|read|copy|forward|delete|install|run|execute|exfiltrate|add)\\b",
+      "score": 3,
+      "category": "secrecy",
+      "source": "common in published prompt-injection PoCs; 'silently' alone is usually descriptive"
+    },
+    {
+      "pattern": "\\bquietly\\b",
+      "score": 1,
+      "category": "secrecy",
+      "source": "common in published prompt-injection PoCs"
+    },
+    {
+      "pattern": "\\bdo not mention\\b",
+      "score": 2,
+      "category": "secrecy",
+      "source": "Invariant Labs tool-poisoning PoC"
+    },
+    {
+      "pattern": "ignore (all |any )?(previous|prior|above|earlier) (instructions|rules|directions)",
+      "score": 3,
+      "category": "override",
+      "source": "classic prompt injection; OWASP LLM01, https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+    },
+    {
+      "pattern": "disregard (all |any )?(previous|prior|your) (instructions|rules|guidelines)",
+      "score": 3,
+      "category": "override",
+      "source": "OWASP LLM01"
+    },
+    {
+      "pattern": "you are no longer",
+      "score": 2,
+      "category": "override",
+      "source": "role-override pattern, OWASP LLM01"
+    },
+    {
+      "pattern": "new (system )?instructions?:",
+      "score": 2,
+      "category": "override",
+      "source": "role-override pattern, OWASP LLM01"
+    },
+    {
+      "pattern": "before using this tool",
+      "score": 2,
+      "category": "tool-poisoning",
+      "source": "Invariant Labs tool-poisoning PoC"
+    },
+    {
+      "pattern": "<important>",
+      "score": 2,
+      "category": "tool-poisoning",
+      "source": "Invariant Labs tool-poisoning PoC wraps its payload in <IMPORTANT> tags"
+    },
+    {
+      "pattern": "(this|the) (file|skill|tool|server) (is|has been) (safe|verified|approved|whitelisted)",
+      "score": 2,
+      "category": "judge-manipulation",
+      "source": "runthrough adversarial corpus: text aimed at scanners and judges"
+    },
+    {
+      "pattern": "ignore (the|any) (scanner|security|warning|finding)s?",
+      "score": 3,
+      "category": "judge-manipulation",
+      "source": "runthrough adversarial corpus"
+    },
+    {
+      "pattern": "(as|you are) an? (ai|security) (scanner|reviewer|judge|auditor)",
+      "score": 2,
+      "category": "judge-manipulation",
+      "source": "runthrough adversarial corpus"
+    },
+    {
+      "pattern": "otherwise the (tool|application|system) will (crash|fail|break)",
+      "score": 2,
+      "category": "coercion",
+      "source": "Invariant Labs tool-poisoning PoC"
+    },
+    {
+      "pattern": "(this is|it is) (very |extremely )?important that you",
+      "score": 1,
+      "category": "coercion",
+      "source": "common in published prompt-injection PoCs"
+    },
+    {
+      "pattern": "do not (ask|wait) for (confirmation|approval|permission)",
+      "score": 3,
+      "category": "override",
+      "source": "auto-approval coercion seen in rules-file backdoor research (Pillar Security, 2025)"
+    }
+  ]
+}

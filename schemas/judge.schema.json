@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amberb617/runthrough/schemas/judge.schema.json",
+  "title": "runthrough judge output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["suspicious", "explanation", "confidence"],
+  "properties": {
+    "suspicious": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["line", "category", "reason"],
+        "properties": {
+          "line": {"type": "integer", "minimum": 1},
+          "category": {"type": "string", "enum": ["RT-UNICODE", "RT-PREREQ", "RT-ENCODED-EXEC", "RT-PASTE-HOST", "RT-SENSITIVE-PATH", "RT-SECRECY", "RT-TOOL-DESC", "RT-RULES-FILE", "RT-RENDER-DIVERGE", "RT-LOOKALIKE", "OTHER"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "explanation": {"type": "string"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}
