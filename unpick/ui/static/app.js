@@ -105,13 +105,13 @@ function show() {
   const name = screens.includes(wanted) ? wanted : "start";
   for (const s of screens) $(`screen-${s}`).hidden = s !== name;
   document.querySelectorAll("[data-screen]").forEach(a => {
-    if (a.dataset.screen === name) a.setAttribute("aria-current", "page");
+    if (a.dataset.screen.split(" ").includes(name)) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
   if (name === "inventory" && !inventoryLoaded) loadInventory();
   if (name === "backends") loadBackends();
   if (name === "recover") loadIsolated();
-  const heading = $(`screen-${name}`).querySelector("h1");
+  const heading = [...$(`screen-${name}`).querySelectorAll("h1")].find(h => h.offsetParent !== null);
   if (heading && document.activeElement !== document.body) heading.focus();
 }
 window.addEventListener("hashchange", show);
@@ -137,9 +137,11 @@ document.addEventListener("click", async (e) => {
   const a = e.target.closest("[data-export]");
   if (!a) return;
   e.preventDefault();
-  const r = await fetch(a.dataset.export, { headers: { "X-Unpick-Token": TOKEN } }).catch(() => null);
+  const headers = { "X-Unpick-Token": TOKEN };
+  if (a.dataset.export.startsWith("/api/export/scan") && last) headers["X-Unpick-Target"] = last.target;  // the result on screen
+  const r = await fetch(a.dataset.export, { headers }).catch(() => null);
   if (!r || !r.ok) {
-    const here = { "#scan": "runstrip", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
+    const here = { "#scan": "remedy-note", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
     if (here) errorStrip(here, "Nothing to download yet: run it first.");
     else a.after(el("span", { class: "field-err", text: "Nothing to download yet." }));
     return;
@@ -163,9 +165,35 @@ async function sample(kind) {
   location.hash = "#scan";
   runScan();
 }
-$("try-dangerous").addEventListener("click", () => sample("dangerous"));
-$("try-safe").addEventListener("click", () => sample("safe"));
 document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => sample(b.dataset.sample)));
+function selectEntry(tab) {
+  const web = tab === "web";
+  $("tab-local").setAttribute("aria-selected", web ? "false" : "true");
+  $("tab-web").setAttribute("aria-selected", web ? "true" : "false");
+  $("tab-local").tabIndex = web ? -1 : 0;
+  $("tab-web").tabIndex = web ? 0 : -1;
+  $("start-form").hidden = web;
+  $("start-web-form").hidden = !web;
+  $("entry-foot").textContent = web ? "unpick asks GitHub, npm or PyPI who published it, then reads the copy on this computer."
+    : "Scans run on this computer. Nothing leaves it.";
+}
+$("tab-local").addEventListener("click", () => selectEntry("local"));
+$("tab-web").addEventListener("click", () => selectEntry("web"));
+document.querySelector(".seg").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = $("tab-local").getAttribute("aria-selected") === "true" ? "web" : "local";
+  selectEntry(next);
+  $(next === "web" ? "tab-web" : "tab-local").focus();
+});
+$("start-web-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = $("start-ref").value.trim();
+  if (!v) { setError("start-ref", "Paste a GitHub link, npm:package or pypi:package."); return; }
+  setError("start-ref", null);
+  $("check-ref").value = v;
+  location.hash = "#check";
+  $("check-form").requestSubmit();
+});
 $("start-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const v = $("start-path").value.trim();
@@ -196,10 +224,12 @@ function fillFilter(id, values) {
 }
 $("inv-search").addEventListener("input", () => renderInventory());
 
-function scanPath(path) {
+// A scan started from an Installed row keeps that row on its result (last.component). An MCP server or hook
+// lives inside a shared settings file, so quarantine must take out that one entry, never the file.
+function scanPath(path, component = null) {
   $("scan-path").value = path;
   location.hash = "#scan";
-  runScan();
+  runScan(component);
 }
 
 function renderInventory() {
@@ -212,13 +242,13 @@ function renderInventory() {
   $("inv-table").querySelector("tbody").replaceChildren(...rows.map(r => {
     const path = r.path.split("#")[0];
     return el("tr", {},
-      el("td", {}, el("input", { type: "checkbox", class: "inv-pick", "data-path": path, "aria-label": `Select ${r.name}` })),
+      el("td", {}, el("input", { type: "checkbox", class: "inv-pick", "data-path": path, "data-component": r.path, "aria-label": `Select ${r.name}` })),
       el("td", { class: "name", title: `SHA-256 ${r.sha256}` }, r.name),
       el("td", {}, el("span", { class: `chip ${r.kind}`, text: r.kind.replace("-", " ") })),
       el("td", { class: "nowrap", text: r.host }),
       el("td", { class: "mono path", text: r.display_path }),
       el("td", { class: "nowrap", text: r.modified.slice(0, 10) }),
-      el("td", {}, el("button", { type: "button", class: "j-btn secondary small", text: "Scan", "aria-label": `Scan ${r.name}`, onclick: () => scanPath(path) })));
+      el("td", {}, el("button", { type: "button", class: "j-btn secondary small", text: "Scan", "aria-label": `Scan ${r.name}`, onclick: () => scanPath(path, r) })));
   }));
   $("inv-empty").hidden = rows.length > 0;
   document.querySelectorAll(".inv-pick").forEach(c => c.addEventListener("change", pickChanged));
@@ -234,27 +264,39 @@ $("inv-all").addEventListener("change", (e) => {
   pickChanged();
 });
 $("inv-scan").addEventListener("click", async () => {
-  const paths = [...new Set([...document.querySelectorAll(".inv-pick:checked")].map(c => c.dataset.path))];
-  if (paths.length === 1) { scanPath(paths[0]); return; }
+  const picked = [...document.querySelectorAll(".inv-pick:checked")];
+  const paths = [...new Set(picked.map(c => c.dataset.path))];
+  if (picked.length === 1) {
+    const row = inventoryRows.find(x => x.path === picked[0].dataset.component);
+    scanPath(paths[0], row || null);
+    return;
+  }
   location.hash = "#scan";
   $("scan-empty").hidden = true;
   const list = $("batch");
   list.hidden = false;
-  const rows = paths.map(p => ({ path: p, item: el("li", { text: `Waiting: ${p}` }) }));
-  $("batch-list").replaceChildren(...rows.map(r => r.item));
-  for (const r of rows) {
+  batchRows = paths.map(p => ({ path: p, data: null, item: el("li", { text: `Waiting: ${p}` }) }));
+  $("batch-list").replaceChildren(...batchRows.map(r => r.item));
+  for (const r of batchRows) {
     r.item.textContent = `Scanning: ${r.path}`;
     const { status, data } = await api("/api/scan", { path: r.path });
     if (status !== 200) { r.item.replaceChildren(el("b", { text: "Could not scan " }), r.path, `: ${data.error || status}`); continue; }
-    const serious = data.findings.filter(f => f.severity === "high").length;
-    let word = "CLEAR";
-    if (serious) word = "STOP";
-    else if (data.findings.length) word = "REVIEW";
-    const kept = data;
-    r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${plural(data.findings.length, "warning", "warnings")} `,
-      el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = kept; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
+    r.data = data;
+    renderBatchRow(r);
   }
 });
+let batchRows = [];
+// Counted from the findings themselves, so a row follows the decisions made after opening it.
+function renderBatchRow(r) {
+  const open = r.data.findings.concat(r.data.accepted).filter(f => f.decision !== "accept");
+  const serious = open.filter(f => f.severity === "high").length;
+  let word = "NOTHING FOUND";
+  if (serious) word = "STOP";
+  else if (open.length) word = "REVIEW";
+  const count = open.length ? plural(open.length, "open warning", "open warnings") : "no open warnings. This does not prove it is safe.";
+  r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${count} `,
+    el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = r.data; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
+}
 
 // ---- scan ------------------------------------------------------------------------------------------
 let last = null;
@@ -284,7 +326,7 @@ async function loadInstalledBackends() {
     : "No other scanners installed (the built-in checks still run)";
 }
 
-async function runScan() {
+async function runScan(component = null) {
   const path = $("scan-path").value.trim();
   if (!path) { setError("scan-path", "Paste the path of a file or folder, or try a sample below."); return; }
   setError("scan-path", null);
@@ -294,29 +336,35 @@ async function runScan() {
   if (status === 409 && data.need_consent) {
     const ok = await confirmDialog({ title: "Send this file to an online AI?", yes: "Yes, send it",
       text: data.prompt.replace(" Send it? [yes/N] ", "") });
-    if (ok) { consentGiven.push(data.need_consent); return runScan(); }
+    if (ok) { consentGiven.push(data.need_consent); return runScan(component); }
     setError("scan-path", "Nothing was sent. Choose an AI that runs on this computer, or none.");
     return;
   }
   if (status !== 200) {
-    if (last) $("verdict").replaceChildren(el("span", { class: "verdict-word", text: "FAILED" }),
-      el("div", {}, el("p", { class: "verdict-head", text: "This scan failed" }), el("p", { class: "verdict-sub", text: "What you see below is the previous result." })));
+    if (last) {
+      $("verdict").className = "verdict-hero failed";
+      $("verdict").replaceChildren(verdictBlock("FAILED", "Nothing new was checked"),
+        el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: "This scan failed" }),
+          el("p", { class: "verdict-sub", text: "What you see below is the previous result." })));
+    }
     setError("scan-path", data.error && data.error.includes("does not exist")
       ? `There is no file or folder at ${path}. Check the spelling, or paste the full path.` : (data.error || `Scan failed (${status}).`));
     return;
   }
   last = data;
+  last.component = component && component.path.includes("#") ? component : null;
+  setBack(false);
   $("scan-empty").hidden = true;
   $("batch").hidden = true;
   $("scan-results").hidden = false;
-  $("rehearse-path").value = path;
-  $("recover-component").value = path;
   renderScan();
 }
 
 const SEV_WORD = { high: "SERIOUS", medium: "WARNING", low: "NOTE", info: "INFO" };
-const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Needs the author's answer" };
-const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: needs the author's answer (saved here only)." };
+const SEV_MANY = { high: "SERIOUS", medium: "WARNINGS", low: "NOTES", info: "INFO" };
+const sourceName = (x) => (x === "builtin" ? "built-in checks" : x.replace(/^backend:/, "").replace(/^judge:/, "AI reviewer "));
+const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Not sure: ask the author" };
+const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: ask the author. Nobody was contacted." };
 
 function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
@@ -329,7 +377,7 @@ function renderVerdict() {
   const unread = open.filter(f => f.rule_id === "RT-UNREAD").length;
   const v = $("verdict");
   let level = "ok";
-  let head = dismissed ? "No unresolved warnings" : "No warnings from these checks";
+  let head = dismissed ? "You marked every warning as a false alarm" : "These checks found nothing to show";
   let sub = "That is not the same as safe. Read it raw, and test-run it before you trust it.";
   if (unread && open.length === unread) {
     level = "review";
@@ -338,32 +386,48 @@ function renderVerdict() {
   }
   if (serious) {
     level = "bad";
-    head = `Do not install yet: ${plural(serious, "serious problem", "serious problems")}`;
-    sub = other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.";
+    head = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}`;
+    sub = (other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.")
+      + (open.length > 1 ? " Several checks can flag the same line." : "");
   } else if (other && !(unread && open.length === unread)) {
     level = "review";
     head = `Review before installing: ${plural(other, "warning", "warnings")}`;
-    sub = "None looks serious on its own. Read each one and decide.";
+    sub = "Read each one and decide. A smaller warning can still be a reason not to install.";
   }
-  v.className = `verdict-banner ${level}`;
-  v.replaceChildren(el("span", { class: "verdict-word", text: { bad: "STOP", review: "REVIEW", ok: "CLEAR" }[level] }),
-    el("div", {}, el("p", { class: "verdict-head", text: head }),
-      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") })));
+  const counts = ["high", "medium", "low", "info"].map(sev => [sev, open.filter(f => f.severity === sev).length]).filter(([, n]) => n);
+  v.className = `verdict-hero ${level}`;
+  const okWord = dismissed ? "YOUR CALL" : "NOTHING FOUND";
+  v.replaceChildren(verdictBlock({ bad: "STOP", review: "REVIEW", ok: okWord }[level], VERDICT_ACTION[level]),
+    el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }),
+      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") }),
+      counts.length ? el("div", { class: "count-row" }, ...counts.map(([sev, n]) => el("span", { class: `sev ${sev}`, text: `${n} ${(n === 1 ? SEV_WORD : SEV_MANY)[sev]}` }))) : null));
+}
+
+const VERDICT_ACTION = { bad: "Do not install it", review: "Read each warning, then decide", ok: "This does not prove it is safe" };
+function verdictBlock(word, action) {
+  return el("div", { class: "verdict-block" }, el("span", { class: "verdict-label", text: "Verdict" }),
+    el("strong", { class: "verdict-word", text: word }), el("span", { class: "verdict-action", text: action }));
 }
 
 function renderRemedy() {
   const open = openFindings().length;
+  $("warn-count").textContent = `${open} open`;
+  $("next-lead").textContent = open ? "Not installed yet? Then do not install it. Scanning did not install anything."
+    : "No open warnings remain. That does not prove it is safe: read it raw and test-run it before you decide.";
   $("remedy").hidden = open === 0;
   $("remedy-note").textContent = "";
 }
 
 $("do-quarantine").addEventListener("click", async () => {
   if (!last) return;
-  const ok = await confirmDialog({ title: "Stop your AI from loading this?", yes: "Move it to quarantine",
-    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Your files are kept: you can put it back from "If something got in".` });
+  const what = last.component
+    ? `unpick takes only the "${last.component.name}" entry out of ${last.target}, and keeps a backup of the file. Every other setting stays.`
+    : `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it.`;
+  const ok = await confirmDialog({ title: last.component ? `Disable only ${last.component.name}?` : "Stop your AI from loading this?", yes: "Move it to quarantine",
+    text: `${what} You can put it back from "Something got in?", under "In quarantine now".` });
   if (!ok) return;
-  const { status, data } = await api("/api/isolate", { path: last.target });
-  $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "If something got in".` : (data.error || "Could not move it.");
+  const { status, data } = await api("/api/isolate", { path: last.target, component: last.component ? last.component.path : null });
+  $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "Something got in?", under "In quarantine now".` : (data.error || "Could not move it.");
 });
 
 $("do-clean").addEventListener("click", async () => {
@@ -389,14 +453,24 @@ async function loadIsolated() {
 }
 
 function renderScan() {
+  $("rehearse-path").value = last.target;
+  $("recover-component").value = last.target;
   renderVerdict();
   renderRemedy();
   const net = last.summary.network_calls;
-  const sources = last.sources.length;
+  const name = last.target.replace(/[\\/]+$/, "").split(/[\\/]/).pop();
+  $("scan-name").textContent = name;
+  $("scan-source").textContent = last.target;
+  const total = allFindings().length;
+  $("scan-summary").textContent = `unpick read ${plural(last.files.length, "file", "files")} and found ${plural(total, "warning", "warnings")}`
+    + (total ? ` in ${plural(new Set(allFindings().map(f => f.path)).size, "file", "files")}.` : ".")
+    + (last.component ? ` Only the shared settings file that lists ${last.component.name} was checked, not the server's own code or tools. Some warnings may belong to other entries in it.` : "");
+  const fact = (k, v, cls) => [el("dt", { text: k }), el("dd", { class: cls || null, text: v })];
   $("runstrip").replaceChildren(
-    el("span", { text: `Checked ${plural(last.files.length, "file", "files")} with ${plural(sources, "checker", "checkers")}` }),
-    el("span", { class: net.length ? "net" : null, text: net.length ? `Sent: ${net.map(r => r.network_detail).join("; ")}` : "Nothing left this computer" }),
-    ...(last.skipped && last.skipped.length ? [el("span", { text: `${plural(last.skipped.length, "file", "files")} not readable` })] : []));
+    ...fact("Files read", String(last.files.length)),
+    ...fact("Checked by", last.sources.map(sourceName).join(", ")),
+    ...fact("Sent anywhere", net.length ? net.map(x => x.network_detail).join("; ") : "Nothing", net.length ? "net" : null),
+    ...(last.skipped && last.skipped.length ? fact("Not readable", plural(last.skipped.length, "file", "files")) : []));
   const counts = {};
   for (const f of openFindings()) counts[f.path] = (counts[f.path] || 0) + 1;
   const files = [...last.files].sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b));
@@ -489,7 +563,7 @@ function rawParts(raw) {
 
 function agreementText(f) {
   if (last.sources.length < 2) return "Found by the built-in checks.";
-  return `Flagged by ${f.agreed_by.length} of ${plural(last.sources.length, "checker", "checkers")}: ${f.agreed_by.join(", ")}.`;
+  return `Flagged by ${f.agreed_by.length} of ${plural(last.sources.length, "checker", "checkers")}: ${f.agreed_by.map(sourceName).join(", ")}.`;
 }
 
 function showInFile(line) {
@@ -500,14 +574,23 @@ function showInFile(line) {
   setTimeout(() => row.classList.remove("pulse"), 1600);
 }
 
+// Undecided first, then severity, then what more checkers agree on, then unpick's own plain-language checks, then line.
+const SEV_ORDER = { high: 0, medium: 1, low: 2, info: 3 };
+function sortFindings(findings) {
+  const own = (f) => (f.source === "builtin" ? 0 : 1);
+  return [...findings].sort((a, b) => (a.decision === "accept") - (b.decision === "accept") || SEV_ORDER[a.severity] - SEV_ORDER[b.severity]
+    || b.agreed_by.length - a.agreed_by.length || own(a) - own(b) || a.line - b.line);
+}
+
+const expanded = new Set();
 function renderFindings(findings) {
   const box = $("findings");
   if (!findings.length) {
-    box.replaceChildren(el("div", { class: "card empty", text: "No warnings in this file." }));
+    box.replaceChildren(el("p", { class: "empty", text: "No warnings in this file." }));
     return;
   }
-  const order = { high: 0, medium: 1, low: 2, info: 3 };
-  const sorted = [...findings].sort((a, b) => (a.decision === "accept") - (b.decision === "accept") || order[a.severity] - order[b.severity] || a.line - b.line);
+  const sorted = sortFindings(findings);
+  if (![...expanded].some(id => findings.some(f => f.id === id))) expanded.add(sorted[0].id);
   box.replaceChildren(...sorted.map(f => findingCard(f, findings)));
 }
 
@@ -519,17 +602,24 @@ function findingCard(f, findings) {
     type: "button", class: "j-btn secondary small", "aria-pressed": f.decision === choice ? "true" : "false", text: label,
     onclick: () => decide(f, choice, findings) }));
   const ctx = el("pre", {}, ...f.context.map(c => el("span", { class: c.line === f.line ? "hit" : null, text: `${String(c.line).padStart(4)}  ${c.text}${NL}` })));
-  return el("article", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}` },
-    el("div", { class: "top" }, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
-      kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
-      f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the file`, onclick: () => showInFile(f.line) }) : null),
-    el("h3", { class: "msg", text: sentence(f.message) }),
-    decided || el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
-    decided ? null : el("p", { class: "meta", text: "Saved on this computer only, for this exact line; nothing is sent. If the line changes, the warning comes back." }),
-    el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
-    el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
-    f.context.length ? ctx : null,
-    el("p", { class: "meta", text: `${agreementText(f)} Rule ${f.rule_id}.` }));
+  const status = f.decision ? el("span", { class: `pill ${{ accept: "", reject: "red", "ask-author": "lavender" }[f.decision]}`, text: DECISION_LABEL[f.decision] }) : null;
+  const card = el("details", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}`,
+    open: expanded.has(f.id) },
+    el("summary", {}, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
+      el("h3", { class: "msg", text: sentence(f.message) }),
+      el("span", { class: "where" }, status, status ? " " : null, kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
+        f.line ? ` line ${f.line}` : "")),
+    el("div", { class: "body" },
+      el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
+      el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
+      f.context.length ? ctx : null,
+      decided || el("div", { class: "decide-box" }, el("p", { class: "decide-q", text: "What do you make of it?" }),
+        el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
+        el("p", { class: "meta-line", text: "Not sure? Leave it open and do not install yet. A choice is saved on this computer only, for this exact line, and contacts nobody. If the line changes, the warning comes back." })),
+      el("p", { class: "meta-line" }, `${agreementText(f)} Rule ${f.rule_id}. `,
+        f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the raw file`, onclick: () => showInFile(f.line) }) : null)));
+  card.addEventListener("toggle", () => { if (card.open) expanded.add(f.id); else expanded.delete(f.id); });
+  return card;
 }
 
 async function decide(f, choice, findings) {
@@ -540,6 +630,7 @@ async function decide(f, choice, findings) {
     return;
   }
   f.decision = choice === "undo" ? null : choice;
+  batchRows.filter(r => r.data === last).forEach(renderBatchRow);
   renderVerdict();
   renderRemedy();
   renderFindings(findings);
@@ -557,7 +648,7 @@ async function decide(f, choice, findings) {
     row.classList.toggle("flag", on);
   });
   const card = [...document.querySelectorAll(".finding")].find(c => c.getAttribute("aria-label").endsWith(f.message));
-  if (card) (card.querySelector(".decided-line button") || card.querySelector(".decide button")).focus();
+  if (card) (card.querySelector(".decided-line button") || card.querySelector(".decide button") || card.querySelector("summary")).focus({ preventScroll: true });
 }
 
 // ---- check -----------------------------------------------------------------------------------------
@@ -567,9 +658,15 @@ $("check-form").addEventListener("submit", async (e) => {
   const ref = $("check-ref").value.trim();
   if (!ref) { setError("check-ref", "Paste a GitHub link, npm:package, pypi:package, or a local path."); return; }
   setError("check-ref", null);
+  checked = null;
+  ["check-card", "check-result", "check-command"].forEach(id => { $(id).hidden = true; });
   strip("check-strip", `Downloading ${ref} into quarantine. Nothing is run.`);
   const { status, data } = await busy($("check-go"), "Checking...", () => api("/api/check", { ref, offline: $("check-offline").checked }));
-  if (status !== 200) { $("check-strip").hidden = true; setError("check-ref", data.error || "The check failed."); return; }
+  if (status !== 200) {
+    $("check-strip").hidden = true;
+    setError("check-ref", `This add-on was not checked. ${data.error || "Fix the address or try again."}`);
+    return;
+  }
   checked = data;
   $("rehearse-path").value = data.id;
   strip("check-strip", `Saved in quarantine as ${data.id}.`, data.network.length ? `Contacted: ${data.network.join("; ")}.` : "Nothing was sent.");
@@ -579,16 +676,37 @@ $("check-form").addEventListener("submit", async (e) => {
   if (!qs.length) qs = [el("li", { text: facts.length ? "Nothing stood out about who made it. That is not the same as safe." : "No who-made-it lookup was made." })];
   $("check-questions").replaceChildren(...qs);
   $("check-card").hidden = false;
-  const open = data.scan.summary.open;
-  $("check-summary").textContent = open ? `${plural(open, "warning", "warnings")} in ${plural(data.scan.files.length, "file", "files")}. Review them before you approve.`
-    : `No warnings in ${plural(data.scan.files.length, "file", "files")}. That is not the same as safe.`;
-  $("check-open").className = open ? "j-btn" : "j-btn secondary";
-  $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
+  renderCheckSummary();
   $("check-result").hidden = false;
   $("check-command").hidden = true;
 });
+// Counted from the findings themselves, so decisions made while reviewing show up when you come back.
+function checkOpen() {
+  const open = checked.scan.findings.concat(checked.scan.accepted).filter(f => f.decision !== "accept");
+  return { open: open.length, serious: open.filter(f => f.severity === "high").length };
+}
+function renderCheckSummary() {
+  if (!checked) return;
+  const { open, serious } = checkOpen();
+  const files = plural(checked.scan.files.length, "file", "files");
+  let text = `No open warnings in ${files}. That is not the same as safe.`;
+  if (serious) text = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}${open > serious ? ` and ${plural(open - serious, "other warning", "other warnings")}` : ""}. Review them first.`;
+  else if (open) text = `${plural(open, "warning", "warnings")} in ${files}. Read them and decide. A warning here is a reason not to install yet.`;
+  $("check-summary").textContent = text;
+  $("check-summary").className = serious ? "big-text bad" : "big-text";
+  $("check-open").className = open ? "j-btn" : "j-btn secondary";
+  $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
+  $("check-approve").className = open ? "link-btn" : "j-btn secondary";  // approving past warnings is possible, never the obvious button
+  $("check-approve").textContent = "Save a record of this download, and show the install command";
+}
+window.addEventListener("hashchange", () => { if (location.hash === "#check") renderCheckSummary(); });
+function setBack(toCheck) {
+  $("scan-back").href = toCheck ? "#check" : "#start";
+  $("scan-back").textContent = toCheck ? "Back to the download review" : "Back to start";
+}
 $("check-open").addEventListener("click", () => {
   if (!checked) return;
+  setBack(true);
   last = checked.scan;
   $("scan-path").value = checked.root;
   location.hash = "#scan";
@@ -598,16 +716,16 @@ $("check-open").addEventListener("click", () => {
 });
 $("check-approve").addEventListener("click", async () => {
   if (!checked) return;
-  const open = checked.scan.summary.open;
-  if (open) {
-    const ok = await confirmDialog({ title: `Approve with ${plural(open, "open warning", "open warnings")}?`, yes: "Approve anyway",
-      text: "You have not marked these warnings as false alarms. Approving records this exact copy as trusted, and unpick will only warn you again if it changes." });
-    if (!ok) return;
-  }
+  const { open } = checkOpen();
+  const ok = await confirmDialog({ title: open ? `Save this copy, with ${plural(open, "open warning", "open warnings")}?` : "Save this copy?",
+    yes: open ? "Save the copy anyway" : "Save the copy", danger: open > 0,
+    text: (open ? "" : "No open warnings is not the same as safe. ")
+      + "This records the exact files you checked, then shows the install command. unpick will not run it, and saving does not mean it is safe. Changes does not watch this download: after you install it, use Changes to save the installed version." });
+  if (!ok) return;
   const { status, data } = await api("/api/check/approve", { id: checked.id });
   const pre = $("check-command");
-  if (status !== 200) { errorStrip("check-strip", data.error || "Could not approve it."); return; }
-  pre.textContent = `# Not run. Copy it yourself if you agree:${NL}${data.install_command}${NL}# Saved as approved in ${data.lockfile}`;
+  if (status !== 200) { errorStrip("check-strip", data.error || "Could not save the copy."); return; }
+  pre.textContent = `# Not run, and not a safety verdict. Copy it only if you still want to install:${NL}${data.install_command}${NL}# A record of the checked files is in ${data.lockfile}. After installing, save the installed version under Changes.`;
   pre.hidden = false;
 });
 
@@ -615,12 +733,16 @@ $("check-approve").addEventListener("click", async () => {
 $("rehearse-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const path = $("rehearse-path").value.trim();
-  if (!path) { setError("rehearse-path", "Paste the path of the add-on, or a check id from step 1."); return; }
+  if (!path) { setError("rehearse-path", "Paste the path of the add-on."); return; }
   setError("rehearse-path", null);
+  if (!$("rehearse-task").value.trim()) { setError("rehearse-task", "Say what you would normally ask this add-on to do."); return; }
+  setError("rehearse-task", null);
   $("rehearse-timeline").replaceChildren();
   $("rehearse-verdict").hidden = true;
+  $("rehearse-out").hidden = true;
   const { status, data } = await api("/api/rehearse", { path, task: $("rehearse-task").value });
-  if (status !== 200) { setError("rehearse-path", data.error); return; }
+  if (status !== 200) { setError("rehearse-path", setupHelp(data.error) || data.error); return; }
+  $("rehearse-out").hidden = false;
   $("rehearse-go").disabled = true;
   strip("rehearse-strip", "Test run in progress: no network, fake secrets, local model. This takes a few minutes.");
   pollRehearse(data.job);
@@ -639,7 +761,8 @@ async function pollRehearse(job) {
     ...evidence.filter(i => typeof i.at === "number").map(i => el("li", { class: "hit" }, el("b", { text: "WARNING SIGN  " }), i.detail)));
   if (data.status === "error" || data.error) {
     $("rehearse-go").disabled = false;
-    errorStrip("rehearse-strip", data.error || "The test run failed.");
+    if (!(data.events || []).length) $("rehearse-out").hidden = true;
+    errorStrip("rehearse-strip", setupHelp(data.error) || data.error || "The test run failed.");
     return;
   }
   if (data.status !== "done") { setTimeout(() => pollRehearse(job), 2000); return; }
@@ -650,6 +773,16 @@ async function pollRehearse(job) {
   $("rehearse-evidence").replaceChildren(...r.evidence.map(i => el("li", { class: "bad", text: i.detail })));
   $("rehearse-verdict").hidden = false;
   strip("rehearse-strip", `Finished: ${plural(r.events.length, "action", "actions")} by the test agent, nothing could leave the box.`);
+}
+
+// The test run needs three things set up once; say which, in words, with the command to run.
+function setupHelp(err) {
+  const m = /^rehearse needs (.+?)(?:: (unpick .+))?$/.exec(err || "");
+  if (!m) return null;
+  const what = { "Docker (Docker Desktop, Colima or Podman with the docker CLI)": "Docker, which runs the sealed box. Install Docker Desktop, Colima or Podman, start it, and try again.",
+    "the local model": "the small AI model that plays the test agent. Set it up once in a terminal:",
+    "its box image once": "the sealed box, built once. Set it up in a terminal:" }[m[1]] || `${m[1]}.`;
+  return `Not set up yet: ${what}${m[2] ? ` ${m[2]} (this step downloads what it needs; the test runs themselves stay offline)` : ""}`;
 }
 
 // ---- verify ----------------------------------------------------------------------------------------
@@ -666,21 +799,30 @@ function diffBlock(text) {
 $("verify-run").addEventListener("click", async () => {
   const { status, data } = await busy($("verify-run"), "Checking...", () => api("/api/verify"));
   if (status !== 200) {
-    errorStrip("verify-strip", (data.error || "").includes("lockfile") ? "Nothing saved as approved yet. Use \"Save the current state as approved\" first." : data.error);
+    if ((data.error || "").includes("lockfile")) {
+      lastVerify = { ok: true, first: true };  // nothing to compare with yet: saving is the first step
+      $("verify-pin").disabled = false;
+      $("verify-empty").hidden = true;
+      strip("verify-strip", "No saved copy to compare with, and this check did not scan your add-ons for warnings. Review them under ",
+        el("a", { href: "#inventory", text: "Installed" }), ", then save a copy to compare later.");
+      return;
+    }
+    errorStrip("verify-strip", data.error);
     return;
   }
-  strip("verify-strip", data.ok ? "Everything matches what you approved." :
+  $("verify-empty").hidden = true;
+  strip("verify-strip", data.ok ? "Everything matches the copies you saved. That is not a safety verdict." :
     `${plural(data.changed.length, "add-on changed", "add-ons changed")}, ${data.added.length} new, ${data.removed.length} removed, ${data.unchanged} unchanged.`);
   const cards = data.changed.map(c => el("article", { class: "card change" },
     el("h2", {}, `${c.name} `, el("span", { class: `chip ${c.kind}`, text: c.kind })),
     el("p", { class: "muted", text: c.path + (c.commit ? `  commit ${c.commit.old} to ${c.commit.new}` : "") }),
     ...(c.config_changes || []).map(ch => el("p", { class: "mono", text: `${ch.field}: ${JSON.stringify(ch.old)} became ${JSON.stringify(ch.new)}` })),
     ...(c.files || []).flatMap(f => [el("p", { class: "mono", text: `${f.status}: ${f.file}` }), f.diff ? diffBlock(f.diff) : null]),
-    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings." }) : null,
+    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings. That is not the same as safe." }) : null,
     c.scan && c.scan.open ? el("button", { type: "button", class: "j-btn small", text: "Review the warnings", onclick: () => scanPath(c.path) }) : null));
   lastVerify = data;
   $("verify-pin").disabled = false;
-  const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}` })),
+  const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}. Not scanned for warnings: scan it under Installed.` })),
                   ...data.removed.map(a => el("p", { text: `Removed: ${a.name} (${a.kind})` }))];
   $("verify-list").replaceChildren(...cards, ...(simple.length ? [el("div", { class: "card" }, ...simple)] : []));
 });
@@ -691,14 +833,15 @@ $("verify-pin").addEventListener("click", async () => {
   if (!lastVerify.ok) {
     const lines = [...lastVerify.changed.map(c => `changed: ${c.name} (${c.path})${c.scan && c.scan.open ? `, ${plural(c.scan.open, "warning", "warnings")}` : ""}`),
                    ...lastVerify.added.map(c => `new: ${c.name} (${c.display_path})`), ...lastVerify.removed.map(c => `removed: ${c.name}`)];
-    scope += `. That includes:${NL}${lines.join(NL)}${NL}Saving treats any warnings above as approved`;
+    scope += `. That includes:${NL}${lines.join(NL)}${NL}Any warnings above stop showing as changes`;
   }
-  const ok = await confirmDialog({ title: "Save the current state as approved?", yes: "Save as approved", danger: false,
-    text: `This saves ${scope}. Future checks compare against this. Anything already changed will stop showing as a change.` });
+  const first = lastVerify.first ? "This check did not scan your add-ons for warnings. " : "";
+  const ok = await confirmDialog({ title: "Save a copy to compare later?", yes: "Save the copy", danger: false,
+    text: `${first}This saves ${scope}. Future checks compare against it, and anything already changed stops showing as a change. It does not mean they are safe.` });
   if (!ok) return;
   const { status, data } = await api("/api/lock", {});
   if (status !== 200) { errorStrip("verify-strip", data.error || "Could not save."); return; }
-  strip("verify-strip", `Saved ${plural(data.components, "add-on", "add-ons")} as approved.`);
+  strip("verify-strip", `Saved ${plural(data.components, "add-on", "add-ons")} as the copies to compare later. That is not a safety verdict.`);
 });
 
 // ---- recover ---------------------------------------------------------------------------------------
@@ -715,8 +858,12 @@ async function runRecover(apply) {
   const { status, data } = await api("/api/recover", body);
   if (status !== 200) { errorStrip("recover-strip", data.error); return null; }
   const planned = data.contain.filter(x => x.startsWith("would"));
+  $("recover-out").hidden = false;
   recoverPlan = apply ? null : { component: body.component, since: body.since };
-  strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
+  const failed = apply && data.contain.some(x => !x.startsWith("moved "));
+  if (apply) loadIsolated();
+  if (failed) errorStrip("recover-strip", "Not fully disabled. Follow the manual steps under 1. Contain it.");
+  else strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
     `${planned.length ? "Not disabled yet. Use \"Disable it now\" when you are ready." : "Nothing to disable."} ${plural(Object.keys(data.reach.rotate).length, "service needs", "services need")} new keys.`);
   $("recover-contain-list").replaceChildren(
     ...data.contain.map(x => el("li", { class: x.startsWith("would") ? null : "bad", text: sentence(x.replace(/^would /, "will ")) })),
@@ -724,12 +871,12 @@ async function runRecover(apply) {
     ...(data.contain.length ? [] : [el("li", { text: "No add-on named, so there is nothing to disable." })]));
   $("recover-contain").disabled = apply || planned.length === 0;
   $("recover-rotate").replaceChildren(...Object.values(data.reach.rotate).map(v => el("li", {},
-    el("label", {}, el("input", { type: "checkbox" }), `${v.provider}: ${v.what}`),
+    el("p", { class: "key-what" }, el("b", { text: `On this computer: ${v.provider}` }), `: ${v.what}`),
     el("p", { class: "why", text: v.how }), v.url ? el("p", { class: "because" }, el("a", { href: v.url.startsWith("https://") ? v.url : null, target: "_blank", rel: "noopener noreferrer", text: v.url })) : null,
     el("p", { class: "because", text: "Found: " + v.because.join(", ") }))));
   const lf = data.changed.lockfile;
-  $("recover-changed").textContent = lf ? `${lf.changed.length} changed, ${lf.added.length} new and ${lf.removed.length} removed since you last approved; ${plural(data.changed.recent.length, "file", "files")} modified in the window.`
-    : `Nothing was saved as approved, so only modification times are known: ${plural(data.changed.recent.length, "file", "files")} modified in the window.`;
+  $("recover-changed").textContent = lf ? `${lf.changed.length} changed, ${lf.added.length} new and ${lf.removed.length} removed since your saved copy; ${plural(data.changed.recent.length, "file", "files")} modified in the window.`
+    : `No copy was saved to compare with, so only modification times are known: ${plural(data.changed.recent.length, "file", "files")} modified in the window.`;
   $("recover-egress").textContent = data.egress;
   $("recover-report-to").replaceChildren(...(data.report_to.length ? data.report_to.map(ch => el("li", {}, `${ch.registry}: ${ch.how} `,
     el("a", { href: ch.url.startsWith("https://") ? ch.url : null, target: "_blank", rel: "noopener noreferrer", text: ch.url })))

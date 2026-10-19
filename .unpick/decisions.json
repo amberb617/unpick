@@ -1243,6 +1243,17 @@
       "source": "builtin",
       "matched": "TEXT_NAMES = {\".cursorrules\", \".clinerules\", \".windsurfrules\", \".gitattributes\", \".gitmodules\", \".npmrc\", \".pypirc\",",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-PREREQ",
+      "line_hash": "eaa7e1c0f451914546dd49b346d887ce3a0a503237abdb092d4248360b2ef91c",
+      "decision": "ask-author",
+      "note": "",
+      "path": "SKILL.md",
+      "line": 14,
+      "source": "builtin",
+      "matched": "Before first use, open Terminal and paste the helper installer below.",
+      "decided_at": "2026-10-19T05:43:35+00:00"
     }
   ]
 }

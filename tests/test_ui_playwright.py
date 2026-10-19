@@ -77,7 +77,8 @@ def test_decide_from_ui(ui, page):
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")
     verdict = page.locator("#verdict").inner_text()
-    assert "No unresolved warnings" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
+    assert "YOUR CALL" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
+    assert "NOTHING FOUND" not in verdict  # a dismissed warning is the reader's call, not an empty result
     assert page.locator("#file-list .count").first.inner_text() == "0"
     assert not page.is_visible("#remedy")  # nothing open, so no "stop the AI" button
     assert (kit / ".unpick" / "decisions.json").is_file()
@@ -284,3 +285,171 @@ def test_next_steps_follow_the_latest_scan_and_blank_recover_is_refused(ui, page
     page.fill("#recover-component", "")
     page.click("#recover-form button[type=submit]")
     page.locator("#recover-component-err", has_text="whole computer").wait_for()
+
+
+def test_start_web_tab_runs_the_check(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url)
+    assert page.is_hidden("#start-web-form")
+    page.click("#tab-web")
+    assert page.is_hidden("#start-form") and page.get_attribute("#tab-web", "aria-selected") == "true"
+    page.fill("#start-ref", str(kit / "sample-a"))
+    page.click("#start-web-form button[type=submit]")
+    page.wait_for_selector("#check-result:not([hidden])")
+    assert page.url.endswith("#check")
+    assert "serious" in page.inner_text("#check-summary")  # the web result says what the scan page says
+    assert page.get_attribute("#check-approve", "class") == "link-btn"  # approving past warnings is never the obvious button
+
+
+def test_result_cards_wait_for_a_run_and_first_save_is_possible(ui, page, monkeypatch, tmp_path):
+    from unpick import lock
+    url, kit = ui
+    page.goto(url + "#recover")
+    assert page.is_hidden("#recover-out") and page.is_visible("#isolated-list")
+    page.goto(url + "#rehearse")
+    assert page.is_hidden("#rehearse-out")
+    def no_lockfile(*a, **k):
+        raise FileNotFoundError("no lockfile at x; run `unpick lock` first")
+    monkeypatch.setattr(lock, "verify", no_lockfile)
+    page.goto(url + "#verify")
+    page.click("#verify-run")
+    page.locator("#verify-strip", has_text="did not scan your add-ons").wait_for()
+    assert page.is_enabled("#verify-pin")  # the first save must not be a dead end
+
+
+def test_web_result_follows_decisions_made_while_reviewing(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url + "#check")
+    page.fill("#check-ref", str(kit / "sample-b"))
+    page.check("#check-offline")
+    page.click("#check-form button[type=submit]")
+    page.locator("#check-open", has_text="Review the 1 warning").wait_for()
+    page.click("#check-open")
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")
+    assert "No open warnings remain" in page.inner_text("#next-lead")
+    page.click("text=Back to the download review")
+    page.locator("#check-summary", has_text="No open warnings").wait_for()
+
+
+def test_batch_result_can_be_decided_and_its_row_follows(ui, page, monkeypatch):
+    from unpick import inventory
+    url, kit = ui
+    items = [{"kind": "skill", "host": "claude-code", "scope": "user", "name": n, "path": str(kit / n), "display_path": n,
+              "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None} for n in ("sample-b", "sample-a")]
+    monkeypatch.setattr(inventory, "discover", lambda **k: items)
+    page.goto(url + "#inventory")
+    page.wait_for_selector(".inv-pick")
+    page.check("#inv-all")
+    page.click("#inv-scan")
+    page.locator("#batch-list li", has_text="sample-a:").wait_for()  # sample-b was scanned first, so it is not the server's latest
+    page.locator("#batch-list li", has_text="sample-b:").locator("button", has_text="Open").click()
+    sync_api.expect(page.locator("#rehearse-path")).to_have_value(re.compile("sample-b$"))
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")  # the decision saved, though another scan ran after this one
+    page.locator("#batch-list li", has_text="sample-b: no open warnings").wait_for()
+
+
+def _mcp_config(tmp_path):
+    import json
+    cfg = tmp_path / "mcp.json"
+    cfg.write_text(json.dumps({"mcpServers": {"evil": {"command": "npx", "args": ["-y", "evil"]}, "keep": {"command": "y"}}}), encoding="utf-8")
+    item = {"kind": "mcp-server", "host": "cursor", "scope": "user", "name": "evil", "path": f"{cfg}#evil", "display_path": "mcp.json#evil",
+            "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None}
+    return cfg, item
+
+
+def test_quarantine_from_installed_takes_out_only_that_entry(ui, page, monkeypatch, tmp_path):
+    import json
+
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    cfg, item = _mcp_config(tmp_path)
+    monkeypatch.setattr(inventory, "discover", lambda **k: [item])
+    page.goto(url + "#inventory")
+    page.click("#inv-table button:text('Scan')")
+    page.wait_for_selector("#do-quarantine")  # "npx -y" with no pinned version is flagged, so the button shows
+    page.click("#do-quarantine")
+    assert "only evil" in page.inner_text("#confirm-title")
+    page.click("#confirm-yes")
+    page.locator("#remedy-note", has_text="Moved to quarantine").wait_for()
+    assert list(json.loads(cfg.read_text(encoding="utf-8"))["mcpServers"]) == ["keep"]  # the neighbour survives
+
+
+def test_a_shared_settings_file_is_never_moved_whole(ui, page, monkeypatch, tmp_path):
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    cfg, item = _mcp_config(tmp_path)
+    monkeypatch.setattr(inventory, "discover", lambda **k: [item])
+    r = page.request.post(url + "api/isolate", data={"path": str(cfg)}, headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 400 and "will not move it whole" in r.json()["error"] and cfg.is_file()
+
+
+def test_report_describes_the_result_on_screen(ui, page, monkeypatch):
+    from unpick import inventory
+    url, kit = ui
+    items = [{"kind": "skill", "host": "claude-code", "scope": "user", "name": n, "path": str(kit / n), "display_path": n,
+              "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None} for n in ("sample-b", "sample-a")]
+    monkeypatch.setattr(inventory, "discover", lambda **k: items)
+    page.goto(url + "#inventory")
+    page.wait_for_selector(".inv-pick")
+    page.check("#inv-all")
+    page.click("#inv-scan")
+    page.locator("#batch-list li", has_text="sample-a:").wait_for()
+    page.locator("#batch-list li", has_text="sample-b:").locator("button", has_text="Open").click()
+    with page.expect_download() as dl:
+        page.click("a[data-export='/api/export/scan.json']")
+    assert Path(dl.value.path()).read_text(encoding="utf-8").count("sample-b") and "sample-a" not in Path(dl.value.path()).read_text(encoding="utf-8")
+
+
+def test_a_failed_web_check_hides_the_previous_result(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url + "#check")
+    page.fill("#check-ref", str(kit / "sample-b"))
+    page.check("#check-offline")
+    page.click("#check-form button[type=submit]")
+    page.wait_for_selector("#check-result:not([hidden])")
+    page.fill("#check-ref", str(kit / "no-such-thing"))
+    page.click("#check-form button[type=submit]")
+    page.locator("#check-ref-err", has_text="was not checked").wait_for()
+    assert page.is_hidden("#check-result") and page.is_hidden("#check-card")
+
+
+def test_quarantine_from_the_ui_never_follows_a_symlink(ui, page, monkeypatch, tmp_path):
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    monkeypatch.setattr(inventory, "discover", lambda **k: [])
+    docs = tmp_path / "Documents"
+    docs.mkdir()
+    (docs / "taxes.pdf").write_text("x", encoding="utf-8")
+    link = tmp_path / "linky"
+    link.symlink_to(docs)
+    r = page.request.post(url + "api/isolate", data={"path": str(link)}, headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 200 and (docs / "taxes.pdf").is_file() and not link.exists()
+
+
+def test_report_and_quarantine_follow_the_result_on_screen(ui, page, monkeypatch, tmp_path):
+    import json
+    url, kit = ui
+    page.goto(url + "#scan")
+    page.fill("#scan-path", "sample-b")
+    page.click("#scan-go")
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")
+    with page.expect_download() as dl:
+        page.click("a[data-export='/api/export/scan.json']")
+    report = json.loads(Path(dl.value.path()).read_text(encoding="utf-8"))
+    assert report["summary"]["open"] == 0 and report["summary"]["accepted"] == 1  # the decision is in the report
+    cfg = tmp_path / "other.json"
+    r = page.request.post(url + "api/isolate", data={"path": str(kit / "sample-b"), "component": f"{cfg}#evil"},
+                          headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 400 and "not part of the result" in r.json()["error"] and (kit / "sample-b").exists()

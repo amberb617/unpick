@@ -12,6 +12,7 @@ The UI never shells out to the CLI.
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import socket
 import threading
@@ -94,6 +95,7 @@ def api_scan():
     if declined:
         return jsonify({"need_consent": declined["provider"], "prompt": consent.prompt_text(declined["provider"])}), 409
     ctx["last"] = res.to_dict()
+    _remember(ctx, ctx["last"])
     scan.save_last(res, ctx["project"])
     return jsonify(ctx["last"])
 
@@ -105,22 +107,35 @@ def api_raw():
     return jsonify(render.to_json(p.read_bytes().decode("utf-8", errors="replace")))
 
 
+def _remember(ctx, result: dict) -> None:
+    """Every finding shown this session stays decidable, not only the latest scan's (batch scans, web checks)."""
+    # ponytail: grows for the life of the UI process; a session scans dozens of add-ons, not thousands.
+    known = ctx.setdefault("known", {})
+    for f in result["findings"] + result["accepted"]:
+        known[f["id"]] = f
+    ctx.setdefault("results", {})[result["target"]] = result
+
+
 def api_decide():
     ctx = _ctx()
     body = request.get_json(force=True) or {}
     last_file = ctx["project"] / ".unpick" / "last-scan.json"
     last = ctx["last"] or (json.loads(last_file.read_text(encoding="utf-8")) if last_file.is_file() else None)
-    if not last:
+    if not last and not ctx.get("known"):
         return jsonify({"error": "no scan yet"}), 400
-    f = next((x for x in last["findings"] + last["accepted"] if x["id"] == body.get("id")), None)
+    f = ctx.get("known", {}).get(body.get("id")) or next((x for x in (last or {}).get("findings", []) + (last or {}).get("accepted", [])
+                                                          if x["id"] == body.get("id")), None)
     if not f:
         return jsonify({"error": "unknown finding"}), 400
     path = decisions.project_file(ctx["project"])
     if body.get("choice") == "undo":
+        f["decision"] = None  # f is the same dict the shown result holds, so a report reflects it
         return jsonify({"undone": decisions.forget(path, f)})
     if body.get("choice") not in decisions.CHOICES:
         return jsonify({"error": "unknown choice"}), 400
-    return jsonify(decisions.record(path, f, body["choice"], body.get("note", "")))
+    saved = decisions.record(path, f, body["choice"], body.get("note", ""))
+    f["decision"] = body["choice"]
+    return jsonify(saved)
 
 
 def api_demo():
@@ -145,13 +160,22 @@ def _download(doc: str, mimetype: str, name: str) -> Response:
     return Response(doc, mimetype=mimetype, headers={"Content-Disposition": f"attachment; filename={name}"})
 
 
+def _shown_scan() -> dict:
+    """The result the page is showing (it names it in a header), so a report never describes another add-on."""
+    ctx = _ctx()
+    res = ctx.get("results", {}).get(request.headers.get("X-Unpick-Target", "")) or ctx["last"] or abort(404)
+    every = res["findings"] + res["accepted"]
+    accepted = sum(1 for f in every if f.get("decision") == "accept")  # counts follow decisions made since the scan
+    return {**res, "summary": {**res.get("summary", {}), "open": len(every) - accepted, "accepted": accepted}}
+
+
 def export_scan_html():
-    last = _ctx()["last"] or abort(404)
+    last = _shown_scan()
     return _download(report.scan_html(last), "text/html", "unpick-scan.html")
 
 
 def export_scan_json():
-    last = _ctx()["last"] or abort(404)
+    last = _shown_scan()
     return _download(json.dumps(last, indent=2, ensure_ascii=False), "application/json", "unpick-scan.json")
 
 
@@ -164,9 +188,12 @@ def api_check():
     from unpick import check, quarantine
     body = request.get_json(force=True) or {}
     try:
-        return jsonify(check.run(str(body.get("ref", "")), offline=bool(body.get("offline"))))
+        res = check.run(str(body.get("ref", "")), offline=bool(body.get("offline")))
     except (quarantine.Refused, OSError) as e:
         return jsonify({"error": str(e)}), 400
+    _ctx()["last"] = res["scan"]
+    _remember(_ctx(), res["scan"])  # so warnings reviewed from a web check can be decided like any scan's
+    return jsonify(res)
 
 
 def api_check_approve():
@@ -260,11 +287,37 @@ def _target(body) -> Path:
     return t if t.is_absolute() else _ctx()["project"] / t
 
 
+def _shared_by(t: Path, components: list[dict]) -> list[dict]:
+    """The other add-ons that would go with t if it were moved whole: entries in a config file, or add-ons inside a folder."""
+    hits = []
+    for c in components:
+        p, _, entry = c["path"].partition("#")
+        cp = Path(p)
+        if (entry and cp == t) or (not entry and cp != t and cp.is_relative_to(t)):
+            hits.append(c)
+    return hits
+
+
 def api_isolate():
-    from unpick import isolate
-    t = _target(request.get_json(force=True) or {})
+    from unpick import inventory, isolate
+    body = request.get_json(force=True) or {}
+    t = Path(os.path.abspath(_target(body)))  # absolute, but never through a symlink
+    components = inventory.discover(project=_ctx()["project"])
+    want = str(body.get("component") or "")
     try:
-        return jsonify(isolate.isolate({"path": str(t.resolve()), "name": t.name}, reason="quarantined from the UI"))
+        if "#" in want and Path(want.partition("#")[0]) != t:
+            return jsonify({"error": "That add-on is not part of the result on screen. Scan it again and retry."}), 400
+        if "#" in want:  # one entry in a shared config, chosen from Installed: take out only that entry
+            c = next((c for c in components if c["path"] == want), None)
+            if not c:
+                return jsonify({"error": "That add-on is no longer listed in its settings file. Reload Installed and try again."}), 400
+            return jsonify(isolate.isolate(c, reason="quarantined from the UI"))
+        shared = _shared_by(t, components)
+        if shared:
+            names = ", ".join(sorted({c["name"] for c in shared})[:6])
+            return jsonify({"error": f"{t} also holds {len(shared)} other add-ons ({names}). unpick will not move it whole. "
+                                     "Scan the one you mean from Installed, then move it."}), 400
+        return jsonify(isolate.isolate({"path": str(t), "name": t.name}, reason="quarantined from the UI"))
     except isolate.CannotIsolate as e:
         return jsonify({"error": str(e)}), 400
 

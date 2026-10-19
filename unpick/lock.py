@@ -120,7 +120,14 @@ def lock(project: Path, out: Path | None = None, extra: list[Path] | None = None
     items = inventory.discover(project=project, extra=extra)
     data = {"tool": "unpick", "version": __version__, "locked_at": datetime.now(UTC).isoformat(timespec="seconds"),
             "components": {c["path"]: record(c) for c in items}}
-    (out or project / LOCKFILE).write_text(json.dumps(data, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    target = out or project / LOCKFILE
+    try:  # records saved by `unpick check` live in the same file; re-locking must not drop them
+        prior = json.loads(target.read_text(encoding="utf-8")).get("approved") if target.is_file() else None
+    except ValueError:
+        prior = None
+    if prior:
+        data["approved"] = prior
+    target.write_text(json.dumps(data, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
     return data
 
 
@@ -163,7 +170,10 @@ def verify(project: Path, lockfile: Path | None = None, rescan: bool = True) -> 
     lf = lockfile or project / LOCKFILE
     if not lf.is_file():
         raise FileNotFoundError(f"no lockfile at {lf}; run `unpick lock` first")
-    locked = json.loads(lf.read_text(encoding="utf-8"))["components"]
+    data = json.loads(lf.read_text(encoding="utf-8"))
+    if not data.get("components") and "locked_at" not in data:  # only `unpick check` records so far: nothing to compare
+        raise FileNotFoundError(f"no lockfile components at {lf}; run `unpick lock` first")
+    locked = data["components"]
     current = {c["path"]: c for c in inventory.discover(project=project)}
     report = {"lockfile": str(lf), "added": [], "removed": [], "changed": [], "unchanged": 0}
     for key in sorted(set(locked) | set(current)):

@@ -188,6 +188,31 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     command needs, so the path box stays. The next steps (test run, recovery) now always follow the
     latest scan instead.
 
+## Redesign after the UX cycles (2026-10-19)
+
+45. **The UI follows the Jiffy quickstart, not the signed-in admin app.** unpick is a free offline scanner,
+    which is what the quickstart is. Start is one input card; a scan is a result page with a verdict block,
+    one warning list and an aside. The talk's five steps stay in the README and the talk, not in the
+    navigation. Sources and what was left out: docs/UI-NOTES.md.
+
+46. **No result is ever called "clear".** The neutral verdict reads "NO WARNINGS / This does not prove it
+    is safe", on a grey block rather than green (Codex review, and the Jiffy rule that absence must not
+    render as health).
+
+47. **The decision comes after the explanation,** with "Not sure: ask the author" and a line saying that
+    leaving it open is a valid answer. A newcomer should not be asked to judge before reading why.
+
+48. **Warnings are ordered for a newcomer:** undecided, then severity, then how many checkers agree, then
+    unpick's own plain-language checks before another scanner's terse rule names.
+
+49. **Quarantine from the UI acts on one add-on, decided by the server.** An entry in a shared settings file
+    is removed alone; a file holding other add-ons' entries, or a folder holding several add-ons, is never
+    moved whole, whatever the page sends; links are moved, never followed.
+
+50. **Nothing the UI saves is called an approval.** A web check saves "a record of this download"; Changes
+    saves "a copy to compare later". Both say they are not a safety verdict. Re-locking keeps the download
+    records, and a lockfile holding only those counts as a first run.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

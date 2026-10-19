@@ -184,3 +184,18 @@ def test_tree_diff(tmp_path):
     (tmp_path / "a" / "SKILL.md").write_text("one\n")
     (tmp_path / "b" / "SKILL.md").write_text("one\nadded line\n")
     assert "+added line" in tree_diff(tmp_path / "a", tmp_path / "b")
+
+
+def test_relocking_keeps_records_saved_by_check(home):
+    h, proj = home
+    lf = proj / lock.LOCKFILE
+    lf.write_text(json.dumps({"tool": "unpick", "components": {}, "approved": {"chk-1": {"ref": "x"}}}), encoding="utf-8")
+    lock.lock(proj)
+    assert json.loads(lf.read_text(encoding="utf-8"))["approved"] == {"chk-1": {"ref": "x"}}
+
+
+def test_verify_with_only_check_records_is_a_first_run(home):
+    h, proj = home
+    (proj / lock.LOCKFILE).write_text(json.dumps({"tool": "unpick", "components": {}, "approved": {"chk-1": {}}}), encoding="utf-8")
+    with pytest.raises(FileNotFoundError, match="lock"):
+        lock.verify(proj)  # not "every installed add-on is new"

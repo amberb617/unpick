@@ -142,7 +142,7 @@ def analyse(strace_text: str, events: list[dict], transcript: list[dict], canari
                 continue  # the shell wrapper; its children are reported
             items.append({"rule": "RT-REHEARSE-SPAWN", "detail": "started " + " ".join(argv)[:200], "at": n})
         elif m := CONNECT.match(line):
-            items.append({"rule": "RT-REHEARSE-NET", "detail": f"tried to connect ({m.group(2)}: {m.group(3)[:120]})", "at": n})
+            items.append({"rule": "RT-REHEARSE-NET", "detail": _connect_detail(m.group(2), m.group(3)), "at": n})
     for e in events:
         blob = json.dumps(e.get("input", {}))
         for rel in canary.hits(blob, canaries):
@@ -179,6 +179,17 @@ def findings(items: list[dict], component_name: str) -> list[Finding]:
                            why=WHY[rule], false_positive=FP[rule], extra={"timeline": mine}))
     return out
 
+
+def _connect_detail(family: str, args: str) -> str:
+    """strace's sockaddr in words: 'tried to reach 192.168.5.2 on port 53 (a name lookup)'."""
+    port = re.search(r"htons\((\d+)\)", args)
+    addr = re.search(r'inet_(?:addr|pton)\((?:AF_INET6?, )?"([^"]+)"', args)
+    if not (port and addr):
+        return f"tried to connect ({family}: {args[:120]})"
+    lookup = " (a name lookup)" if port.group(1) == "53" else ""
+    if addr.group(1) == "::1" or addr.group(1).startswith("127."):  # loopback exists even with no network
+        return f"tried to reach {addr.group(1)} on port {port.group(1)}{lookup}, inside the box itself"
+    return f"tried to reach {addr.group(1)} on port {port.group(1)}{lookup}; the box has no network, so it failed"
 
 def run(component: Path, task: str = "Summarise the README in this folder.", max_steps: int = 8, keep: bool = False,
         canary_dns: str | None = None, on_start=None) -> dict:
