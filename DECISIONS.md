@@ -158,7 +158,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 ## After the UX review
 
-38. **Quarantine is one engine.** `unpick quarantine`, `watch --quarantine`, the UI's "Move to quarantine"
+38. **Quarantine is one engine.** `unpick quarantine`, `watch --quarantine`, the UI's "Stop the AI from loading this"
     and `recover`'s containment step all call unpick/isolate.py, so they cannot drift apart. Nothing is
     deleted; `restore` refuses to overwrite something that has come back in the meantime.
 
@@ -167,7 +167,26 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     descriptions, because a rewrite that looks right is worse than an honest flag.
 
 40. **The tagline stays** at the top of the UI (the spec asked for it); the start screen carries a
-    plain-language line for newcomers.
+    plain-language line for newcomers. The third review (Grok) asked again to replace it; it still stays.
+
+## After the third review (Grok)
+
+41. **Quarantine never follows a link or rewrites text it cannot keep.** A symlinked skill is moved as a
+    link, so its target is untouched. A config is rewritten only when it is plain JSON in valid UTF-8 with
+    no comments; otherwise unpick prints the manual edit. Every rewrite is backed up and swapped in
+    atomically. Hooks are matched by content, and an MCP server is removed from every block that lists it,
+    including Claude Code's per-project blocks and OpenCode's `plugin` array.
+
+42. **The watcher quarantines the add-on, not the folder it lives in.** It moves the deepest inventoried
+    skill, plugin or extension folder that owns the changed file. A shared config or cache is never moved
+    whole; the event records `quarantine_skipped` instead.
+
+43. **Review copies live outside every agent folder**, in ~/.unpick/cleaned/, with symlinks dropped, so an
+    agent cannot load a half-cleaned add-on by accident.
+
+44. **No folder picker in the UI.** A browser page cannot read a local folder's full path, which every
+    command needs, so the path box stays. The next steps (test run, recovery) now always follow the
+    latest scan instead.
 
 ## Phase 2 (looking ahead)
 

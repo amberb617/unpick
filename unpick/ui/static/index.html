@@ -116,8 +116,9 @@
         <div class="verdict-banner" id="verdict" role="status" aria-live="polite"></div>
         <div class="remedy" id="remedy" hidden>
           <span>What to do about it:</span>
-          <button class="j-btn danger small" id="do-quarantine" type="button">Move to quarantine</button>
-          <button class="j-btn secondary small" id="do-clean" type="button">Make a cleaned copy</button>
+          <button class="j-btn danger small" id="do-quarantine" type="button">Stop the AI from loading this</button>
+          <button class="j-btn secondary small" id="do-clean" type="button">Make a review copy with the hidden tricks removed</button>
+          <a class="link-btn" href="#rehearse" id="next-rehearse">Next: test-run it</a>
           <span class="muted" id="remedy-note" role="status"></span>
         </div>
         <div class="results-bar">
@@ -185,7 +186,7 @@
     <section id="screen-verify" class="screen" hidden aria-labelledby="verify-title">
       <div class="screen-head"><div><p class="eyebrow">STEP 5</p><h1 id="verify-title" tabindex="-1">Has anything changed since you approved it?</h1></div>
         <div class="actions"><button class="j-btn" id="verify-run" type="button">Check for changes</button>
-          <button class="j-btn secondary" id="verify-pin" type="button">Save the current state as approved</button></div></div>
+          <button class="j-btn secondary" id="verify-pin" type="button" disabled>Save the current state as approved</button></div></div>
       <div class="runstrip" id="verify-strip" role="status" aria-live="polite">Compares every add-on with what you last saved as approved. Changed text shows as a diff.</div>
       <div id="verify-list"></div>
     </section>
@@ -195,27 +196,25 @@
       <div class="screen-head"><div><p class="eyebrow danger">IF SOMETHING GOT IN</p><h1 id="recover-title" tabindex="-1">Contain it, change your keys, find out what happened</h1></div></div>
       <form class="inline-form" id="recover-form">
         <div class="field-row">
-          <div class="field"><label for="recover-component">Which add-on (leave blank for the whole computer)</label>
-            <input id="recover-component" type="text" spellcheck="false" autocomplete="off"></div>
-          <div class="field narrow"><label for="recover-since">Since</label><input id="recover-since" type="date"></div>
+          <div class="field"><label for="recover-component">Which add-on: its name or path</label>
+            <input id="recover-component" type="text" spellcheck="false" autocomplete="off" aria-describedby="recover-component-err"></div>
+          <div class="field narrow"><label for="recover-since">Look back to</label><input id="recover-since" type="date"></div>
         </div>
+        <p class="field-err" id="recover-component-err" hidden></p>
         <div class="actions"><button class="j-btn" type="submit">Show the recovery steps (changes nothing)</button>
+          <button class="j-btn secondary" id="recover-all" type="button">Check the whole computer instead</button>
           <button class="j-btn danger" id="recover-contain" type="button" disabled>Disable it now</button>
           <a class="j-btn secondary" href="#" data-export="/api/export/incident.md">Download incident report</a></div>
       </form>
       <div class="runstrip" id="recover-strip" role="status" aria-live="polite">Secret values are never shown: names and places only. If a password stealer ran, changing those keys is not optional.</div>
-      <div class="two-col">
-        <section>
-          <article class="card"><h2>1. Contain it</h2><ul id="recover-contain-list" class="questions"></ul></article>
-          <article class="card"><h2>2. Change these keys and passwords</h2><ul id="recover-rotate" class="checklist"></ul></article>
-          <article class="card"><h2>4. What changed on disk</h2><p id="recover-changed"></p>
-            <h2>5. Watch outgoing connections from now on</h2><p id="recover-egress"></p>
-            <h2>6. Report it</h2><ul id="recover-report-to"></ul></article>
-        </section>
-        <section>
-        <article class="card"><h2>In quarantine</h2><ul id="isolated-list" class="questions"></ul></article>
+      <div class="one-col">
+        <article class="card"><h2>1. Contain it</h2><ul id="recover-contain-list" class="questions"></ul>
+          <h3 class="sub">In quarantine now</h3><ul id="isolated-list" class="questions"></ul></article>
+        <article class="card"><h2>2. Change these keys and passwords</h2><ul id="recover-rotate" class="checklist"></ul></article>
         <section class="card"><h2>3. What the agents did</h2><p class="muted" id="recover-count"></p><ol id="recover-timeline" class="timeline"></ol></section>
-        </section>
+        <article class="card"><h2>4. What changed on disk</h2><p id="recover-changed"></p></article>
+        <article class="card"><h2>5. Watch outgoing connections from now on</h2><p id="recover-egress"></p></article>
+        <article class="card"><h2>6. Report it</h2><ul id="recover-report-to"></ul></article>
       </div>
     </section>
 

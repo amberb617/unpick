@@ -7,6 +7,7 @@ from unpick import recover
 
 def test_containment_plan_and_mcp_entry_removal_with_backup(tmp_path, monkeypatch):
     h = _fake_home(tmp_path, monkeypatch)
+    (h / ".cursor" / "mcp.json").write_text(json.dumps({"mcpServers": {"fs": {"command": "npx"}}}), encoding="utf-8")
     [c] = [x for x in recover.find_component("fs", tmp_path) if x["kind"] == "mcp-server"]
     assert recover.containment_plan(c) == [{"action": "remove-entry", "file": str(h / ".cursor" / "mcp.json"), "entry": "fs", "kind": "mcp-server"}]
     from unpick import isolate

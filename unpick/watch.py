@@ -86,12 +86,38 @@ def component_root(path: Path, watched: list[Path]) -> Path:
     return path
 
 
+def _fingerprint(p: Path) -> tuple:
+    files = [p] if p.is_file() else sorted(x for x in p.rglob("*") if x.is_file())
+    return tuple((str(f), f.stat().st_ino, f.stat().st_mtime_ns, f.stat().st_size) for f in files[:2000])
+
+
+def _changed_since(p: Path, before: tuple) -> bool:
+    return _fingerprint(p) != before
+
+
+def owning_component(changed: Path) -> Path | None:
+    """The deepest inventoried skill or plugin folder that contains the changed path, or None.
+
+    Config files and shared caches are never quarantined whole: one bad entry must not take ~/.claude.json
+    or a whole marketplace cache away from the agent."""
+    hits = []
+    for c in inventory.discover(project=Path.cwd()):
+        p, _, entry = c["path"].partition("#")
+        if entry or c["kind"] not in ("skill", "plugin", "extension"):
+            continue
+        root = Path(p)
+        if root.is_dir() and not root.is_symlink() and (changed == root or changed.is_relative_to(root)):
+            hits.append(root)
+    return max(hits, key=lambda r: len(r.parts)) if hits else None
+
+
 def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     """Scan what landed; with quarantine_at ("high" or "medium"), move it out of the agent's reach at that severity."""
     from unpick import isolate
     from unpick.finding import SEVERITIES
     if not target.exists():
         return {"path": str(target), "status": "removed"}
+    before = _fingerprint(target)
     res = scan.scan(target)
     high = [f for f in res.findings if f.severity == "high"]
     entry = {"path": str(target), "open": len(res.findings), "high": len(high),
@@ -99,11 +125,17 @@ def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     if quarantine_at:
         floor = SEVERITIES.index(quarantine_at)
         if any(SEVERITIES.index(f.severity) >= floor for f in res.findings):
-            try:
-                r = isolate.isolate({"path": str(target), "name": target.name}, reason=f"watch: {entry['top'][0]}")
-                entry["quarantined"] = r["id"]
-            except isolate.CannotIsolate as e:
-                entry["quarantine_error"] = str(e)
+            owner = owning_component(target)
+            if owner is None:
+                entry["quarantine_skipped"] = "not a whole add-on folder (a config file or a shared cache); review it with unpick recover"
+            elif _changed_since(owner, before):
+                entry["quarantine_skipped"] = "it changed while it was being scanned; it will be scanned again"
+            else:
+                try:
+                    r = isolate.isolate({"path": str(owner), "name": owner.name}, reason=f"watch: {entry['top'][0]}")
+                    entry["quarantined"] = r["id"]
+                except isolate.CannotIsolate as e:
+                    entry["quarantine_error"] = str(e)
     log(entry)
     if entry.get("quarantined"):
         notify("unpick moved an AI add-on to quarantine",

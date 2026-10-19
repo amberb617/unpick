@@ -138,7 +138,12 @@ document.addEventListener("click", async (e) => {
   if (!a) return;
   e.preventDefault();
   const r = await fetch(a.dataset.export, { headers: { "X-Unpick-Token": TOKEN } }).catch(() => null);
-  if (!r || !r.ok) { errorStrip("runstrip", "Nothing to download yet: run it first."); return; }
+  if (!r || !r.ok) {
+    const here = { "#scan": "runstrip", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
+    if (here) errorStrip(here, "Nothing to download yet: run it first.");
+    else a.after(el("span", { class: "field-err", text: "Nothing to download yet." }));
+    return;
+  }
   const blob = await r.blob();
   const name = (r.headers.get("Content-Disposition") || "").split("filename=")[1] || "unpick-report";
   const link = el("a", { href: URL.createObjectURL(blob), download: name });
@@ -294,6 +299,8 @@ async function runScan() {
     return;
   }
   if (status !== 200) {
+    if (last) $("verdict").replaceChildren(el("span", { class: "verdict-word", text: "FAILED" }),
+      el("div", {}, el("p", { class: "verdict-head", text: "This scan failed" }), el("p", { class: "verdict-sub", text: "What you see below is the previous result." })));
     setError("scan-path", data.error && data.error.includes("does not exist")
       ? `There is no file or folder at ${path}. Check the spelling, or paste the full path.` : (data.error || `Scan failed (${status}).`));
     return;
@@ -302,14 +309,14 @@ async function runScan() {
   $("scan-empty").hidden = true;
   $("batch").hidden = true;
   $("scan-results").hidden = false;
-  if (!$("rehearse-path").value) $("rehearse-path").value = path;
-  if (!$("recover-component").value) $("recover-component").value = path;
+  $("rehearse-path").value = path;
+  $("recover-component").value = path;
   renderScan();
 }
 
 const SEV_WORD = { high: "SERIOUS", medium: "WARNING", low: "NOTE", info: "INFO" };
-const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Ask the author" };
-const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: ask the author." };
+const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Needs the author's answer" };
+const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: needs the author's answer (saved here only)." };
 
 function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
@@ -352,8 +359,8 @@ function renderRemedy() {
 
 $("do-quarantine").addEventListener("click", async () => {
   if (!last) return;
-  const ok = await confirmDialog({ title: "Move this to quarantine?", yes: "Move to quarantine",
-    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Nothing is deleted: you can put it back from "If something got in".` });
+  const ok = await confirmDialog({ title: "Stop your AI from loading this?", yes: "Move it to quarantine",
+    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Your files are kept: you can put it back from "If something got in".` });
   if (!ok) return;
   const { status, data } = await api("/api/isolate", { path: last.target });
   $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "If something got in".` : (data.error || "Could not move it.");
@@ -364,7 +371,7 @@ $("do-clean").addEventListener("click", async () => {
   const { status, data } = await busy($("do-clean"), "Cleaning...", () => api("/api/clean", { path: last.target }));
   if (status !== 200) { $("remedy-note").textContent = data.error || "Could not clean it."; return; }
   const n = Object.values(data.changes).reduce((a, c) => a + c.length, 0);
-  $("remedy-note").textContent = `Cleaned copy written to ${data.clean} (${plural(n, "change", "changes")}; the original is untouched). ${plural(data.still_flagged.length, "warning still needs", "warnings still need")} a human.`;
+  $("remedy-note").textContent = `Review copy written to ${data.clean} (${plural(n, "change", "changes")}). It is not installed, and the original is untouched. ${plural(data.still_flagged.length, "warning is", "warnings are")} still a problem.`;
 });
 
 async function loadIsolated() {
@@ -517,11 +524,11 @@ function findingCard(f, findings) {
       kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
       f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the file`, onclick: () => showInFile(f.line) }) : null),
     el("h3", { class: "msg", text: sentence(f.message) }),
+    decided || el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
+    decided ? null : el("p", { class: "meta", text: "Saved on this computer only, for this exact line; nothing is sent. If the line changes, the warning comes back." }),
     el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
     el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
     f.context.length ? ctx : null,
-    decided || el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
-    decided ? null : el("p", { class: "meta", text: "Your choice is saved for this exact line. If the line changes, the warning comes back." }),
     el("p", { class: "meta", text: `${agreementText(f)} Rule ${f.rule_id}.` }));
 }
 
@@ -599,7 +606,8 @@ $("check-approve").addEventListener("click", async () => {
   }
   const { status, data } = await api("/api/check/approve", { id: checked.id });
   const pre = $("check-command");
-  pre.textContent = status === 200 ? `# Not run. Copy it yourself if you agree:${NL}${data.install_command}${NL}# Saved as approved in ${data.lockfile}` : data.error;
+  if (status !== 200) { errorStrip("check-strip", data.error || "Could not approve it."); return; }
+  pre.textContent = `# Not run. Copy it yourself if you agree:${NL}${data.install_command}${NL}# Saved as approved in ${data.lockfile}`;
   pre.hidden = false;
 });
 
@@ -671,16 +679,19 @@ $("verify-run").addEventListener("click", async () => {
     c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings." }) : null,
     c.scan && c.scan.open ? el("button", { type: "button", class: "j-btn small", text: "Review the warnings", onclick: () => scanPath(c.path) }) : null));
   lastVerify = data;
+  $("verify-pin").disabled = false;
   const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}` })),
                   ...data.removed.map(a => el("p", { text: `Removed: ${a.name} (${a.kind})` }))];
   $("verify-list").replaceChildren(...cards, ...(simple.length ? [el("div", { class: "card" }, ...simple)] : []));
 });
 let lastVerify = null;
 $("verify-pin").addEventListener("click", async () => {
+  if (!lastVerify) return;
   let scope = "every add-on on this computer, as it is right now";
-  if (lastVerify && !lastVerify.ok) {
-    const names = [...lastVerify.changed, ...lastVerify.added].map(c => c.name);
-    scope += `, including ${plural(names.length, "add-on", "add-ons")} that changed or are new: ${names.slice(0, 8).join(", ")}${names.length > 8 ? " and more" : ""}`;
+  if (!lastVerify.ok) {
+    const lines = [...lastVerify.changed.map(c => `changed: ${c.name} (${c.path})${c.scan && c.scan.open ? `, ${plural(c.scan.open, "warning", "warnings")}` : ""}`),
+                   ...lastVerify.added.map(c => `new: ${c.name} (${c.display_path})`), ...lastVerify.removed.map(c => `removed: ${c.name}`)];
+    scope += `. That includes:${NL}${lines.join(NL)}${NL}Saving treats any warnings above as approved`;
   }
   const ok = await confirmDialog({ title: "Save the current state as approved?", yes: "Save as approved", danger: false,
     text: `This saves ${scope}. Future checks compare against this. Anything already changed will stop showing as a change.` });
@@ -732,7 +743,17 @@ async function runRecover(apply) {
   }));
   return data;
 }
-$("recover-form").addEventListener("submit", (e) => { e.preventDefault(); runRecover(false); });
+$("recover-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!$("recover-component").value.trim()) {
+    setError("recover-component", "Type the add-on's name or path, or use \"Check the whole computer instead\".");
+    return;
+  }
+  setError("recover-component", null);
+  runRecover(false);
+});
+$("recover-all").addEventListener("click", () => { $("recover-component").value = ""; setError("recover-component", null); runRecover(false); });
+$("recover-since").value = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
 $("recover-contain").addEventListener("click", async () => {
   if (!recoverPlan) return;
   const plan = [...document.querySelectorAll("#recover-contain-list li")].map(li => li.textContent).join(NL);

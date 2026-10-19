@@ -1,6 +1,7 @@
 """`unpick clean <path>`: write a cleaned copy of an add-on, removing what is never legitimate.
 
-The original is never changed. The copy, next to it as `<name>.unpick-clean` (or `--out`), has:
+The original is never changed. The copy is written to ~/.unpick/cleaned/<time>-<name>/ (or `--out`), outside
+every folder an agent loads from, so the agent cannot pick it up by accident. It has:
   * every invisible character removed (zero-width, bidirectional controls, Unicode tag characters), the
     trick behind the Rules File Backdoor;
   * HTML comments removed from Markdown outside code blocks, since a viewer never shows them;
@@ -14,6 +15,7 @@ copy is a starting point for review, not a certificate.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 from pathlib import Path
@@ -80,13 +82,25 @@ def _drop_comments(block: str, changes: list[str]) -> str:
     return COMMENT.sub("", block)
 
 
+CLEANED = Path.home() / ".unpick" / "cleaned"
+
+
 def clean(target: Path, out: Path | None = None) -> dict:
+    from datetime import UTC, datetime
     target = target.resolve()
-    dest = out or target.with_name(target.name + ".unpick-clean")
+    if out is None:
+        out = CLEANED / f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{target.name}"
+        out = out / target.name if target.is_file() else out
+    dest = out
     if dest.exists():
         raise FileExistsError(f"{dest} already exists; remove it or pass --out")
+    links: list[str] = []
     if target.is_dir():
         shutil.copytree(target, dest, symlinks=True, ignore=shutil.ignore_patterns(".git"))
+        for p in sorted(dest.rglob("*")):
+            if p.is_symlink():  # a link can point anywhere; the review copy keeps none
+                links.append(f"{p.relative_to(dest).as_posix()} (pointed to {os.readlink(p)})")
+                p.unlink()
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(target, dest)
@@ -102,11 +116,14 @@ def clean(target: Path, out: Path | None = None) -> dict:
     res = scan.scan(dest, decision_files=[])
     left = [f.to_dict() for f in res.findings]
     note = dest / "CLEANUP.md" if dest.is_dir() else dest.with_name(dest.name + ".CLEANUP.md")
-    body = ["# What unpick cleaned", "", f"Original: {target}", "", "The original was not changed.", ""]
+    body = ["# What unpick cleaned", "", f"Original: {target}", "", "The original was not changed. This copy is for review; it is not installed.", ""]
+    if links:
+        body += ["## Links removed", ""] + [f"- {x}" for x in links] + [""]
     for rel, changes in report.items():
         body += [f"## {rel}", ""] + [f"- {c}" for c in changes] + [""]
     body += ["## Still flagged after cleaning", ""]
     body += [f"- {f['severity']} {f['rule_id']} {f['path']}:{f['line']}: {f['message']}" for f in left] or ["- Nothing."]
     body += ["", "A cleaned copy is a starting point for review, not a certificate."]
     note.write_text("\n".join(body) + "\n", encoding="utf-8")
-    return {"original": str(target), "clean": str(dest), "changes": report, "still_flagged": left, "report": str(note)}
+    return {"original": str(target), "clean": str(dest), "changes": report, "links_removed": links, "still_flagged": left,
+            "report": str(note)}

@@ -1,10 +1,16 @@
+[hidden] { display: none !important; }
 /* unpick UI. Jiffy visual system: navy and pale blue surfaces, white cards, pink kickers on navy, red for
    danger, the offset hover shadow. Meaning never rides on colour alone: severity and verdicts are words with
    distinct border styles, so the screen reads in black and white and on a projector. */
 * { box-sizing: border-box; }
 html { font-size: 16px; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
-body.present main { zoom: 1.25; }
+body.present main { font-size: 20px; }
+body.present h1 { font-size: 40px; } body.present .verdict-head { font-size: 30px; }
+body.present .finding .msg { font-size: 24px; } body.present .finding .why, body.present .lede { font-size: 20px; }
+body.present .split-body, body.present .finding pre, body.present .runstrip, body.present .timeline { font-size: 18px; }
+body.present .hidden-text { font-size: 20px; } body.present .j-btn { font-size: 18px; }
+body.present label, body.present .meta, body.present .link-btn, body.present .kicker { font-size: 18px; }
 h1 { font-size: 30px; line-height: 1.15; margin: 0; color: var(--fg-strong); letter-spacing: -0.01em; }
 h1:focus { outline: none; }
 h2 { font-size: 16px; margin: 0 0 12px; color: var(--fg-strong); }
@@ -205,6 +211,8 @@ pre.diff .add { color: #1d6b2f; background: #e9f3e9; display: block; } pre.diff 
 .checklist .because { font: 13px var(--font-mono); color: var(--fg-muted); margin: 4px 0 0 28px; word-break: break-all; }
 .checklist .why { margin: 4px 0 0 28px; }
 #screen-recover h2 + p { margin-top: 0; }
+.one-col { display: flex; flex-direction: column; max-width: 1100px; }
+h3.sub { font-size: 15px; margin: 16px 0 6px; color: var(--fg-strong); }
 
 dialog { border: 1.5px solid var(--navy-900); border-radius: var(--radius-lg); padding: 24px; max-width: 600px; box-shadow: 6px 6px 0 var(--pink-500); background: var(--bg-elevated); color: var(--fg); }
 dialog p { white-space: pre-line; }
