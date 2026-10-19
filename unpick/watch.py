@@ -2,7 +2,9 @@
 
 This is a backstop, not a control. It sees a file after it is written, and an agent can load it before
 the scan finishes; the install hook (`unpick hook install`) is what stops an install. The watcher posts a
-desktop notification and appends to ~/.unpick/watch.log. Needs the `watch` extra (watchdog). Recipes to
+desktop notification and appends to ~/.unpick/watch.log. With --quarantine high (opt-in) it also moves an
+add-on with a serious warning out of the agent's folder at once, like antivirus quarantine; `unpick restore`
+undoes it. Needs the `watch` extra (watchdog). Recipes to
 run it at login: `unpick watch --print-service launchd|systemd|windows` (verified in docs/verified/phase3.md).
 """
 
@@ -84,21 +86,35 @@ def component_root(path: Path, watched: list[Path]) -> Path:
     return path
 
 
-def scan_and_report(target: Path) -> dict:
+def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
+    """Scan what landed; with quarantine_at ("high" or "medium"), move it out of the agent's reach at that severity."""
+    from unpick import isolate
+    from unpick.finding import SEVERITIES
     if not target.exists():
         return {"path": str(target), "status": "removed"}
     res = scan.scan(target)
     high = [f for f in res.findings if f.severity == "high"]
     entry = {"path": str(target), "open": len(res.findings), "high": len(high),
              "top": [f"{f.rule_id} {f.path}:{f.line}" for f in res.findings[:3]]}
+    if quarantine_at:
+        floor = SEVERITIES.index(quarantine_at)
+        if any(SEVERITIES.index(f.severity) >= floor for f in res.findings):
+            try:
+                r = isolate.isolate({"path": str(target), "name": target.name}, reason=f"watch: {entry['top'][0]}")
+                entry["quarantined"] = r["id"]
+            except isolate.CannotIsolate as e:
+                entry["quarantine_error"] = str(e)
     log(entry)
-    if res.findings:
+    if entry.get("quarantined"):
+        notify("unpick moved an AI add-on to quarantine",
+               f"{target.name}: {len(high)} serious warning(s). Undo with: unpick restore {entry['quarantined']}")
+    elif res.findings:
         notify("unpick: new AI component needs a look",
                f"{target.name}: {len(res.findings)} finding(s), {len(high)} high. Run: unpick scan {target}")
     return entry
 
 
-def run(project: Path, once: bool = False) -> None:
+def run(project: Path, once: bool = False, quarantine_at: str | None = None) -> None:
     try:
         from watchdog.events import FileSystemEventHandler
         from watchdog.observers import Observer
@@ -135,7 +151,7 @@ def run(project: Path, once: bool = False) -> None:
                 for p in ready:
                     pending.pop(p)
             for p in ready:
-                scan_and_report(p)
+                scan_and_report(p, quarantine_at)
             if once and ready:
                 break
     except KeyboardInterrupt:

@@ -88,6 +88,23 @@ in docs/screenshots/ui/.
 Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothing was scanned"),
 3 a requested backend or judge was unavailable.
 
+## After a flag: quarantine and clean
+
+Like antivirus, unpick can take a flagged add-on out of your agent's reach without deleting it:
+
+- `unpick quarantine <path or name>` moves it (or takes its MCP entry out of the config, with a backup)
+  into `~/.unpick/quarantine/`. `unpick quarantine --list` shows what is there; `unpick restore <id>` puts
+  it back exactly.
+- `unpick watch --quarantine high` (opt-in) does that automatically for anything that lands with a
+  serious warning, and notifies you.
+- `unpick clean <path>` writes a cleaned copy next to the original: invisible characters and hidden HTML
+  comments removed, decode-or-download-and-run lines disabled with a visible marker, and a `CLEANUP.md`
+  listing every change and what is still flagged. Persuasive prose, poisoned tool descriptions and
+  look-alike names cannot be fixed by rewriting text, so they stay flagged for a person.
+- The safest path is still the one `check` already takes: fetch into quarantine, inspect and test-run it
+  there, and copy in only the exact files you approved. Your agent reads add-ons from disk, so there is
+  no way to "run it virtually" inside your normal agent.
+
 ## When it got through
 
 `unpick recover <component>` (or `--all` when there is no single suspect; `--since 2026-10-17` sets the

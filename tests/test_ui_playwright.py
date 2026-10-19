@@ -245,3 +245,24 @@ def test_scan_selected_scans_every_selected_add_on(ui, page, monkeypatch):
     page.wait_for_function("1")
     page.locator("#batch-list li", has_text="sample-b:").wait_for()
     assert page.locator("#batch-list li", has_text="STOP").count() == 1 and page.locator("#batch-list li").count() == 2
+
+
+def test_quarantine_and_restore_from_the_ui(ui, page, monkeypatch, tmp_path):
+    from unpick import isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    page.goto(url + "#scan")
+    page.fill("#scan-path", "sample-a")
+    page.click("#scan-go")
+    page.wait_for_selector("#remedy:not([hidden])")
+    page.click("#do-clean")
+    page.locator("#remedy-note", has_text="Cleaned copy written").wait_for()
+    page.click("#do-quarantine")
+    page.click("#confirm-yes")
+    page.locator("#remedy-note", has_text="Moved to quarantine").wait_for()
+    assert not (kit / "sample-a").exists()
+    page.goto(url + "#recover")
+    page.locator("#isolated-list button", has_text="Restore").click()
+    page.click("#confirm-yes")
+    page.locator("#isolated-list", has_text="Nothing in quarantine").wait_for()
+    assert (kit / "sample-a" / "SKILL.md").is_file()

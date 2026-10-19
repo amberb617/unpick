@@ -22,7 +22,6 @@ import json
 import os
 import platform
 import re
-import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -89,43 +88,15 @@ def containment_plan(c: dict) -> list[dict]:
     return [{"action": "move", "from": path_s}]
 
 
-def _remove_entry(cfg: Path, entry: str, kind: str) -> str:
-    if cfg.suffix == ".toml":
-        return f"edit {cfg} by hand and delete the [{'mcp_servers.' + entry}] table (unpick does not rewrite TOML)"
-    data = inventory.load_config(cfg, "")
-    removed = False
-    for key in ("mcpServers", "servers", "context_servers", "mcp"):
-        block = data.get(key) if isinstance(data, dict) else None
-        if isinstance(block, dict) and entry in block:
-            block.pop(entry)
-            removed = True
-    if kind == "hook" and isinstance(data.get("hooks"), dict):
-        event, _, idx = entry.partition(".")
-        groups = data["hooks"].get(event)
-        if isinstance(groups, list) and idx.isdigit() and int(idx) < len(groups):
-            groups.pop(int(idx))
-            removed = True
-    if not removed:
-        return f"{entry} not found in {cfg}"
-    backup = cfg.with_name(cfg.name + f".unpick-incident-{now_stamp()}")
-    shutil.copy2(cfg, backup)
-    cfg.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    return f"removed {entry} from {cfg} (backup {backup.name}; comments in the original are only in the backup)"
-
-
 def contain(c: dict, incident: Path) -> list[str]:
-    done = []
-    for step in containment_plan(c):
-        if step["action"] == "remove-entry":
-            done.append(_remove_entry(Path(step["file"]), step["entry"], step["kind"]))
-        else:
-            src = Path(step["from"])
-            if src.exists():
-                dest = incident / "component" / src.name
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(src), dest)
-                done.append(f"moved {src} to {dest}")
-    return done
+    """Move the component out of the agent's reach, using the same quarantine as `unpick quarantine`."""
+    from unpick import isolate
+    try:
+        r = isolate.isolate(c, reason=f"recover ({incident.name})")
+    except isolate.CannotIsolate as e:
+        return [str(e)]
+    where = f"{r['entry']} from {r['original']}" if r.get("entry") else r["original"]
+    return [f"moved {where} into quarantine as {r['id']} (undo: unpick restore {r['id']})"]
 
 
 # ---------------------------------------------------------------- 2. what could it reach

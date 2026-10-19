@@ -156,6 +156,19 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 37. **Slide screenshots are generated, not hand-made:** `python tests/slides.py` drives the real UI at 2x
     with the installed scanners and records the commit and every scanner version in docs/SLIDES.md.
 
+## After the UX review
+
+38. **Quarantine is one engine.** `unpick quarantine`, `watch --quarantine`, the UI's "Move to quarantine"
+    and `recover`'s containment step all call unpick/isolate.py, so they cannot drift apart. Nothing is
+    deleted; `restore` refuses to overwrite something that has come back in the meantime.
+
+39. **`clean` only removes what is never legitimate.** Invisible characters, hidden HTML comments outside
+    code blocks, and one-step decode-or-download-and-run lines. It does not rewrite instructions or tool
+    descriptions, because a rewrite that looks right is worse than an honest flag.
+
+40. **The tagline stays** at the top of the UI (the spec asked for it); the start screen carries a
+    plain-language line for newcomers.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

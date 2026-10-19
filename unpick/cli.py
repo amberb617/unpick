@@ -396,7 +396,7 @@ def cmd_watch(args) -> int:
     if args.list:
         _out(args, [str(p) for p in watch.roots(Path(args.project))], lambda d: [console.print(esc(p)) for p in d])
         return 0
-    watch.run(Path(args.project))
+    watch.run(Path(args.project), quarantine_at=args.quarantine)
     return 0
 
 
@@ -505,6 +505,66 @@ def cmd_report(args) -> int:
     return 0
 
 
+def cmd_quarantine(args) -> int:
+    from unpick import inventory, isolate
+
+    if args.list or not args.target:
+        rows = isolate.isolated()
+        _out(args, rows, lambda d: [console.print(f"{esc(r['id'])}  {esc(r['name'])}  from {esc(r['original'])}"
+                                                   f"{'#' + esc(r['entry']) if r.get('entry') else ''}  ({esc(r.get('reason') or '')})") for r in d]
+             or console.print("Nothing in quarantine."))
+        return 0
+    p = Path(args.target).expanduser()
+    if p.exists():
+        matches = [{"path": str(p.resolve()), "name": p.name}]
+    else:
+        matches = [c for c in inventory.discover(project=Path(args.project)) if c["name"] == args.target]
+    if not matches:
+        print(f"unpick: no file, folder or installed add-on called {args.target}", file=sys.stderr)
+        return 2
+    if len(matches) > 1:
+        print(f"unpick: {len(matches)} add-ons are called {args.target}; give the path instead", file=sys.stderr)
+        return 2
+    try:
+        r = isolate.isolate(matches[0], reason=args.reason or "quarantined by hand")
+    except isolate.CannotIsolate as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    _out(args, r, lambda d: console.print(f"moved {esc(d['name'])} into quarantine as {esc(d['id'])}. Undo: unpick restore {esc(d['id'])}"))
+    return 0
+
+
+def cmd_restore(args) -> int:
+    from unpick import isolate
+
+    try:
+        msg = isolate.restore(args.id)
+    except isolate.CannotIsolate as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    _out(args, {"restored": args.id, "message": msg}, lambda d: console.print(esc(d["message"])))
+    return 0
+
+
+def cmd_clean(args) -> int:
+    from unpick import clean
+
+    try:
+        r = clean.clean(Path(args.path), Path(args.out) if args.out else None)
+    except (FileExistsError, FileNotFoundError) as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    def render(d):
+        n = sum(len(v) for v in d["changes"].values())
+        console.print(f"wrote a cleaned copy to {esc(d['clean'])} ({n} change(s)); the original is unchanged")
+        for rel, changes in d["changes"].items():
+            for c in changes:
+                console.print(f"   {esc(rel)}: {esc(c)}")
+        console.print(f"still flagged after cleaning: {len(d['still_flagged'])}; details in {esc(d['report'])}")
+    _out(args, r, render)
+    return 1 if r["still_flagged"] else 0
+
+
 def cmd_ui(args) -> int:
     try:
         from unpick.ui.server import serve
@@ -610,6 +670,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--project", default=".")
     s.add_argument("--list", action="store_true", help="show the folders that would be watched")
     s.add_argument("--print-service", choices=["launchd", "systemd", "windows"], help="print a run-at-login recipe")
+    s.add_argument("--quarantine", choices=["high", "medium"], help="opt-in: move add-ons with warnings at this severity out of the agent's reach")
     s.set_defaults(fn=cmd_watch)
 
     s = sub.add_parser("record", parents=[common], help="flight recorder: append the hook event on stdin to ~/.unpick/flight")
@@ -647,6 +708,22 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--boxed", action="store_true")
     s.add_argument("--project", default=".")
     s.set_defaults(fn=cmd_report)
+
+    s = sub.add_parser("quarantine", parents=[common], help="move an add-on out of your agent's reach (undo with restore)")
+    s.add_argument("target", nargs="?", help="path, or the name of an installed add-on")
+    s.add_argument("--list", action="store_true", help="show what is in quarantine")
+    s.add_argument("--reason", default="")
+    s.add_argument("--project", default=".")
+    s.set_defaults(fn=cmd_quarantine)
+
+    s = sub.add_parser("restore", parents=[common], help="put a quarantined add-on back where it was")
+    s.add_argument("id")
+    s.set_defaults(fn=cmd_restore)
+
+    s = sub.add_parser("clean", parents=[common], help="write a cleaned copy: hidden text removed, decode-and-run lines disabled")
+    s.add_argument("path")
+    s.add_argument("--out", help="where to write the copy (default: next to it, .unpick-clean)")
+    s.set_defaults(fn=cmd_clean)
 
     s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
     s.add_argument("--project", default=".")

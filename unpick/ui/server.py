@@ -255,6 +255,42 @@ def export_incident():
     return _download(Path(r["report"]).read_text(encoding="utf-8"), "text/markdown", Path(r["report"]).name)
 
 
+def _target(body) -> Path:
+    t = Path(str(body.get("path", ""))).expanduser()
+    return t if t.is_absolute() else _ctx()["project"] / t
+
+
+def api_isolate():
+    from unpick import isolate
+    t = _target(request.get_json(force=True) or {})
+    try:
+        return jsonify(isolate.isolate({"path": str(t.resolve()), "name": t.name}, reason="quarantined from the UI"))
+    except isolate.CannotIsolate as e:
+        return jsonify({"error": str(e)}), 400
+
+
+def api_isolated():
+    from unpick import isolate
+    return jsonify(isolate.isolated())
+
+
+def api_restore():
+    from unpick import isolate
+    try:
+        return jsonify({"message": isolate.restore(str((request.get_json(force=True) or {}).get("id", "")))})
+    except isolate.CannotIsolate as e:
+        return jsonify({"error": str(e)}), 400
+
+
+def api_clean():
+    from unpick import clean
+    t = _target(request.get_json(force=True) or {})
+    try:
+        return jsonify(clean.clean(t))
+    except (FileExistsError, FileNotFoundError) as e:
+        return jsonify({"error": str(e)}), 400
+
+
 ROUTES = [
     ("/", index, ["GET"]), ("/static/<path:name>", static_file, ["GET"]),
     ("/api/meta", api_meta, ["GET"]), ("/api/inventory", api_inventory, ["GET"]), ("/api/scan", api_scan, ["POST"]),
@@ -264,7 +300,9 @@ ROUTES = [
     ("/api/check", api_check, ["POST"]), ("/api/check/approve", api_check_approve, ["POST"]),
     ("/api/rehearse", api_rehearse_start, ["POST"]), ("/api/rehearse/<job_id>", api_rehearse_poll, ["GET"]),
     ("/api/verify", api_verify, ["GET"]), ("/api/lock", api_lock, ["POST"]),
-    ("/api/recover", api_recover, ["POST"]), ("/api/demo", api_demo, ["POST"]), ("/api/export/incident.md", export_incident, ["GET"]),
+    ("/api/recover", api_recover, ["POST"]), ("/api/demo", api_demo, ["POST"]),
+    ("/api/isolate", api_isolate, ["POST"]), ("/api/isolated", api_isolated, ["GET"]), ("/api/restore", api_restore, ["POST"]),
+    ("/api/clean", api_clean, ["POST"]), ("/api/export/incident.md", export_incident, ["GET"]),
 ]
 
 

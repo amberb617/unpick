@@ -110,6 +110,7 @@ function show() {
   });
   if (name === "inventory" && !inventoryLoaded) loadInventory();
   if (name === "backends") loadBackends();
+  if (name === "recover") loadIsolated();
   const heading = $(`screen-${name}`).querySelector("h1");
   if (heading && document.activeElement !== document.body) heading.focus();
 }
@@ -343,8 +344,46 @@ function renderVerdict() {
       el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") })));
 }
 
+function renderRemedy() {
+  const open = openFindings().length;
+  $("remedy").hidden = open === 0;
+  $("remedy-note").textContent = "";
+}
+
+$("do-quarantine").addEventListener("click", async () => {
+  if (!last) return;
+  const ok = await confirmDialog({ title: "Move this to quarantine?", yes: "Move to quarantine",
+    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Nothing is deleted: you can put it back from "If something got in".` });
+  if (!ok) return;
+  const { status, data } = await api("/api/isolate", { path: last.target });
+  $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "If something got in".` : (data.error || "Could not move it.");
+});
+
+$("do-clean").addEventListener("click", async () => {
+  if (!last) return;
+  const { status, data } = await busy($("do-clean"), "Cleaning...", () => api("/api/clean", { path: last.target }));
+  if (status !== 200) { $("remedy-note").textContent = data.error || "Could not clean it."; return; }
+  const n = Object.values(data.changes).reduce((a, c) => a + c.length, 0);
+  $("remedy-note").textContent = `Cleaned copy written to ${data.clean} (${plural(n, "change", "changes")}; the original is untouched). ${plural(data.still_flagged.length, "warning still needs", "warnings still need")} a human.`;
+});
+
+async function loadIsolated() {
+  const { data } = await api("/api/isolated");
+  const rows = Array.isArray(data) ? data : [];
+  $("isolated-list").replaceChildren(...(rows.length ? rows.map(r => el("li", {}, `${r.name} (from ${r.original}${r.entry ? "#" + r.entry : ""}) `,
+    el("button", { type: "button", class: "j-btn secondary small", text: "Restore", onclick: async () => {
+      const ok = await confirmDialog({ title: `Put ${r.name} back?`, yes: "Restore", danger: false,
+        text: `It goes back to ${r.original}, and your AI can load it again.` });
+      if (!ok) return;
+      const res = await api("/api/restore", { id: r.id });
+      if (res.status !== 200) { errorStrip("recover-strip", res.data.error); return; }
+      loadIsolated();
+    } }))) : [el("li", { text: "Nothing in quarantine." })]));
+}
+
 function renderScan() {
   renderVerdict();
+  renderRemedy();
   const net = last.summary.network_calls;
   const sources = last.sources.length;
   $("runstrip").replaceChildren(
@@ -495,6 +534,7 @@ async function decide(f, choice, findings) {
   }
   f.decision = choice === "undo" ? null : choice;
   renderVerdict();
+  renderRemedy();
   renderFindings(findings);
   const counts = {};
   for (const x of openFindings()) counts[x.path] = (counts[x.path] || 0) + 1;

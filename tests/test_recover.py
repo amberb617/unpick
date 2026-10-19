@@ -9,18 +9,23 @@ def test_containment_plan_and_mcp_entry_removal_with_backup(tmp_path, monkeypatc
     h = _fake_home(tmp_path, monkeypatch)
     [c] = [x for x in recover.find_component("fs", tmp_path) if x["kind"] == "mcp-server"]
     assert recover.containment_plan(c) == [{"action": "remove-entry", "file": str(h / ".cursor" / "mcp.json"), "entry": "fs", "kind": "mcp-server"}]
+    from unpick import isolate
+    monkeypatch.setattr(isolate, "ROOT", h / ".unpick" / "quarantine")
     [msg] = recover.contain(c, tmp_path / "incident")
-    assert "removed fs" in msg
+    assert "into quarantine" in msg
     assert json.loads((h / ".cursor" / "mcp.json").read_text(encoding="utf-8"))["mcpServers"] == {}
-    assert list((h / ".cursor").glob("mcp.json.unpick-incident-*"))
+    assert list((h / ".cursor").glob("mcp.json.unpick-backup-*"))
 
 
 def test_contain_moves_a_skill_into_the_incident_folder(tmp_path, monkeypatch):
     h = _fake_home(tmp_path, monkeypatch)
     [c] = recover.find_component("tidy-pdf", tmp_path)
+    from unpick import isolate
+    monkeypatch.setattr(isolate, "ROOT", h / ".unpick" / "quarantine")
     recover.contain(c, tmp_path / "incident")
     assert not (h / ".claude" / "skills" / "tidy").exists()
-    assert (tmp_path / "incident" / "component" / "tidy" / "SKILL.md").is_file()
+    [r] = isolate.isolated()
+    assert (isolate.ROOT / r["id"] / "files" / "tidy" / "SKILL.md").is_file()
 
 
 def test_reach_lists_names_and_locations_never_values(tmp_path, monkeypatch):

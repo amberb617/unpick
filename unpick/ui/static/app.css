@@ -222,3 +222,4 @@ dialog::backdrop { background: rgba(4, 14, 39, 0.6); }
 @media (prefers-reduced-motion: reduce) { .j-btn, .finding { transition: none; } .j-btn:hover, .finding:hover { transform: none; } }
 @media print { .topbar, .actions, .decide, .inline-form { display: none; } body { background: #fff; } .finding { box-shadow: none; } }
 @media (max-width: 1440px) { .tagline { display: none; } nav a, .topbar-right a { padding: 8px 10px; font-size: 14px; } .topbar { padding: 10px 20px; } }
+.remedy { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: -4px 0 12px; font-weight: 600; }

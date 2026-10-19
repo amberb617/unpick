@@ -114,6 +114,12 @@
 
       <div id="scan-results" hidden>
         <div class="verdict-banner" id="verdict" role="status" aria-live="polite"></div>
+        <div class="remedy" id="remedy" hidden>
+          <span>What to do about it:</span>
+          <button class="j-btn danger small" id="do-quarantine" type="button">Move to quarantine</button>
+          <button class="j-btn secondary small" id="do-clean" type="button">Make a cleaned copy</button>
+          <span class="muted" id="remedy-note" role="status"></span>
+        </div>
         <div class="results-bar">
           <div class="runstrip" id="runstrip"></div>
           <div class="actions"><a class="j-btn secondary small" href="#" data-export="/api/export/scan.html">Download report</a>
@@ -206,7 +212,10 @@
             <h2>5. Watch outgoing connections from now on</h2><p id="recover-egress"></p>
             <h2>6. Report it</h2><ul id="recover-report-to"></ul></article>
         </section>
+        <section>
+        <article class="card"><h2>In quarantine</h2><ul id="isolated-list" class="questions"></ul></article>
         <section class="card"><h2>3. What the agents did</h2><p class="muted" id="recover-count"></p><ol id="recover-timeline" class="timeline"></ol></section>
+        </section>
       </div>
     </section>
 
