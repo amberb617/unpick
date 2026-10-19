@@ -113,9 +113,24 @@ def api_decide():
     if not last:
         return jsonify({"error": "no scan yet"}), 400
     f = next((x for x in last["findings"] + last["accepted"] if x["id"] == body.get("id")), None)
-    if not f or body.get("choice") not in decisions.CHOICES:
-        return jsonify({"error": "unknown finding or choice"}), 400
-    return jsonify(decisions.record(decisions.project_file(ctx["project"]), f, body["choice"], body.get("note", "")))
+    if not f:
+        return jsonify({"error": "unknown finding"}), 400
+    path = decisions.project_file(ctx["project"])
+    if body.get("choice") == "undo":
+        return jsonify({"undone": decisions.forget(path, f)})
+    if body.get("choice") not in decisions.CHOICES:
+        return jsonify({"error": "unknown choice"}), 400
+    return jsonify(decisions.record(path, f, body["choice"], body.get("note", "")))
+
+
+def api_demo():
+    """Write the demo kit somewhere predictable so a newcomer can try unpick in one click."""
+    from unpick import demo
+    dest = Path.home() / ".unpick" / "demo"
+    if not (dest / "sample-a" / "SKILL.md").is_file():
+        demo.write(dest, force=True)
+    return jsonify({"path": str(dest), "samples": {"dangerous": str(dest / "sample-a"), "safe": str(dest / "sample-b"),
+                                                   "tools": str(dest / "tools.json")}})
 
 
 def api_backends():
@@ -249,7 +264,7 @@ ROUTES = [
     ("/api/check", api_check, ["POST"]), ("/api/check/approve", api_check_approve, ["POST"]),
     ("/api/rehearse", api_rehearse_start, ["POST"]), ("/api/rehearse/<job_id>", api_rehearse_poll, ["GET"]),
     ("/api/verify", api_verify, ["GET"]), ("/api/lock", api_lock, ["POST"]),
-    ("/api/recover", api_recover, ["POST"]), ("/api/export/incident.md", export_incident, ["GET"]),
+    ("/api/recover", api_recover, ["POST"]), ("/api/demo", api_demo, ["POST"]), ("/api/export/incident.md", export_incident, ["GET"]),
 ]
 
 

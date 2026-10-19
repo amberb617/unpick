@@ -9,149 +9,224 @@
   <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
+  <a class="skip" href="#main">Skip to content</a>
   <header class="topbar">
-    <div class="brand"><span class="kicker">UNPICK {{VERSION}}</span><span class="tagline">{{TAGLINE}}</span></div>
-    <nav aria-label="Screens">
-      <a href="#inventory" data-screen="inventory">Inventory</a>
-      <a href="#scan" data-screen="scan">Scan</a>
-      <a href="#check" data-screen="check">Check</a>
-      <a href="#rehearse" data-screen="rehearse">Rehearse</a>
-      <a href="#verify" data-screen="verify">Verify</a>
-      <a href="#recover" data-screen="recover">Recover</a>
-      <a href="#backends" data-screen="backends">Backends and judges</a>
+    <a class="brand" href="#start" aria-label="unpick home"><span class="kicker">UNPICK {{VERSION}}</span><span class="tagline">{{TAGLINE}}</span></a>
+    <nav aria-label="Steps">
+      <a href="#inventory" data-screen="inventory">Installed</a>
+      <a href="#check" data-screen="check"><span class="step">1</span>Check source</a>
+      <a href="#scan" data-screen="scan"><span class="step">2&ndash;3</span>Read and scan</a>
+      <a href="#rehearse" data-screen="rehearse"><span class="step">4</span>Test run</a>
+      <a href="#verify" data-screen="verify"><span class="step">5</span>Watch for changes</a>
     </nav>
-    <button class="ghost" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
+    <div class="topbar-right">
+      <a href="#recover" data-screen="recover" class="danger-link">If something got in</a>
+      <a href="#backends" data-screen="backends" class="quiet-link">Settings</a>
+      <button class="ghost" id="present" type="button" aria-pressed="false">Presenter</button>
+      <button class="ghost" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
+    </div>
   </header>
 
-  <main>
-    <section id="screen-inventory" class="screen" hidden>
+  <main id="main" tabindex="-1">
+    <!-- ------------------------------------------------------------- start -->
+    <section id="screen-start" class="screen" hidden aria-labelledby="start-title">
+      <div class="hero card">
+        <p class="eyebrow">START HERE</p>
+        <h1 id="start-title" tabindex="-1">Check an AI add-on before you install it</h1>
+        <p class="lede">Skills, rules files, MCP servers and plugins can carry instructions you never see. unpick reads them
+          the way your AI does, on this computer, and sends nothing anywhere unless you ask.</p>
+        <div class="actions big">
+          <button class="j-btn" type="button" id="try-dangerous">Try a dangerous sample</button>
+          <button class="j-btn secondary" type="button" id="try-safe">Try a safe sample</button>
+          <a class="j-btn secondary" href="#inventory">See what is already installed</a>
+        </div>
+        <form class="inline-form" id="start-form">
+          <label for="start-path">Or scan a file or folder you have</label>
+          <div class="field-row">
+            <input id="start-path" type="text" spellcheck="false" autocomplete="off" placeholder="for example ~/Downloads/some-skill" aria-describedby="start-path-err">
+            <button class="j-btn" type="submit">Scan it</button>
+          </div>
+          <p class="field-err" id="start-path-err" hidden></p>
+        </form>
+      </div>
+      <ol class="steps" aria-label="The five-minute triage">
+        <li><a href="#check"><b>1. Check the source</b><span>Who made it, how old is it, does the name match the publisher?</span></a></li>
+        <li><a href="#scan"><b>2. Read it raw</b><span>See the hidden text a Markdown viewer leaves out.</span></a></li>
+        <li><a href="#scan"><b>3. Scan it</b><span>Built-in checks, plus any scanners you have, all offline.</span></a></li>
+        <li><a href="#rehearse"><b>4. Test run in a box</b><span>Let a throwaway agent use it with fake secrets and no network.</span></a></li>
+        <li><a href="#verify"><b>5. Watch for changes</b><span>Save what you approved and spot it when it changes.</span></a></li>
+      </ol>
+    </section>
+
+    <!-- ------------------------------------------------------------- inventory -->
+    <section id="screen-inventory" class="screen" hidden aria-labelledby="inv-title">
       <div class="screen-head">
-        <div><p class="eyebrow">STEP 0</p><h1>What is already on this machine</h1></div>
-        <div class="actions">
-          <select id="inv-host" aria-label="Filter by host"><option value="">All hosts</option></select>
-          <select id="inv-kind" aria-label="Filter by kind"><option value="">All kinds</option></select>
-          <button id="inv-scan" class="j-btn" type="button" disabled>Scan selected</button>
-          <a class="j-btn secondary" id="inv-export" href="#" data-export="/api/export/inventory.html">Export HTML</a>
+        <div><p class="eyebrow">INSTALLED</p><h1 id="inv-title" tabindex="-1">What AI add-ons are already on this computer</h1></div>
+      </div>
+      <div class="toolbar">
+        <label class="sr" for="inv-search">Search</label>
+        <input id="inv-search" type="search" placeholder="Search by name or path" spellcheck="false">
+        <label class="sr" for="inv-host">Used by</label>
+        <select id="inv-host"><option value="">Every agent</option></select>
+        <label class="sr" for="inv-kind">Type</label>
+        <select id="inv-kind"><option value="">Every type</option></select>
+        <span class="spacer"></span>
+        <button id="inv-scan" class="j-btn" type="button" disabled>Scan selected</button>
+        <a class="j-btn secondary" href="#" data-export="/api/export/inventory.html">Download report</a>
+      </div>
+      <p class="muted" id="inv-count" role="status"></p>
+      <div class="card flush"><table class="grid" id="inv-table"><thead><tr>
+        <th scope="col"><input type="checkbox" id="inv-all" aria-label="Select all shown"></th><th scope="col">Name</th><th scope="col">Type</th>
+        <th scope="col">Used by</th><th scope="col">Where</th><th scope="col">Changed</th><th scope="col"><span class="sr">Action</span></th></tr></thead><tbody></tbody></table>
+        <p class="empty" id="inv-empty" hidden>No AI add-ons found in the places agents keep them.</p></div>
+    </section>
+
+    <!-- ------------------------------------------------------------- scan -->
+    <section id="screen-scan" class="screen" hidden aria-labelledby="scan-title">
+      <div class="screen-head">
+        <div><p class="eyebrow">STEPS 2 AND 3</p><h1 id="scan-title" tabindex="-1">Read it raw, then scan it</h1></div>
+      </div>
+      <form class="inline-form" id="scan-form">
+        <label for="scan-path">What to scan: a file or folder</label>
+        <div class="field-row">
+          <input id="scan-path" type="text" spellcheck="false" autocomplete="off" placeholder="for example ~/.claude/skills/pdf-tidy" aria-describedby="scan-path-err">
+          <button class="j-btn" type="submit" id="scan-go">Scan</button>
+        </div>
+        <p class="field-err" id="scan-path-err" hidden></p>
+        <details class="options">
+          <summary>More checks (optional)</summary>
+          <div class="option-grid">
+            <label for="scan-judge">Second opinion from an AI</label>
+            <select id="scan-judge"><option value="">Off (the built-in checks still run)</option></select>
+            <label class="check"><input type="checkbox" id="scan-backends"> <span id="scan-backends-label">Also run other scanners installed here (offline)</span></label>
+          </div>
+        </details>
+      </form>
+
+      <div id="scan-empty" class="card empty-state">
+        <p>Nothing scanned yet. Paste a path above, or try a sample:</p>
+        <div class="actions"><button class="j-btn secondary" type="button" data-sample="dangerous">Dangerous sample</button>
+          <button class="j-btn secondary" type="button" data-sample="safe">Safe sample</button>
+          <button class="j-btn secondary" type="button" data-sample="tools">Poisoned MCP tool list</button></div>
+      </div>
+
+      <div id="scan-results" hidden>
+        <div class="verdict-banner" id="verdict" role="status" aria-live="polite"></div>
+        <div class="results-bar">
+          <div class="runstrip" id="runstrip"></div>
+          <div class="actions"><a class="j-btn secondary small" href="#" data-export="/api/export/scan.html">Download report</a>
+            <a class="j-btn secondary small" href="#" data-export="/api/export/scan.json">JSON</a></div>
+        </div>
+        <div class="scan-layout">
+          <aside class="card files" aria-label="Files"><h2>Files</h2><ul id="file-list"></ul></aside>
+          <section class="findings" id="findings" aria-label="Warnings in this file"></section>
+          <section class="card split" aria-label="Rendered versus raw">
+            <h2 id="split-title">What a viewer shows <span class="vs">vs</span> what the AI reads</h2>
+            <div class="split-head" role="row"><span role="columnheader">Line</span><span role="columnheader">What you see</span><span role="columnheader">What the AI reads</span></div>
+            <div id="split" class="split-body" role="table" aria-labelledby="split-title"></div>
+          </section>
         </div>
       </div>
-      <div class="card"><table class="grid" id="inv-table"><thead><tr>
-        <th><input type="checkbox" id="inv-all" aria-label="Select all"></th><th>Kind</th><th>Host</th><th>Scope</th>
-        <th>Name</th><th>Path</th><th>SHA-256</th><th>Modified</th></tr></thead><tbody></tbody></table>
-        <p class="empty" id="inv-empty" hidden>No AI components found in the known locations.</p></div>
     </section>
 
-    <section id="screen-scan" class="screen" hidden>
-      <div class="screen-head">
-        <div><p class="eyebrow">STEPS 2 AND 3</p><h1>Read it raw, then scan it</h1></div>
-        <form class="actions" id="scan-form">
-          <input id="scan-path" type="text" placeholder="Path to a skill, rules file or tools.json" aria-label="Path to scan" size="46">
-          <select id="scan-judge" aria-label="Judge"><option value="">No judge</option></select>
-          <label class="check"><input type="checkbox" id="scan-backends"> Installed scanners</label>
-          <button class="j-btn" type="submit">Scan</button>
-          <a class="j-btn secondary" href="#" data-export="/api/export/scan.json">JSON</a>
-          <a class="j-btn secondary" href="#" data-export="/api/export/scan.html">HTML</a>
-        </form>
-      </div>
-      <div class="runstrip" id="runstrip" aria-live="polite">Nothing scanned yet.</div>
-      <div class="scan-layout">
-        <aside class="card files"><h2>Files</h2><ul id="file-list"></ul></aside>
-        <section class="card split">
-          <h2 id="split-title">Rendered (what you see) <span class="vs">vs</span> raw (what the model reads)</h2>
-          <div class="split-head"><span>#</span><span>Rendered</span><span>Raw</span></div>
-          <div id="split" class="split-body"></div>
-        </section>
-        <aside class="findings" id="findings" aria-label="Findings"></aside>
-      </div>
-    </section>
-
-    <section id="screen-check" class="screen" hidden>
-      <div class="screen-head">
-        <div><p class="eyebrow">STEP 1</p><h1>Who made it? Check before you install</h1></div>
-        <form class="actions" id="check-form">
-          <input id="check-ref" type="text" size="52" placeholder="GitHub URL, npm:package, pypi:package, archive or path" aria-label="What to check">
-          <label class="check"><input type="checkbox" id="check-offline"> Skip provenance lookup</label>
-          <button class="j-btn" type="submit">Fetch into quarantine and check</button>
-        </form>
-      </div>
-      <div class="runstrip" id="check-strip">Nothing checked yet. Fetching never runs anything, and the install command is only ever printed.</div>
+    <!-- ------------------------------------------------------------- check -->
+    <section id="screen-check" class="screen" hidden aria-labelledby="check-title">
+      <div class="screen-head"><div><p class="eyebrow">STEP 1</p><h1 id="check-title" tabindex="-1">Who made it? Check before you install</h1></div></div>
+      <form class="inline-form" id="check-form">
+        <label for="check-ref">Web address, package name or local path</label>
+        <div class="field-row">
+          <input id="check-ref" type="text" spellcheck="false" autocomplete="off" placeholder="github.com/org/skill, npm:package, pypi:package or a folder" aria-describedby="check-ref-err check-help">
+          <button class="j-btn" type="submit" id="check-go">Download a safe copy and check it</button>
+        </div>
+        <p class="field-err" id="check-ref-err" hidden></p>
+        <p class="help" id="check-help">unpick downloads it into a quarantine folder and runs none of it. Installing is always up to you.</p>
+        <label class="check"><input type="checkbox" id="check-offline"> Skip the who-made-it lookup (no request to GitHub, npm or PyPI for details)</label>
+      </form>
+      <div class="runstrip" id="check-strip" role="status" aria-live="polite" hidden></div>
       <div class="two-col">
-        <article class="card" id="check-card" hidden><h2>Provenance</h2><dl id="check-facts" class="facts"></dl><ul id="check-questions" class="questions"></ul></article>
-        <article class="card" id="check-result" hidden><h2>Scan of the quarantined copy</h2><p id="check-summary"></p>
-          <div class="actions"><button class="j-btn secondary" id="check-open" type="button">Open in the scan view</button>
-          <button class="j-btn" id="check-approve" type="button">Approve and show install command</button></div>
+        <article class="card" id="check-card" hidden><h2>Who made it</h2><ul id="check-questions" class="questions"></ul><dl id="check-facts" class="facts"></dl></article>
+        <article class="card" id="check-result" hidden><h2>What the scan found</h2><p id="check-summary" class="big-text"></p>
+          <div class="actions"><button class="j-btn" id="check-open" type="button">Review the warnings</button>
+          <button class="j-btn secondary" id="check-approve" type="button">Approve and show the install command</button></div>
           <pre id="check-command" class="command" hidden></pre></article>
       </div>
     </section>
 
-    <section id="screen-rehearse" class="screen" hidden>
-      <div class="screen-head">
-        <div><p class="eyebrow">STEP 4</p><h1>First run in a box</h1></div>
-        <form class="actions" id="rehearse-form">
-          <input id="rehearse-path" type="text" size="40" placeholder="Component path or check id" aria-label="Component">
-          <input id="rehearse-task" type="text" size="40" value="Summarise the README in this folder." aria-label="Task for the agent">
-          <button class="j-btn" type="submit">Rehearse</button>
-        </form>
-      </div>
-      <div class="runstrip" id="rehearse-strip">No network, read-only root, no capabilities, fake secrets only, local model.</div>
+    <!-- ------------------------------------------------------------- rehearse -->
+    <section id="screen-rehearse" class="screen" hidden aria-labelledby="rehearse-title">
+      <div class="screen-head"><div><p class="eyebrow">STEP 4</p><h1 id="rehearse-title" tabindex="-1">Test run in a sealed box</h1></div></div>
+      <form class="inline-form" id="rehearse-form">
+        <label for="rehearse-path">What to test: a file, folder or check id</label>
+        <input id="rehearse-path" type="text" spellcheck="false" autocomplete="off" aria-describedby="rehearse-path-err">
+        <p class="field-err" id="rehearse-path-err" hidden></p>
+        <label for="rehearse-task">Task to give the test agent</label>
+        <textarea id="rehearse-task" rows="2">Summarise the README in this folder.</textarea>
+        <p class="help">The box has no network, no access to your files and only fake secrets. A task that uses the add-on shows more than one that ignores it.</p>
+        <div><button class="j-btn" type="submit" id="rehearse-go">Start test run</button></div>
+      </form>
+      <div class="runstrip" id="rehearse-strip" role="status" aria-live="polite" hidden></div>
       <div class="two-col">
-        <section class="card"><h2>What the agent did, live</h2><ol id="rehearse-timeline" class="timeline"></ol></section>
-        <section><article class="card verdict" id="rehearse-verdict" hidden><h2>Verdict</h2><p id="rehearse-verdict-text"></p>
-          <ul id="rehearse-evidence" class="questions"></ul><p class="muted" id="rehearse-scope"></p></article></section>
+        <section class="card"><h2>What the test agent did</h2><ol id="rehearse-timeline" class="timeline"></ol></section>
+        <section><article class="card verdict" id="rehearse-verdict" hidden><h2>Result</h2><p id="rehearse-verdict-text" class="big-text"></p>
+          <ul id="rehearse-evidence" class="questions"></ul>
+          <p class="muted">A clean test run does not prove it is safe: it only shows what this task triggered.</p></article></section>
       </div>
     </section>
 
-    <section id="screen-verify" class="screen" hidden>
-      <div class="screen-head">
-        <div><p class="eyebrow">STEP 5</p><h1>Did anything change since you approved it?</h1></div>
-        <div class="actions"><button class="j-btn" id="verify-run" type="button">Verify against the lockfile</button>
-          <button class="j-btn secondary" id="verify-pin" type="button">Pin current state</button></div>
-      </div>
-      <div class="runstrip" id="verify-strip">Compares every component with unpick.lock.json; changed text files show as a diff.</div>
+    <!-- ------------------------------------------------------------- verify -->
+    <section id="screen-verify" class="screen" hidden aria-labelledby="verify-title">
+      <div class="screen-head"><div><p class="eyebrow">STEP 5</p><h1 id="verify-title" tabindex="-1">Has anything changed since you approved it?</h1></div>
+        <div class="actions"><button class="j-btn" id="verify-run" type="button">Check for changes</button>
+          <button class="j-btn secondary" id="verify-pin" type="button">Save the current state as approved</button></div></div>
+      <div class="runstrip" id="verify-strip" role="status" aria-live="polite">Compares every add-on with what you last saved as approved. Changed text shows as a diff.</div>
       <div id="verify-list"></div>
     </section>
 
-    <section id="screen-recover" class="screen" hidden>
-      <div class="screen-head">
-        <div><p class="eyebrow">WHEN IT GOT THROUGH</p><h1>Contain, rotate, find out what happened</h1></div>
-        <form class="actions" id="recover-form">
-          <input id="recover-component" type="text" size="28" placeholder="Component name or path (blank: whole machine)" aria-label="Suspected component">
-          <input id="recover-since" type="text" size="18" placeholder="Since, e.g. 2026-10-17" aria-label="Start of the window">
-          <button class="j-btn" type="submit">Run the runbook (changes nothing)</button>
-          <button class="j-btn danger" id="recover-contain" type="button" disabled>Contain now</button>
-          <a class="j-btn secondary" href="#" data-export="/api/export/incident.md">Export incident report</a>
-        </form>
-      </div>
-      <div class="runstrip" id="recover-strip">Secret values are never shown: names and locations only. If a stealer ran, rotation is not optional.</div>
+    <!-- ------------------------------------------------------------- recover -->
+    <section id="screen-recover" class="screen" hidden aria-labelledby="recover-title">
+      <div class="screen-head"><div><p class="eyebrow danger">IF SOMETHING GOT IN</p><h1 id="recover-title" tabindex="-1">Contain it, change your keys, find out what happened</h1></div></div>
+      <form class="inline-form" id="recover-form">
+        <div class="field-row">
+          <div class="field"><label for="recover-component">Which add-on (leave blank for the whole computer)</label>
+            <input id="recover-component" type="text" spellcheck="false" autocomplete="off"></div>
+          <div class="field narrow"><label for="recover-since">Since</label><input id="recover-since" type="date"></div>
+        </div>
+        <div class="actions"><button class="j-btn" type="submit">Show the recovery steps (changes nothing)</button>
+          <button class="j-btn danger" id="recover-contain" type="button" disabled>Disable it now</button>
+          <a class="j-btn secondary" href="#" data-export="/api/export/incident.md">Download incident report</a></div>
+      </form>
+      <div class="runstrip" id="recover-strip" role="status" aria-live="polite">Secret values are never shown: names and places only. If a password stealer ran, changing those keys is not optional.</div>
       <div class="two-col">
         <section>
-          <article class="card"><h2>1. Contain</h2><ul id="recover-contain-list" class="questions"></ul></article>
-          <article class="card"><h2>2. Rotate</h2><ul id="recover-rotate" class="checklist"></ul></article>
-          <article class="card"><h2>4. Changed on disk</h2><p id="recover-changed"></p>
-            <h2>5. Watch outbound connections</h2><p id="recover-egress"></p>
-            <h2>6. Report the component</h2><ul id="recover-report-to"></ul></article>
+          <article class="card"><h2>1. Contain it</h2><ul id="recover-contain-list" class="questions"></ul></article>
+          <article class="card"><h2>2. Change these keys and passwords</h2><ul id="recover-rotate" class="checklist"></ul></article>
+          <article class="card"><h2>4. What changed on disk</h2><p id="recover-changed"></p>
+            <h2>5. Watch outgoing connections from now on</h2><p id="recover-egress"></p>
+            <h2>6. Report it</h2><ul id="recover-report-to"></ul></article>
         </section>
         <section class="card"><h2>3. What the agents did</h2><p class="muted" id="recover-count"></p><ol id="recover-timeline" class="timeline"></ol></section>
       </div>
     </section>
 
-    <section id="screen-backends" class="screen" hidden>
-      <div class="screen-head"><div><p class="eyebrow">WITNESSES</p><h1>Scanners and judges on this machine</h1></div></div>
-      <div class="card"><h2>Scanner backends <span class="muted">(all optional)</span></h2>
-        <table class="grid" id="be-table"><thead><tr><th>Name</th><th>Installed</th><th>Version</th><th>Tested</th>
-        <th>Maintainer</th><th>Licence</th><th>Network as invoked</th></tr></thead><tbody></tbody></table></div>
-      <div class="card"><h2>Judges <span class="muted">(one witness, never the verdict)</span></h2>
-        <table class="grid" id="ju-table"><thead><tr><th>Id</th><th>Where</th><th>Found by</th><th>Consent</th><th>Usable</th><th>Adversarial corpus</th></tr></thead><tbody></tbody></table>
+    <!-- ------------------------------------------------------------- settings -->
+    <section id="screen-backends" class="screen" hidden aria-labelledby="be-title">
+      <div class="screen-head"><div><p class="eyebrow">SETTINGS</p><h1 id="be-title" tabindex="-1">Scanners and AI reviewers on this computer</h1></div></div>
+      <div class="card"><h2>Scanners <span class="muted">(all optional; the built-in checks always run)</span></h2>
+        <table class="grid" id="be-table"><thead><tr><th scope="col">Name</th><th scope="col">Installed</th><th scope="col">Version</th><th scope="col">Tested</th>
+        <th scope="col">Maintainer</th><th scope="col">Licence</th><th scope="col">Sends anything?</th></tr></thead><tbody></tbody></table></div>
+      <div class="card"><h2>AI reviewers <span class="muted">(a second opinion, never the verdict)</span></h2>
+        <table class="grid" id="ju-table"><thead><tr><th scope="col">Id</th><th scope="col">Where it runs</th><th scope="col">Found at</th><th scope="col">Permission</th><th scope="col">Usable</th><th scope="col">Trick test</th></tr></thead><tbody></tbody></table>
         <p class="muted" id="ju-default"></p></div>
       <div class="card"><h2>Agreement in the last scan</h2><table class="grid" id="agree-table"><tbody></tbody></table>
-        <p class="empty" id="agree-empty">Run a scan with more than one source to see where they agree.</p></div>
+        <p class="empty" id="agree-empty">Run a scan with more than one checker to see where they agree.</p></div>
     </section>
   </main>
 
-  <dialog id="consent" aria-labelledby="consent-title">
-    <h2 id="consent-title">Send this to a hosted model?</h2>
-    <p id="consent-text"></p>
-    <div class="actions"><button class="j-btn secondary" id="consent-no" type="button">No</button>
-      <button class="j-btn danger" id="consent-yes" type="button">Yes, send it</button></div>
+  <dialog id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-text"></p>
+    <div class="actions"><button class="j-btn secondary" id="confirm-no" type="button">Cancel</button>
+      <button class="j-btn danger" id="confirm-yes" type="button">Yes</button></div>
   </dialog>
   <script src="/static/app.js"></script>
 </body>

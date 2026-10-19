@@ -483,11 +483,11 @@
 12    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=15, si_uid=1000, si_status=2, si_utime=0, si_stime=0} ---
 9     --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=12, si_uid=1000, si_status=2, si_utime=0, si_stime=0} ---
 9     openat(AT_FDCWD, "/trace/2026-10-19.jsonl", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 5
-16    execve("/usr/local/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
-16    execve("/usr/local/sbin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
-16    execve("/usr/local/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
-16    execve("/usr/sbin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
-16    execve("/usr/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"], 0xc11e347713c0 /* 10 vars */) = 0
+16    execve("/usr/local/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
+16    execve("/usr/local/sbin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
+16    execve("/usr/local/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
+16    execve("/usr/sbin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"], 0xc11e347713c0 /* 10 vars */) = -1 ENOENT (No such file or directory)
+16    execve("/usr/bin/sh", ["sh", "-c", "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"], 0xc11e347713c0 /* 10 vars */) = 0
 16    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
 16    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
 16    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=17, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---

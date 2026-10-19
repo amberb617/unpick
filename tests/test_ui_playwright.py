@@ -48,9 +48,10 @@ def test_scan_screen(ui, page, theme):
     page.click("#scan-form button[type=submit]")
     page.wait_for_selector(".finding")
     assert page.locator(".row.flag").count() == 3
-    hidden = page.locator("#L24 .hidden-note").inner_text()
-    assert "collector@example.invalid" in hidden
+    hidden = page.locator(".hidden-row .hidden-text").first.inner_text()
+    assert "HIDDEN TEXT THE AI READS" in hidden and "collector@example.invalid" in hidden
     assert page.locator(".finding").first.locator(".decide button").count() == 3
+    assert "Do not install yet" in page.locator("#verdict").inner_text()
     page.locator("#L24").scroll_into_view_if_needed()
     page.screenshot(path=str(SHOTS / f"scan-{theme}.png"))
 
@@ -71,8 +72,11 @@ def test_decide_from_ui(ui, page):
     page.fill("#scan-path", "sample-b")
     page.click("#scan-form button[type=submit]")
     page.wait_for_selector(".finding")
-    page.click(".finding .decide button:text('accept')")
-    page.wait_for_selector(".finding.decided")
+    assert "Review before installing" in page.locator("#verdict").inner_text()
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")
+    assert "No warnings from these checks" in page.locator("#verdict").inner_text()  # counts update live
+    assert page.locator("#file-list .count").first.inner_text() == "0"
     assert (kit / ".unpick" / "decisions.json").is_file()
     page.screenshot(path=str(SHOTS / "scan-false-positive-accepted.png"))
 
@@ -121,6 +125,8 @@ def test_check_screen_local_path(ui, page, tmp_path, monkeypatch):
     page.click("#check-form button[type=submit]")
     page.wait_for_selector("#check-result:not([hidden])")
     page.click("#check-approve")
+    page.wait_for_selector("#confirm[open]")  # open warnings: approving needs a second, explicit yes
+    page.click("#confirm-yes")
     page.wait_for_selector("#check-command:not([hidden])")
     assert "Not run" in page.locator("#check-command").inner_text()
     page.screenshot(path=str(SHOTS / "check.png"))
@@ -164,3 +170,36 @@ def test_recover_screen(ui, page, monkeypatch, tmp_path):
     assert page.locator("#recover-rotate li").count() == 2 and page.locator("#recover-timeline li.hit").count() == 1
     assert not page.locator("#recover-contain").is_disabled()
     page.screenshot(path=str(SHOTS / "recover.png"))
+
+
+def test_start_screen_sample_runs_a_scan(ui, page, monkeypatch, tmp_path):
+    url, kit = ui
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path))
+    page.goto(url)
+    assert page.locator("#screen-start").is_visible()
+    page.screenshot(path=str(SHOTS / "start.png"))
+    page.click("#try-dangerous")
+    page.wait_for_selector(".finding")
+    assert "Do not install yet" in page.locator("#verdict").inner_text()
+
+
+def test_scan_errors_are_inline(ui, page):
+    url, _ = ui
+    page.goto(url + "#scan")
+    page.click("#scan-go")
+    assert page.locator("#scan-path-err").is_visible() and page.get_attribute("#scan-path", "aria-invalid") == "true"
+    page.fill("#scan-path", "no-such-folder")
+    page.click("#scan-go")
+    page.locator("#scan-path-err").filter(has_text="no file or folder").wait_for()
+
+
+def test_laptop_width_keeps_warnings_on_screen(ui, page):
+    url, _ = ui
+    page.set_viewport_size({"width": 1280, "height": 800})
+    page.goto(url + "#scan")
+    page.fill("#scan-path", "sample-a")
+    page.click("#scan-go")
+    page.wait_for_selector(".finding")
+    box = page.locator(".finding").first.bounding_box()
+    assert box and box["y"] < 800 and box["x"] < 1280
+    page.screenshot(path=str(SHOTS / "scan-laptop.png"))

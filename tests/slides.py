@@ -66,18 +66,20 @@ def main() -> None:
             page.goto(url + "#scan")
             page.reload()
             page.fill("#scan-path", path)
-            if with_backends and not page.is_disabled("#scan-backends"):
-                page.check("#scan-backends")
+            if with_backends:
+                page.locator("details.options").evaluate("d => d.open = true")
+                if not page.is_disabled("#scan-backends"):
+                    page.check("#scan-backends")
             page.click("#scan-form button[type=submit]")
             page.wait_for_selector(".finding", timeout=600_000)
 
         scan("sample-a", True)
-        page.screenshot(path=str(SHOTS / "slide-17.png"), clip={"x": 0, "y": 0, "width": 1920, "height": 240})
+        page.screenshot(path=str(SHOTS / "slide-17.png"), clip={"x": 0, "y": 0, "width": 1920, "height": 420})
         page.locator("#L24").scroll_into_view_if_needed()
         page.screenshot(path=str(SHOTS / "slide-18.png"))
         scan("sample-b", False)
-        page.click(".finding .decide button:text('accept')")
-        page.wait_for_selector(".finding.decided")
+        page.click(".finding .decide button:text('False alarm')")
+        page.wait_for_selector(".decided-line")
         page.screenshot(path=str(SHOTS / "slide-19.png"))
         term = browser.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=2)
         terminal_png(term, SHOTS / "slide-23.png", "NO INSTALL NEEDED: MACOS / LINUX", handout_transcript())

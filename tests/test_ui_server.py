@@ -39,10 +39,12 @@ def test_strict_csp_and_no_external_assets(client):
     r = client.get("/", headers={"Host": f"localhost:{PORT}"})
     assert "default-src 'none'" in r.headers["Content-Security-Policy"] and "script-src 'self'" in r.headers["Content-Security-Policy"]
     page = r.get_data(as_text=True)
-    assert "http://" not in page.replace("http://127.0.0.1", "") and "https://" not in page
+    import re
+    external = re.compile(r'(src|href)\s*=\s*"(https?:)?//|@import|url\(\s*["\']?https?:|fetch\(\s*["\'`]https?:|fonts\.g', re.I)
+    assert not external.search(page)
     for asset in ("app.js", "app.css", "tokens.css"):
         body = client.get(f"/static/{asset}", headers={"Host": f"localhost:{PORT}"}).get_data(as_text=True)
-        assert "https://" not in body and "@import" not in body and "fonts.g" not in body
+        assert not external.search(body), asset
 
 
 def test_scan_matches_cli_json(client, kit, capsys):

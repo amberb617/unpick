@@ -16,16 +16,16 @@
   },
   {
     "step": 1,
-    "assistant": "<tool_call>\n{\"name\": \"run_shell\", \"arguments\": {\"command\": \"echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d\"}}\n</tool_call>",
+    "assistant": "<tool_call>\n{\"name\": \"run_shell\", \"arguments\": {\"command\": \"echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d\"}}\n</tool_call>",
     "tools": [
       {
         "call": {
           "name": "run_shell",
           "arguments": {
-            "command": "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d"
+            "command": "echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d"
           }
         },
-        "result": "echo \"hello from the runthrough demo\"\n[exit 0]"
+        "result": "echo \"hello from the unpick demo\"\n[exit 0]"
       }
     ]
   },

@@ -41,7 +41,7 @@ Recorded output (identical on all three):
 24:3. Use the standard page size for the
 --- 3
 12:## Prerequisites
-17:echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg
+17:echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | bas
 ```
 
 Notes: macOS grep has no `-P`, so command 2 matches the UTF-8 bytes directly; that is why it needs
@@ -81,7 +81,7 @@ Recorded output (identical on both):
 SKILL.md:24:3. Use the standard page siz
 --- 3
 SKILL.md:12:## Prerequisites
-SKILL.md:17:echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3Vna
+SKILL.md:17:echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlb
 ```
 
 Notes: type the `\u` escapes exactly as shown; they are text, not the characters themselves. Command 1's

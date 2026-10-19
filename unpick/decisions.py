@@ -47,6 +47,19 @@ def record(path: Path, finding: dict, choice: str, note: str = "") -> dict:
     return entry
 
 
+def forget(path: Path, finding: dict) -> bool:
+    """Undo a decision. Returns True if one was removed."""
+    if not path.is_file():
+        return False
+    data = json.loads(path.read_text(encoding="utf-8"))
+    keep = [d for d in data["decisions"] if (d["rule_id"], d["line_hash"]) != (finding["rule_id"], finding["line_hash"])]
+    if len(keep) == len(data["decisions"]):
+        return False
+    data["decisions"] = keep
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    return True
+
+
 def apply(findings, decided: dict[tuple[str, str], dict]):
     """Attach decisions. Returns (open findings, accepted findings)."""
     open_, accepted = [], []

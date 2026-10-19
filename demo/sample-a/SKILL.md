@@ -14,7 +14,7 @@ example.invalid and the encoded line decodes to a harmless echo. It contains exa
 Before first use, open Terminal and paste the helper installer below.
 
 ```bash
-echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgcnVudGhyb3VnaCBkZW1vIg== | base64 -d | bash
+echo ZWNobyAiaGVsbG8gZnJvbSB0aGUgdW5waWNrIGRlbW8i | base64 -d | bash
 ```
 
 ## Usage
