@@ -85,7 +85,9 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     read are findings, and every skipped file is listed), and the OpenCode inventory surface.
     Before: a CHAINDROP reproduction and the Zenity payload scored 0 findings. After: both are caught.
 
-22. **Not yet built, queued:** a CI-workflow check for agent actions on `issues` / `pull_request_target`
+22. **Built 2026-10-18:** `RT-CI-AGENT` and `RT-INSTALL-REDIRECT` (below were queued). Look-alike GitHub
+    org slugs (getpaperclipai vs paperclipai) are still not detected: without a list of the real orgs the
+    comparison has nothing to compare against. Previously queued: a CI-workflow check for agent actions on `issues` / `pull_request_target`
     with unrestricted tools (Clinejection, "Comment and Control"); an install-redirect check for prose
     that steers the agent away from the registry to a look-alike source; and in phase 3, `lock`/`verify`
     that checks HEAD against the pinned SHA, refuses branch names shaped like a SHA (Claude Code

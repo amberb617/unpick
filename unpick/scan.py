@@ -18,7 +18,8 @@ SKIP_DIRS = {".git", ".hg", ".svn", ".venv", "venv", "node_modules", "__pycache_
              ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist", "build", ".tox"}
 TEXT_EXT = {".md", ".mdc", ".markdown", ".txt", ".json", ".jsonc", ".toml", ".yaml", ".yml", ".sh", ".bash",
             ".zsh", ".ps1", ".psm1", ".bat", ".cmd", ".py", ".js", ".mjs", ".cjs", ".ts", ".rb", ".swift", ".yar"}
-TEXT_NAMES = {".cursorrules", ".clinerules", ".windsurfrules", ".gitattributes", ".gitmodules", "dockerfile", "makefile"}
+TEXT_NAMES = {".cursorrules", ".clinerules", ".windsurfrules", ".gitattributes", ".gitmodules", ".npmrc", ".pypirc",
+              "pip.conf", "pip.ini", "dockerfile", "makefile"}
 MAX_BYTES = 2_000_000
 IGNORE_FILE = ".unpickignore"
 GIT_FILES = (".git/config", ".git/commondir")  # read even though .git/ is otherwise skipped (git_autorun check)

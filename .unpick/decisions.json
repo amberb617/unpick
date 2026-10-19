@@ -1155,6 +1155,94 @@
       "source": "builtin",
       "matched": " 'prereq|\\|\\s*(ba)?sh|base64|\\.ssh|\\.env|tell the user'",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "09dfffb68bfe226fb84c5e3762f78106a610632d18b0db0d96859ae83a65d669",
+      "decision": "accept",
+      "note": "landscape report quoting the attack phrases this check detects; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 50,
+      "source": "builtin",
+      "matched": "| 2026-07-11 to 08-02 | **Zenity Labs: trojanized skills on skills.sh, 1.7M aggregate installs.** Lookalike orgs `getpaperclipai` and `browser-use-headless` uploaded clean copies, then swapped in mali",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "6f446a61bd24e662d775b6b4bd8200696835b43c45ba93300076a55a876fd29b",
+      "decision": "accept",
+      "note": "landscape report quoting the attack phrases this check detects; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 231,
+      "source": "builtin",
+      "matched": "- \"do not use npx/npm/pip/the registry\"",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "a735b1281a4991e68717565ddfa3098c7b9808e30411ac157d1ab9f94b221c23",
+      "decision": "accept",
+      "note": "landscape report quoting the attack phrases this check detects; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 232,
+      "source": "builtin",
+      "matched": "- \"the only supported/official way\" plus `git clone`",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "e2c71f3471d9b6d5dc1590b5324a6c25712f3e573b83f8ee334a07b72a2acf2a",
+      "decision": "accept",
+      "note": "landscape report quoting the attack phrases this check detects; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 233,
+      "source": "builtin",
+      "matched": "- \"do not convert it to a GitHub URL\"",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "3e221d10f04e776ca156ad4e00189805ba4e938ebef018adb65d2ad5d9a1b6ba",
+      "decision": "accept",
+      "note": "llama-cpp-python's own prebuilt CPU wheel index, published by its maintainer (abetlen); a deliberate, documented redirect",
+      "path": "docs/verified/fallback-judge.md",
+      "line": 64,
+      "source": "builtin",
+      "matched": "- Prebuilt CPU wheels for 0.3.36 are on `--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu`: `win_amd64`, `manylinux2014_x86_64`, `manylinux2014_aarch64`, `musllinux_1_2_{x86_64,aar",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-INSTALL-REDIRECT",
+      "line_hash": "9a45cd03919e11ba3f5deb426f9ecf3935e668e79039560706952e82beb352f1",
+      "decision": "accept",
+      "note": "llama-cpp-python's own prebuilt CPU wheel index, published by its maintainer (abetlen); a deliberate, documented redirect",
+      "path": "pyproject.toml",
+      "line": 18,
+      "source": "builtin",
+      "matched": "# Prebuilt CPU wheels: add --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "e15e223093efc9ba342a1d6d65fdb22f4e904ffdd89ca09c44cbd88d34b21899",
+      "decision": "accept",
+      "note": "unpick's own file-name list; reviewed 2026-10-18",
+      "path": "unpick/checks/install_redirect.py",
+      "line": 38,
+      "source": "builtin",
+      "matched": "    return doc.is_markdown or doc.name in (\".npmrc\", \"pip.conf\", \"pip.ini\", \".pypirc\") or doc.name.endswith((\".txt\", \".sh\", \".ps1\", \".toml\", \".cfg\"))",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "05dfaf470d5ece0e55745f1f0fd8ec28a0fc83dee8acbba22b4f17fca2cb9e81",
+      "decision": "accept",
+      "note": "unpick's own file-name list; reviewed 2026-10-18",
+      "path": "unpick/scan.py",
+      "line": 21,
+      "source": "builtin",
+      "matched": "TEXT_NAMES = {\".cursorrules\", \".clinerules\", \".windsurfrules\", \".gitattributes\", \".gitmodules\", \".npmrc\", \".pypirc\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
     }
   ]
 }

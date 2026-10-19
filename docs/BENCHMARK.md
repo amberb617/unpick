@@ -18,10 +18,12 @@ Generated 2026-10-18 by `python tests/benchmark.py --backends installed`. Offlin
 |---|---|---|
 | RT-AGENT-SETTINGS | 0 of 36 | 0% |
 | RT-AUTORUN | 0 of 36 | 0% |
+| RT-CI-AGENT | 0 of 36 | 0% |
 | RT-ENCODED-EXEC | 0 of 36 | 0% |
 | RT-PREREQ | 1 of 36 | 3% |
 | RT-GIT-AUTORUN | 0 of 36 | 0% |
 | RT-UNICODE | 0 of 36 | 0% |
+| RT-INSTALL-REDIRECT | 0 of 36 | 0% |
 | RT-LOOKALIKE | 0 of 36 | 0% |
 | RT-MCP-LAUNCH | 0 of 36 | 0% |
 | RT-PASTE-HOST | 0 of 36 | 0% |
