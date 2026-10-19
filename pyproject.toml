@@ -9,6 +9,20 @@ description = "Vet AI components (skills, rules files, MCP servers, plugins) on 
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
+authors = [{ name = "unpick contributors" }]
+keywords = ["security", "ai", "agent-skills", "mcp", "supply-chain", "prompt-injection", "scanner"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
 dependencies = ["rich>=13", "pyyaml>=6"]
 
 [project.optional-dependencies]
@@ -20,8 +34,16 @@ fallback = ["llama-cpp-python>=0.3.17"]
 dev = ["pytest>=8", "jsonschema>=4", "ruff>=0.6", "flask>=3"]
 uitest = ["playwright>=1.48"]
 
+[project.urls]
+Homepage = "https://github.com/amberb617/unpick"
+Issues = "https://github.com/amberb617/unpick/issues"
+Security = "https://github.com/amberb617/unpick/security"
+
 [project.scripts]
 unpick = "unpick.cli:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["docs/screenshots", ".unpick", ".github"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["unpick"]

@@ -31,8 +31,10 @@ runtime guard (see "What unpick does not do").
 ## Install
 
 ```
-pipx install .
+pipx install unpick
 ```
+
+or, from a clone, `pipx install .`.
 
 Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows PowerShell 5.1). Optional
 extras: `pipx install '.[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
