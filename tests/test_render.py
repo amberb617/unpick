@@ -31,7 +31,7 @@ def test_offscreen_spaces():
 
 
 def test_escape_is_cat_v_equivalent():
-    assert escape("a​b‮\t") == "a\\u{200B}b\\u{202E}\\t"
+    assert escape("a\u200bb\u202e\t") == "a\\u{200B}b\\u{202E}\\t"
     assert escape(chr(0xE0041)) == "\\u{E0041}"
 
 
@@ -45,11 +45,11 @@ def test_comment_inside_code_fence_is_visible():
 
 
 def test_invisible_char_inside_fence_still_flagged():
-    assert by_line("```\nrun​ this\n```")[2].differs
+    assert by_line("```\nrun\u200b this\n```")[2].differs
 
 
 def test_emoji_presentation_selector_is_not_hidden():
-    assert not by_line("### ⚠️ STEP 0 ⚠️")[1].differs
+    assert not by_line("### ⚠\ufe0f STEP 0 ⚠\ufe0f")[1].differs
 
 
 def test_padded_table_cells_are_not_offscreen():

@@ -149,7 +149,9 @@ def reach(project: Path) -> dict:
     checklist: dict[str, dict] = {}
     for rule in _rotation_rules():
         rx = [re.compile(m, re.I) for m in rule.get("matches", [])]
-        hits = [f for f in found_files if any(r.search(f) for r in rx)] + [e for e in env_names if any(r.search(e) for r in rx)]
+        # Rules are written with "/"; compare Windows paths in the same form.
+        hits = [f for f in found_files if any(r.search(Path(f).as_posix()) for r in rx)] + \
+            [e for e in env_names if any(r.search(e) for r in rx)]
         if hits:
             checklist[rule["id"]] = {**{k: rule.get(k) for k in ("provider", "what", "how", "url", "cli")}, "because": hits[:8]}
     covered = {h for v in checklist.values() for h in v["because"]}

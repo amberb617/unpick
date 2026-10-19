@@ -7,7 +7,7 @@ Set-Location $Dir
 $one = gc SKILL.md -Enc UTF8 | % { $_ -replace '[^\t -~]','<?>' }
 $one[23].Substring(0, 58)
 '--- 2 invisible Unicode'
-$two = sls -Enc UTF8 '[​-‏‪-‮]|\uDB40' SKILL.md
+$two = sls -Enc UTF8 '[\u200B-\u200F\u202A-\u202E]|\uDB40' SKILL.md
 $two | % { "SKILL.md:$($_.LineNumber):" + $_.Line.Substring(0, 28) }
 '--- 3 red-flag words'
 $three = sls -Path SKILL.md -Pattern `

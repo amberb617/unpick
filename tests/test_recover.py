@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from tests.test_schema_inventory import _fake_home
 from unpick import recover
@@ -10,7 +11,7 @@ def test_containment_plan_and_mcp_entry_removal_with_backup(tmp_path, monkeypatc
     assert recover.containment_plan(c) == [{"action": "remove-entry", "file": str(h / ".cursor" / "mcp.json"), "entry": "fs", "kind": "mcp-server"}]
     [msg] = recover.contain(c, tmp_path / "incident")
     assert "removed fs" in msg
-    assert json.loads((h / ".cursor" / "mcp.json").read_text())["mcpServers"] == {}
+    assert json.loads((h / ".cursor" / "mcp.json").read_text(encoding="utf-8"))["mcpServers"] == {}
     assert list((h / ".cursor").glob("mcp.json.unpick-incident-*"))
 
 
@@ -33,7 +34,7 @@ def test_reach_lists_names_and_locations_never_values(tmp_path, monkeypatch):
     r = recover.reach(proj)
     blob = json.dumps(r)
     assert "SUPERSECRET" not in blob and "NOTPRINTED" not in blob
-    assert any(f.endswith(".aws/credentials") for f in r["files"]) and "GITHUB_TOKEN" in r["env_names"]
+    assert any(Path(f).as_posix().endswith(".aws/credentials") for f in r["files"]) and "GITHUB_TOKEN" in r["env_names"]
 
 
 def test_running_processes_matched_by_path(monkeypatch):
@@ -93,10 +94,10 @@ def test_recover_dry_run_changes_nothing_and_report_has_no_secrets(tmp_path, mon
     (h / ".aws" / "credentials").write_text("aws_secret_access_key = TOPSECRETVALUE\n")
     proj = tmp_path / "proj"
     proj.mkdir()
-    before = (h / ".cursor" / "mcp.json").read_text()
+    before = (h / ".cursor" / "mcp.json").read_text(encoding="utf-8")
     r = recover.run("tidy-pdf", proj, None, apply=False)
-    assert (h / ".claude" / "skills" / "tidy" / "SKILL.md").is_file() and (h / ".cursor" / "mcp.json").read_text() == before
+    assert (h / ".claude" / "skills" / "tidy" / "SKILL.md").is_file() and (h / ".cursor" / "mcp.json").read_text(encoding="utf-8") == before
     assert r["contain"][0].startswith("would move")
-    report = open(r["report"]).read()
+    report = open(r["report"], encoding="utf-8").read()
     assert "TOPSECRETVALUE" not in report and "s3cret" not in report and "## 2. Rotate" in report
     assert "AWS" in report or "aws" in report.lower()

@@ -12,7 +12,7 @@ import json
 import os
 from pathlib import Path
 
-from unpick.backends import version_of, which
+from unpick.backends import which
 from unpick.backends._common import finding
 
 NAME = "cisco-mcp-scanner"
@@ -48,7 +48,22 @@ def applies(target: Path) -> bool:
 
 
 def version():
-    return version_of(["mcp-scanner", "--version"]) if which("mcp-scanner") else None
+    """mcp-scanner has no --version flag; ask the interpreter its script runs under for the package version."""
+    import subprocess
+    exe = which("mcp-scanner")
+    if not exe:
+        return None
+    try:
+        first = Path(exe).read_text(encoding="utf-8", errors="replace").splitlines()[0]
+    except (OSError, IndexError):
+        first = ""
+    python = first[2:].strip() if first.startswith("#!") else None
+    if python and Path(python.split()[0]).exists():
+        p = subprocess.run([*python.split(), "-c", "import importlib.metadata as m; print(m.version('cisco-ai-mcp-scanner'))"],
+                           capture_output=True, text=True, timeout=20)
+        if p.returncode == 0 and p.stdout.strip():
+            return f"mcp-scanner {p.stdout.strip()}"
+    return "mcp-scanner (version unknown)"
 
 
 def command(target: Path) -> list[str]:

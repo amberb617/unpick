@@ -28,7 +28,8 @@ from pathlib import Path
 from unpick.finding import SEVERITIES
 
 COMMAND = "unpick hook run {agent}"
-MARK = "unpick hook run"
+MARK = "unpick hook run"  # in docs and tests; matching uses MARK_RX, which also sees unpick.exe and quoted paths
+MARK_RX = re.compile(r"unpick(?:\.exe)?[\"']?\s+hook\s+run\b|-m\s+unpick\s+hook\s+run\b", re.I)
 CONFIG_NAMES = (".mcp.json", ".claude.json", "mcp.json", "mcp_config.json", "claude_desktop_config.json",
                 "settings.json", "settings.local.json", "opencode.json", "opencode.jsonc", "config.toml", "hooks.json")
 
@@ -242,9 +243,20 @@ def settings_path(agent: str) -> Path:
             "cursor": home / ".cursor" / "hooks.json"}[agent]
 
 
+def _ours(entry) -> bool:
+    return bool(MARK_RX.search(json.dumps(entry).replace("\\\\", "/")))
+
+
+def _quote(path: str) -> str:
+    """Quote a program path for the shell the agent runs hooks in: POSIX quoting, or Windows double quotes."""
+    if os.name == "nt":
+        return f'"{path}"' if " " in path else path
+    return shlex.quote(path)
+
+
 def _exe() -> str:
     found = shutil.which("unpick")
-    return shlex.quote(found) if found else f"{shlex.quote(sys.executable)} -m unpick"
+    return _quote(found) if found else f"{_quote(sys.executable)} -m unpick"
 
 
 def _entry(agent: str) -> dict:
@@ -261,10 +273,10 @@ def planned(agent: str, install: bool) -> tuple[Path, dict, dict]:
     if agent == "cursor":
         after.setdefault("version", 1)
         hooks = after.setdefault("hooks", {}).setdefault("beforeShellExecution", [])
-        hooks[:] = [h for h in hooks if MARK not in json.dumps(h)]
+        hooks[:] = [h for h in hooks if not _ours(h)]
     else:
         hooks = after.setdefault("hooks", {}).setdefault("PreToolUse", [])
-        hooks[:] = [h for h in hooks if MARK not in json.dumps(h)]
+        hooks[:] = [h for h in hooks if not _ours(h)]
     if install:
         hooks.append(_entry(agent))
     if not hooks:

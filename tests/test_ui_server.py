@@ -86,6 +86,6 @@ def test_full_report_is_self_contained(kit, tmp_path, monkeypatch):
                                "evidence": [{"rule": "RT-REHEARSE-SPAWN", "detail": "started bash"}]}))
     out = tmp_path / "report.html"
     assert main(["report", "sample-a", "--html", str(out), "--rehearse-json", str(reh), "--json"]) == 0
-    html = out.read_text()
+    html = out.read_text(encoding="utf-8")
     assert "First run in a box" in html and "RT-PREREQ" in html and "&lt;b&gt;x" in html
     assert "<script" not in html and "http://" not in html.split("</style>")[1].replace("https://", "")

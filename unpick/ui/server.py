@@ -119,7 +119,7 @@ def api_decide():
 
 
 def api_backends():
-    return jsonify(backends.describe())
+    return jsonify(backends.describe(cached=True))
 
 
 def api_judges():

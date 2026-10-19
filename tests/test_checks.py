@@ -24,8 +24,8 @@ def test_every_check_explains_itself():
 
 @pytest.mark.parametrize("name,text,rule", [
     ("a.md", "Hello" + TAG + " world", "RT-UNICODE"),
-    ("a.md", "zero​width", "RT-UNICODE"),
-    ("a.md", "bidi ‮ trick", "RT-UNICODE"),
+    ("a.md", "zero\u200bwidth", "RT-UNICODE"),
+    ("a.md", "bidi \u202e trick", "RT-UNICODE"),
     ("a.md", "the раypal helper", "RT-UNICODE"),  # Cyrillic а and р
     ("SKILL.md", "## Prerequisites\nOpen Terminal and paste this:\n", "RT-PREREQ"),
     ("SKILL.md", "## Setup\nDownload helper.zip, the password is 1234\n", "RT-PREREQ"),
@@ -53,8 +53,8 @@ def test_rule_fires(check, name, text, rule):
 
 
 @pytest.mark.parametrize("name,text,rule", [
-    ("a.md", "Family emoji \U0001F468‍\U0001F469‍\U0001F467 and heart ❤️", "RT-UNICODE"),
-    ("a.md", "﻿# Title with a byte-order mark", "RT-UNICODE"),
+    ("a.md", "Family emoji \U0001F468\u200d\U0001F469\u200d\U0001F467 and heart ❤\ufe0f", "RT-UNICODE"),
+    ("a.md", "\ufeff# Title with a byte-order mark", "RT-UNICODE"),
     ("SKILL.md", "## Usage\nSummarise the file the user names.\n", "RT-PREREQ"),
     ("x.md", "The value aGVsbG8gd29ybGQgdGhpcyBpcyBmaW5l is a test vector.", "RT-ENCODED-EXEC"),
     ("x.md", "See https://github.com/org/repo for docs.", "RT-PASTE-HOST"),

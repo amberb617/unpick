@@ -19,6 +19,7 @@ See CONTRIBUTING.md.
 from __future__ import annotations
 
 import importlib
+import os
 import pkgutil
 import shutil
 import subprocess
@@ -48,7 +49,15 @@ def adapters() -> dict:
     return dict(sorted(out.items()))
 
 
-def describe() -> list[dict]:
+_DESCRIBED: dict[str, list[dict]] = {}
+
+
+def describe(cached: bool = False) -> list[dict]:
+    """Every adapter with its installed version. Asking each scanner for --version takes seconds, so the UI
+    passes cached=True and pays that once per server process (keyed on PATH, which decides what is found)."""
+    key = os.environ.get("PATH", "")
+    if cached and key in _DESCRIBED:
+        return _DESCRIBED[key]
     rows = []
     for name, mod in adapters().items():
         rows.append({
@@ -57,6 +66,7 @@ def describe() -> list[dict]:
             "network": mod.NETWORK, "needs_online": mod.NEEDS_ONLINE, "homepage": mod.HOMEPAGE,
             "unverified": getattr(mod, "UNVERIFIED", None),
         })
+    _DESCRIBED[key] = rows
     return rows
 
 

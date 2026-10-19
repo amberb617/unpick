@@ -71,8 +71,8 @@ def test_recorded_rehearsal_of_demo_sample_a():
     the fake Prerequisites step and piped base64 into bash. The analysis must keep finding that."""
     import json
     fix = Path(__file__).resolve().parent / "fixtures" / "rehearse" / "sample-a-triggered"
-    events = [json.loads(x) for x in (fix / "flight.jsonl").read_text().splitlines()]
-    items = rehearse.analyse((fix / "strace.log").read_text(), events, json.loads((fix / "transcript.json").read_text()), {})
+    events = [json.loads(x) for x in (fix / "flight.jsonl").read_text(encoding="utf-8").splitlines()]
+    items = rehearse.analyse((fix / "strace.log").read_text(encoding="utf-8"), events, json.loads((fix / "transcript.json").read_text(encoding="utf-8")), {})
     rules = {i["rule"] for i in items}
     assert {"RT-REHEARSE-ENCODED", "RT-REHEARSE-SPAWN"} <= rules
     assert "run commands that decode" in rehearse.verdict(items, "sample-a")

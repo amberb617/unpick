@@ -71,14 +71,14 @@ def test_install_dry_run_then_install_then_uninstall(tmp_path, monkeypatch, agen
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"keep": True}))
     dry = hook.apply(agent, install=True, dry_run=True)
-    assert dry["changed"] and json.loads(path.read_text()) == {"keep": True}
+    assert dry["changed"] and json.loads(path.read_text(encoding="utf-8")) == {"keep": True}
     hook.apply(agent, install=True, dry_run=False)
     assert hook.apply(agent, install=True, dry_run=False)["changed"] is False  # idempotent
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     assert data["keep"] and hook.MARK in json.dumps(data["hooks"])
     assert list(path.parent.glob(path.name + ".unpick-backup-*"))
     hook.apply(agent, install=False, dry_run=False)
-    assert json.loads(path.read_text()) == {"keep": True}
+    assert json.loads(path.read_text(encoding="utf-8")) == {"keep": True}
 
 
 def test_watch_roots_and_component_root(tmp_path, monkeypatch):
@@ -95,7 +95,7 @@ def test_watch_scan_and_report_logs(tmp_path, monkeypatch, kit):
     monkeypatch.setattr(watch, "LOG", tmp_path / "watch.log")
     monkeypatch.setattr(watch, "notify", lambda t, b: None)
     e = watch.scan_and_report(kit / "sample-a")
-    assert e["high"] >= 1 and json.loads((tmp_path / "watch.log").read_text())["path"].endswith("sample-a")
+    assert e["high"] >= 1 and json.loads((tmp_path / "watch.log").read_text(encoding="utf-8"))["path"].endswith("sample-a")
 
 
 @pytest.mark.parametrize("kind,needle", [("launchd", "RunAtLoad"), ("systemd", "WantedBy=default.target"), ("windows", "/SC ONLOGON")])
@@ -133,3 +133,10 @@ def test_unquoted_heredoc_substitutions_still_count():
     script = "cat <<EOF\ninstalled: $(npx skills add acme/x)\nEOF"
     assert hook.targets(script) == ["https://github.com/acme/x"]
     assert hook.targets(script.replace("<<EOF", "<<'EOF'")) == []
+
+
+@pytest.mark.parametrize("cmd", ['C:\\Tools\\unpick.EXE hook run codex', '"C:\\Program Files\\unpick\\unpick.exe" hook run cursor',
+                                 "/usr/local/bin/unpick hook run claude-code", "python -m unpick hook run codex"])
+def test_hook_marker_recognises_every_install_form(cmd):
+    assert hook._ours({"command": cmd})
+    assert not hook._ours({"command": "prettier --write"})

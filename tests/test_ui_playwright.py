@@ -90,8 +90,8 @@ def _recorded_rehearsal():
 
     from unpick import rehearse
     fix = Path(__file__).resolve().parent / "fixtures" / "rehearse" / "sample-a-triggered"
-    events = [json.loads(x) for x in (fix / "flight.jsonl").read_text().splitlines()]
-    items = rehearse.analyse((fix / "strace.log").read_text(), events, json.loads((fix / "transcript.json").read_text()), {})
+    events = [json.loads(x) for x in (fix / "flight.jsonl").read_text(encoding="utf-8").splitlines()]
+    items = rehearse.analyse((fix / "strace.log").read_text(encoding="utf-8"), events, json.loads((fix / "transcript.json").read_text(encoding="utf-8")), {})
     return {"events": events, "evidence": items, "verdict": rehearse.verdict(items, "sample-a"), "box": {"model": "granite-4.1-3b-Q4_K_M.gguf"},
             "findings": [f.to_dict() for f in rehearse.findings(items, "sample-a")], "scope": "Evidence, not proof."}
 
