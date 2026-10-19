@@ -3,6 +3,7 @@
 Needs the uitest extra and `python -m playwright install chromium`; skipped otherwise.
 """
 
+import re
 import threading
 from pathlib import Path
 
@@ -78,6 +79,7 @@ def test_decide_from_ui(ui, page):
     verdict = page.locator("#verdict").inner_text()
     assert "No unresolved warnings" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
     assert page.locator("#file-list .count").first.inner_text() == "0"
+    assert not page.is_visible("#remedy")  # nothing open, so no "stop the AI" button
     assert (kit / ".unpick" / "decisions.json").is_file()
     page.screenshot(path=str(SHOTS / "scan-false-positive-accepted.png"))
 
@@ -248,15 +250,16 @@ def test_scan_selected_scans_every_selected_add_on(ui, page, monkeypatch):
 
 
 def test_quarantine_and_restore_from_the_ui(ui, page, monkeypatch, tmp_path):
-    from unpick import isolate
+    from unpick import clean, isolate
     url, kit = ui
     monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    monkeypatch.setattr(clean, "CLEANED", tmp_path / "cleaned")
     page.goto(url + "#scan")
     page.fill("#scan-path", "sample-a")
     page.click("#scan-go")
     page.wait_for_selector("#remedy:not([hidden])")
     page.click("#do-clean")
-    page.locator("#remedy-note", has_text="Cleaned copy written").wait_for()
+    page.locator("#remedy-note", has_text="Review copy written").wait_for()
     page.click("#do-quarantine")
     page.click("#confirm-yes")
     page.locator("#remedy-note", has_text="Moved to quarantine").wait_for()
@@ -266,3 +269,18 @@ def test_quarantine_and_restore_from_the_ui(ui, page, monkeypatch, tmp_path):
     page.click("#confirm-yes")
     page.locator("#isolated-list", has_text="Nothing in quarantine").wait_for()
     assert (kit / "sample-a" / "SKILL.md").is_file()
+
+
+def test_next_steps_follow_the_latest_scan_and_blank_recover_is_refused(ui, page):
+    url, kit = ui
+    page.goto(url + "#verify")
+    assert page.is_disabled("#verify-pin")  # nothing to approve until a check has run
+    page.goto(url + "#scan")
+    for name in ("sample-a", "sample-b"):
+        page.fill("#scan-path", name)
+        page.click("#scan-go")
+        sync_api.expect(page.locator("#rehearse-path")).to_have_value(re.compile(f"{name}$"))
+    page.goto(url + "#recover")
+    page.fill("#recover-component", "")
+    page.click("#recover-form button[type=submit]")
+    page.locator("#recover-component-err", has_text="whole computer").wait_for()

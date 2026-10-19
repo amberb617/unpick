@@ -52,8 +52,8 @@ def now_stamp() -> str:
 def find_component(query: str, project: Path) -> list[dict]:
     p = Path(query).expanduser()
     items = inventory.discover(project=project)
-    if p.exists():
-        rp = str(p.resolve())
+    if p.exists() or p.is_symlink():
+        rp = os.path.abspath(p)  # never follow a symlink: the link is what gets quarantined
         return [c for c in items if c["path"].partition("#")[0] == rp] or [{"kind": "path", "name": p.name, "path": rp, "host": "-"}]
     return [c for c in items if c["name"] == query]
 
@@ -96,7 +96,11 @@ def contain(c: dict, incident: Path) -> list[str]:
     except isolate.CannotIsolate as e:
         return [str(e)]
     where = f"{r['entry']} from {r['original']}" if r.get("entry") else r["original"]
-    return [f"moved {where} into quarantine as {r['id']} (undo: unpick restore {r['id']})"]
+    msgs = [f"moved {where} into quarantine as {r['id']} (undo: unpick restore {r['id']})"]
+    if r.get("came_back"):
+        msgs.append(f"CONTAINMENT FAILED: {r['original']} was recreated straight away. Something still running is writing it; "
+                    "stop the processes listed above, then run recover again.")
+    return msgs
 
 
 # ---------------------------------------------------------------- 2. what could it reach

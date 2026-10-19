@@ -93,11 +93,13 @@ Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothi
 Like antivirus, unpick can take a flagged add-on out of your agent's reach without deleting it:
 
 - `unpick quarantine <path or name>` moves it (or takes its MCP entry out of the config, with a backup)
-  into `~/.unpick/quarantine/`. `unpick quarantine --list` shows what is there; `unpick restore <id>` puts
+  into `~/.unpick/quarantine/`. A symlinked add-on is moved as a link, never its target. A config with
+  comments, or in TOML, is left alone and unpick prints the exact edit to make by hand. `unpick quarantine --list` shows what is there; `unpick restore <id>` puts
   it back exactly.
 - `unpick watch --quarantine high` (opt-in) does that automatically for anything that lands with a
-  serious warning, and notifies you.
-- `unpick clean <path>` writes a cleaned copy next to the original: invisible characters and hidden HTML
+  serious warning, and notifies you. It moves only the add-on that owns the file, never a shared
+  config or cache.
+- `unpick clean <path>` writes a review copy to `~/.unpick/cleaned/`, outside every agent folder, with symlinks dropped: invisible characters and hidden HTML
   comments removed, decode-or-download-and-run lines disabled with a visible marker, and a `CLEANUP.md`
   listing every change and what is still flagged. Persuasive prose, poisoned tool descriptions and
   look-alike names cannot be fixed by rewriting text, so they stay flagged for a person.
