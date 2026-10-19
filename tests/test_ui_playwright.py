@@ -352,3 +352,86 @@ def test_batch_result_can_be_decided_and_its_row_follows(ui, page, monkeypatch):
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")  # the decision saved, though another scan ran after this one
     page.locator("#batch-list li", has_text="sample-b: no open warnings").wait_for()
+
+
+def _mcp_config(tmp_path):
+    import json
+    cfg = tmp_path / "mcp.json"
+    cfg.write_text(json.dumps({"mcpServers": {"evil": {"command": "npx", "args": ["-y", "evil"]}, "keep": {"command": "y"}}}), encoding="utf-8")
+    item = {"kind": "mcp-server", "host": "cursor", "scope": "user", "name": "evil", "path": f"{cfg}#evil", "display_path": "mcp.json#evil",
+            "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None}
+    return cfg, item
+
+
+def test_quarantine_from_installed_takes_out_only_that_entry(ui, page, monkeypatch, tmp_path):
+    import json
+
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    cfg, item = _mcp_config(tmp_path)
+    monkeypatch.setattr(inventory, "discover", lambda **k: [item])
+    page.goto(url + "#inventory")
+    page.click("#inv-table button:text('Scan')")
+    page.wait_for_selector("#do-quarantine")  # "npx -y" with no pinned version is flagged, so the button shows
+    page.click("#do-quarantine")
+    assert "only evil" in page.inner_text("#confirm-title")
+    page.click("#confirm-yes")
+    page.locator("#remedy-note", has_text="Moved to quarantine").wait_for()
+    assert list(json.loads(cfg.read_text(encoding="utf-8"))["mcpServers"]) == ["keep"]  # the neighbour survives
+
+
+def test_a_shared_settings_file_is_never_moved_whole(ui, page, monkeypatch, tmp_path):
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    cfg, item = _mcp_config(tmp_path)
+    monkeypatch.setattr(inventory, "discover", lambda **k: [item])
+    r = page.request.post(url + "api/isolate", data={"path": str(cfg)}, headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 400 and "will not move it whole" in r.json()["error"] and cfg.is_file()
+
+
+def test_report_describes_the_result_on_screen(ui, page, monkeypatch):
+    from unpick import inventory
+    url, kit = ui
+    items = [{"kind": "skill", "host": "claude-code", "scope": "user", "name": n, "path": str(kit / n), "display_path": n,
+              "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None} for n in ("sample-b", "sample-a")]
+    monkeypatch.setattr(inventory, "discover", lambda **k: items)
+    page.goto(url + "#inventory")
+    page.wait_for_selector(".inv-pick")
+    page.check("#inv-all")
+    page.click("#inv-scan")
+    page.locator("#batch-list li", has_text="sample-a:").wait_for()
+    page.locator("#batch-list li", has_text="sample-b:").locator("button", has_text="Open").click()
+    with page.expect_download() as dl:
+        page.click("a[data-export='/api/export/scan.json']")
+    assert Path(dl.value.path()).read_text(encoding="utf-8").count("sample-b") and "sample-a" not in Path(dl.value.path()).read_text(encoding="utf-8")
+
+
+def test_a_failed_web_check_hides_the_previous_result(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url + "#check")
+    page.fill("#check-ref", str(kit / "sample-b"))
+    page.check("#check-offline")
+    page.click("#check-form button[type=submit]")
+    page.wait_for_selector("#check-result:not([hidden])")
+    page.fill("#check-ref", str(kit / "no-such-thing"))
+    page.click("#check-form button[type=submit]")
+    page.locator("#check-ref-err", has_text="was not checked").wait_for()
+    assert page.is_hidden("#check-result") and page.is_hidden("#check-card")
+
+
+def test_quarantine_from_the_ui_never_follows_a_symlink(ui, page, monkeypatch, tmp_path):
+    from unpick import inventory, isolate
+    url, kit = ui
+    monkeypatch.setattr(isolate, "ROOT", tmp_path / "q")
+    monkeypatch.setattr(inventory, "discover", lambda **k: [])
+    docs = tmp_path / "Documents"
+    docs.mkdir()
+    (docs / "taxes.pdf").write_text("x", encoding="utf-8")
+    link = tmp_path / "linky"
+    link.symlink_to(docs)
+    r = page.request.post(url + "api/isolate", data={"path": str(link)}, headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 200 and (docs / "taxes.pdf").is_file() and not link.exists()

@@ -12,6 +12,7 @@ The UI never shells out to the CLI.
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import socket
 import threading
@@ -112,6 +113,7 @@ def _remember(ctx, result: dict) -> None:
     known = ctx.setdefault("known", {})
     for f in result["findings"] + result["accepted"]:
         known[f["id"]] = f
+    ctx.setdefault("results", {})[result["target"]] = result
 
 
 def api_decide():
@@ -155,13 +157,19 @@ def _download(doc: str, mimetype: str, name: str) -> Response:
     return Response(doc, mimetype=mimetype, headers={"Content-Disposition": f"attachment; filename={name}"})
 
 
+def _shown_scan() -> dict:
+    """The result the page is showing (it names it in a header), so a report never describes another add-on."""
+    ctx = _ctx()
+    return ctx.get("results", {}).get(request.headers.get("X-Unpick-Target", "")) or ctx["last"] or abort(404)
+
+
 def export_scan_html():
-    last = _ctx()["last"] or abort(404)
+    last = _shown_scan()
     return _download(report.scan_html(last), "text/html", "unpick-scan.html")
 
 
 def export_scan_json():
-    last = _ctx()["last"] or abort(404)
+    last = _shown_scan()
     return _download(json.dumps(last, indent=2, ensure_ascii=False), "application/json", "unpick-scan.json")
 
 
@@ -273,11 +281,35 @@ def _target(body) -> Path:
     return t if t.is_absolute() else _ctx()["project"] / t
 
 
+def _shared_by(t: Path, components: list[dict]) -> list[dict]:
+    """The other add-ons that would go with t if it were moved whole: entries in a config file, or add-ons inside a folder."""
+    hits = []
+    for c in components:
+        p, _, entry = c["path"].partition("#")
+        cp = Path(p)
+        if (entry and cp == t) or (not entry and cp != t and cp.is_relative_to(t)):
+            hits.append(c)
+    return hits
+
+
 def api_isolate():
-    from unpick import isolate
-    t = _target(request.get_json(force=True) or {})
+    from unpick import inventory, isolate
+    body = request.get_json(force=True) or {}
+    t = Path(os.path.abspath(_target(body)))  # absolute, but never through a symlink
+    components = inventory.discover(project=_ctx()["project"])
+    want = str(body.get("component") or "")
     try:
-        return jsonify(isolate.isolate({"path": str(t.resolve()), "name": t.name}, reason="quarantined from the UI"))
+        if "#" in want:  # one entry in a shared config, chosen from Installed: take out only that entry
+            c = next((c for c in components if c["path"] == want), None)
+            if not c:
+                return jsonify({"error": "That add-on is no longer listed in its settings file. Reload Installed and try again."}), 400
+            return jsonify(isolate.isolate(c, reason="quarantined from the UI"))
+        shared = _shared_by(t, components)
+        if shared:
+            names = ", ".join(sorted({c["name"] for c in shared})[:6])
+            return jsonify({"error": f"{t} also holds {len(shared)} other add-ons ({names}). unpick will not move it whole. "
+                                     "Open the one you mean from Installed and move that one."}), 400
+        return jsonify(isolate.isolate({"path": str(t), "name": t.name}, reason="quarantined from the UI"))
     except isolate.CannotIsolate as e:
         return jsonify({"error": str(e)}), 400
 

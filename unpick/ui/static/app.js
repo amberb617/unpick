@@ -137,7 +137,9 @@ document.addEventListener("click", async (e) => {
   const a = e.target.closest("[data-export]");
   if (!a) return;
   e.preventDefault();
-  const r = await fetch(a.dataset.export, { headers: { "X-Unpick-Token": TOKEN } }).catch(() => null);
+  const headers = { "X-Unpick-Token": TOKEN };
+  if (a.dataset.export.startsWith("/api/export/scan") && last) headers["X-Unpick-Target"] = last.target;  // the result on screen
+  const r = await fetch(a.dataset.export, { headers }).catch(() => null);
   if (!r || !r.ok) {
     const here = { "#scan": "remedy-note", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
     if (here) errorStrip(here, "Nothing to download yet: run it first.");
@@ -222,10 +224,13 @@ function fillFilter(id, values) {
 }
 $("inv-search").addEventListener("input", () => renderInventory());
 
-function scanPath(path) {
+// The inventory entry a scan came from. An MCP server or hook lives inside a shared settings file, so
+// quarantine must take out that one entry, never the file.
+let scanComponent = null;
+function scanPath(path, component = null) {
   $("scan-path").value = path;
   location.hash = "#scan";
-  runScan();
+  runScan(component);
 }
 
 function renderInventory() {
@@ -244,7 +249,7 @@ function renderInventory() {
       el("td", { class: "nowrap", text: r.host }),
       el("td", { class: "mono path", text: r.display_path }),
       el("td", { class: "nowrap", text: r.modified.slice(0, 10) }),
-      el("td", {}, el("button", { type: "button", class: "j-btn secondary small", text: "Scan", "aria-label": `Scan ${r.name}`, onclick: () => scanPath(path) })));
+      el("td", {}, el("button", { type: "button", class: "j-btn secondary small", text: "Scan", "aria-label": `Scan ${r.name}`, onclick: () => scanPath(path, r) })));
   }));
   $("inv-empty").hidden = rows.length > 0;
   document.querySelectorAll(".inv-pick").forEach(c => c.addEventListener("change", pickChanged));
@@ -317,7 +322,7 @@ async function loadInstalledBackends() {
     : "No other scanners installed (the built-in checks still run)";
 }
 
-async function runScan() {
+async function runScan(component = null) {
   const path = $("scan-path").value.trim();
   if (!path) { setError("scan-path", "Paste the path of a file or folder, or try a sample below."); return; }
   setError("scan-path", null);
@@ -327,7 +332,7 @@ async function runScan() {
   if (status === 409 && data.need_consent) {
     const ok = await confirmDialog({ title: "Send this file to an online AI?", yes: "Yes, send it",
       text: data.prompt.replace(" Send it? [yes/N] ", "") });
-    if (ok) { consentGiven.push(data.need_consent); return runScan(); }
+    if (ok) { consentGiven.push(data.need_consent); return runScan(component); }
     setError("scan-path", "Nothing was sent. Choose an AI that runs on this computer, or none.");
     return;
   }
@@ -343,6 +348,7 @@ async function runScan() {
     return;
   }
   last = data;
+  scanComponent = component && component.path.includes("#") ? component : null;
   setBack(false);
   $("scan-empty").hidden = true;
   $("batch").hidden = true;
@@ -410,10 +416,13 @@ function renderRemedy() {
 
 $("do-quarantine").addEventListener("click", async () => {
   if (!last) return;
-  const ok = await confirmDialog({ title: "Stop your AI from loading this?", yes: "Move it to quarantine",
-    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Your files are kept: you can put it back from "Something got in?", under "In quarantine now".` });
+  const what = scanComponent
+    ? `unpick takes only the "${scanComponent.name}" entry out of ${last.target}, and keeps a backup of the file. Every other setting stays.`
+    : `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it.`;
+  const ok = await confirmDialog({ title: scanComponent ? `Disable only ${scanComponent.name}?` : "Stop your AI from loading this?", yes: "Move it to quarantine",
+    text: `${what} You can put it back from "Something got in?", under "In quarantine now".` });
   if (!ok) return;
-  const { status, data } = await api("/api/isolate", { path: last.target });
+  const { status, data } = await api("/api/isolate", { path: last.target, component: scanComponent ? scanComponent.path : null });
   $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "Something got in?", under "In quarantine now".` : (data.error || "Could not move it.");
 });
 
@@ -644,9 +653,15 @@ $("check-form").addEventListener("submit", async (e) => {
   const ref = $("check-ref").value.trim();
   if (!ref) { setError("check-ref", "Paste a GitHub link, npm:package, pypi:package, or a local path."); return; }
   setError("check-ref", null);
+  checked = null;
+  ["check-card", "check-result", "check-command"].forEach(id => { $(id).hidden = true; });
   strip("check-strip", `Downloading ${ref} into quarantine. Nothing is run.`);
   const { status, data } = await busy($("check-go"), "Checking...", () => api("/api/check", { ref, offline: $("check-offline").checked }));
-  if (status !== 200) { $("check-strip").hidden = true; setError("check-ref", data.error || "The check failed."); return; }
+  if (status !== 200) {
+    $("check-strip").hidden = true;
+    setError("check-ref", `This add-on was not checked. ${data.error || "Fix the address or try again."}`);
+    return;
+  }
   checked = data;
   $("rehearse-path").value = data.id;
   strip("check-strip", `Saved in quarantine as ${data.id}.`, data.network.length ? `Contacted: ${data.network.join("; ")}.` : "Nothing was sent.");
@@ -827,7 +842,9 @@ async function runRecover(apply) {
   const planned = data.contain.filter(x => x.startsWith("would"));
   $("recover-out").hidden = false;
   recoverPlan = apply ? null : { component: body.component, since: body.since };
-  strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
+  const failed = apply && data.contain.some(x => !x.startsWith("moved "));
+  if (failed) errorStrip("recover-strip", "Not fully disabled. Follow the manual steps under 1. Contain it.");
+  else strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
     `${planned.length ? "Not disabled yet. Use \"Disable it now\" when you are ready." : "Nothing to disable."} ${plural(Object.keys(data.reach.rotate).length, "service needs", "services need")} new keys.`);
   $("recover-contain-list").replaceChildren(
     ...data.contain.map(x => el("li", { class: x.startsWith("would") ? null : "bad", text: sentence(x.replace(/^would /, "will ")) })),
