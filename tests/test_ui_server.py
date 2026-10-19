@@ -73,3 +73,19 @@ def test_export_html_escapes_untrusted_content(tmp_path):
                        "context": [{"line": 1, "text": "<b>"}], "agreed_by": []}], "accepted": []}
     out = report.scan_html(d)
     assert "<script>x" not in out and "<img src=x" not in out and "&lt;img" in out
+
+
+def test_full_report_is_self_contained(kit, tmp_path, monkeypatch):
+    import json
+
+    from unpick.cli import main
+    monkeypatch.chdir(kit)
+    reh = tmp_path / "r.json"
+    reh.write_text(json.dumps({"verdict": "made the agent start programs", "scope": "Evidence, not proof.",
+                               "events": [{"ts": "2026-10-18T01:11:00", "tool": "run_shell", "input": {"command": "<b>x</b>"}}],
+                               "evidence": [{"rule": "RT-REHEARSE-SPAWN", "detail": "started bash"}]}))
+    out = tmp_path / "report.html"
+    assert main(["report", "sample-a", "--html", str(out), "--rehearse-json", str(reh), "--json"]) == 0
+    html = out.read_text()
+    assert "First run in a box" in html and "RT-PREREQ" in html and "&lt;b&gt;x" in html
+    assert "<script" not in html and "http://" not in html.split("</style>")[1].replace("https://", "")

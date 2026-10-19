@@ -488,6 +488,23 @@ def cmd_recover(args) -> int:
     return 0
 
 
+def cmd_report(args) -> int:
+    from unpick import decisions, inventory, judges, report, scan
+
+    judge = judges.default_judge() if args.judge == "auto" else args.judge
+    res = scan.scan(Path(args.path), backends=_backend_list(args.backends), judge=judge, boxed=args.boxed)
+    d = res.to_dict()
+    inv = inventory.discover(project=Path(args.project)) if args.inventory else None
+    reh = json.loads(Path(args.rehearse_json).read_text(encoding="utf-8")) if args.rehearse_json else None
+    decided = [x for p in (decisions.project_file(), decisions.user_file()) if p.is_file()
+               for x in json.loads(p.read_text(encoding="utf-8")).get("decisions", [])]
+    doc = report.full_html(d, inv, reh, decided)
+    report.write(Path(args.html), doc)
+    _out(args, {"html": args.html, "open": d["summary"]["open"], "accepted": d["summary"]["accepted"]},
+         lambda x: console.print(f"wrote {esc(x['html'])}: {x['open']} open, {x['accepted']} accepted"))
+    return 0
+
+
 def cmd_ui(args) -> int:
     try:
         from unpick.ui.server import serve
@@ -619,6 +636,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--yes", action="store_true", help="actually contain (move the component, edit configs with backups)")
     s.add_argument("--project", default=".")
     s.set_defaults(fn=cmd_recover)
+
+    s = sub.add_parser("report", parents=[common], help="one self-contained HTML report: scan, judges, rehearse, decisions, inventory")
+    s.add_argument("path")
+    s.add_argument("--html", required=True, help="output file")
+    s.add_argument("--inventory", action="store_true", help="include the machine's inventory")
+    s.add_argument("--rehearse-json", help="include a saved `unpick rehearse --json` result")
+    s.add_argument("--backends")
+    s.add_argument("--judge")
+    s.add_argument("--boxed", action="store_true")
+    s.add_argument("--project", default=".")
+    s.set_defaults(fn=cmd_report)
 
     s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
     s.add_argument("--project", default=".")

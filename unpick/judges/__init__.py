@@ -23,6 +23,7 @@ import json
 import pkgutil
 import secrets
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from unpick.finding import Finding, with_context
 from unpick.resources import data_dir, load_json, schemas_dir
@@ -71,6 +72,8 @@ def detect_all() -> list[dict]:
             row.setdefault("provider", getattr(mod, "PROVIDER", None))
             row["consent"] = "not needed" if mod.KIND == "on-device" else consent.status(row["provider"])
             row["adversarial"] = _reliability().get(row["id"])
+            if isinstance(row.get("found_by"), str):  # show ~ instead of the home folder (screenshots, exports)
+                row["found_by"] = row["found_by"].replace(str(Path.home()), "~")
             rows.append(row)
     return rows
 
