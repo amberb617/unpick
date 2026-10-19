@@ -94,6 +94,32 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 23. **No CHAINDROP file hashes shipped.** The report suggests matching published `setup.mjs` hashes; none
     were found in a primary source, and inventing them is worse than not having them.
 
+## Phase 3
+
+24. **rehearse needs Docker.** sandbox-runtime boxes a host command, but rehearse needs its own filesystem,
+    a model runtime and tracing, so it uses a Linux container on every host OS. Tracing is strace inside the
+    box. Host tracers (fs_usage, dtrace, ETW, Sysmon) need root or admin and SIP blocks dtrace, so they are
+    not used.
+
+25. **rehearse is offline only for now.** The spec allows a hosted model with exactly one allowed API host.
+    Not built: a no-network box plus a local model already works, and a per-host egress allowance needs a
+    proxy inside the box. Recommendation: add it only if Granite's tool calling proves too weak in practice.
+    **OPEN.**
+
+26. **The hook fails closed.** An install the hook cannot resolve (an MCP add whose server is a local
+    binary, say) is denied with the reason and the override, `UNPICK_HOOK_FAIL_OPEN=1`.
+
+27. **`check` is network-on by default**, as the spec asks; `--offline` skips provenance. `outdated` needs
+    `--online`. The hook inherits check's network behaviour, and the README table says so.
+
+28. **CHAINDROP file hashes and GitHub look-alike orgs** are still not shipped (no primary-source IOC list).
+
+29. **A hook must read the command, not the text around it.** On 2026-10-18 the Jiffy CLI hook on this
+    machine blocked a shell script because a heredoc of documentation contained an MCP-add example.
+    unpick's hook matches install commands too; its `targets()` has the same weakness for commands that
+    embed install text in a string. Accepted for now: it fails toward blocking. **OPEN:** parse shell
+    words before matching.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

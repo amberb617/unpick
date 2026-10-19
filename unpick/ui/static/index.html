@@ -14,6 +14,9 @@
     <nav aria-label="Screens">
       <a href="#inventory" data-screen="inventory">Inventory</a>
       <a href="#scan" data-screen="scan">Scan</a>
+      <a href="#check" data-screen="check">Check</a>
+      <a href="#rehearse" data-screen="rehearse">Rehearse</a>
+      <a href="#verify" data-screen="verify">Verify</a>
       <a href="#backends" data-screen="backends">Backends and judges</a>
     </nav>
     <button class="ghost" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
@@ -58,6 +61,52 @@
         </section>
         <aside class="findings" id="findings" aria-label="Findings"></aside>
       </div>
+    </section>
+
+    <section id="screen-check" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">STEP 1</p><h1>Who made it? Check before you install</h1></div>
+        <form class="actions" id="check-form">
+          <input id="check-ref" type="text" size="52" placeholder="GitHub URL, npm:package, pypi:package, archive or path" aria-label="What to check">
+          <label class="check"><input type="checkbox" id="check-offline"> Skip provenance lookup</label>
+          <button class="j-btn" type="submit">Fetch into quarantine and check</button>
+        </form>
+      </div>
+      <div class="runstrip" id="check-strip">Nothing checked yet. Fetching never runs anything, and the install command is only ever printed.</div>
+      <div class="two-col">
+        <article class="card" id="check-card" hidden><h2>Provenance</h2><dl id="check-facts" class="facts"></dl><ul id="check-questions" class="questions"></ul></article>
+        <article class="card" id="check-result" hidden><h2>Scan of the quarantined copy</h2><p id="check-summary"></p>
+          <div class="actions"><button class="j-btn secondary" id="check-open" type="button">Open in the scan view</button>
+          <button class="j-btn" id="check-approve" type="button">Approve and show install command</button></div>
+          <pre id="check-command" class="command" hidden></pre></article>
+      </div>
+    </section>
+
+    <section id="screen-rehearse" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">STEP 4</p><h1>First run in a box</h1></div>
+        <form class="actions" id="rehearse-form">
+          <input id="rehearse-path" type="text" size="40" placeholder="Component path or check id" aria-label="Component">
+          <input id="rehearse-task" type="text" size="40" value="Summarise the README in this folder." aria-label="Task for the agent">
+          <button class="j-btn" type="submit">Rehearse</button>
+        </form>
+      </div>
+      <div class="runstrip" id="rehearse-strip">No network, read-only root, no capabilities, fake secrets only, local model.</div>
+      <div class="two-col">
+        <section class="card"><h2>What the agent did, live</h2><ol id="rehearse-timeline" class="timeline"></ol></section>
+        <section><article class="card verdict" id="rehearse-verdict" hidden><h2>Verdict</h2><p id="rehearse-verdict-text"></p>
+          <ul id="rehearse-evidence" class="questions"></ul><p class="muted" id="rehearse-scope"></p></article></section>
+      </div>
+    </section>
+
+    <section id="screen-verify" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">STEP 5</p><h1>Did anything change since you approved it?</h1></div>
+        <div class="actions"><button class="j-btn" id="verify-run" type="button">Verify against the lockfile</button>
+          <button class="j-btn secondary" id="verify-pin" type="button">Pin current state</button></div>
+      </div>
+      <div class="runstrip" id="verify-strip">Compares every component with unpick.lock.json; changed text files show as a diff.</div>
+      <div id="verify-list"></div>
     </section>
 
     <section id="screen-backends" class="screen" hidden>

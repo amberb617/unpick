@@ -145,12 +145,89 @@ def export_inventory_html():
                      "unpick-inventory.html")
 
 
+def api_check():
+    from unpick import check, quarantine
+    body = request.get_json(force=True) or {}
+    try:
+        return jsonify(check.run(str(body.get("ref", "")), offline=bool(body.get("offline"))))
+    except (quarantine.Refused, OSError) as e:
+        return jsonify({"error": str(e)}), 400
+
+
+def api_check_approve():
+    from unpick import check, quarantine
+    body = request.get_json(force=True) or {}
+    try:
+        return jsonify(check.approve(str(body.get("id", "")), _ctx()["project"]))
+    except quarantine.Refused as e:
+        return jsonify({"error": str(e)}), 400
+
+
+_JOBS: dict[str, dict] = {}
+
+
+def api_rehearse_start():
+    import threading
+
+    from unpick import quarantine, rehearse
+    body = request.get_json(force=True) or {}
+    target = Path(str(body.get("path", ""))).expanduser()
+    if not target.is_absolute():
+        target = _ctx()["project"] / target
+    if not target.exists():
+        try:
+            target = Path(quarantine.load_meta(str(body.get("path", "")))[1]["root"])
+        except quarantine.Refused as e:
+            return jsonify({"error": str(e)}), 400
+    job_id = secrets.token_hex(6)
+    job = _JOBS[job_id] = {"status": "starting", "trace": None, "result": None, "error": None}
+
+    def work():
+        try:
+            job["status"] = "running"
+            job["result"] = rehearse.run(target, task=body.get("task") or "Summarise the README in this folder.",
+                                         on_start=lambda t: job.update(trace=t))
+            job["status"] = "done"
+        except Exception as e:  # surfaced to the UI, never swallowed
+            job["status"], job["error"] = "error", str(e)
+
+    threading.Thread(target=work, daemon=True).start()
+    return jsonify({"job": job_id})
+
+
+def api_rehearse_poll(job_id):
+    from unpick import flight
+    job = _JOBS.get(job_id) or abort(404)
+    if job["result"]:
+        events = job["result"]["events"]
+    else:
+        events = flight.read(job["trace"]) if job["trace"] else []  # follow the recorder while the box runs
+    return jsonify({"status": job["status"], "error": job["error"], "events": events, "result": job["result"]})
+
+
+def api_verify():
+    from unpick import lock
+    try:
+        return jsonify(lock.verify(_ctx()["project"]))
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+
+
+def api_lock():
+    from unpick import lock
+    data = lock.lock(_ctx()["project"])
+    return jsonify({"components": len(data["components"])})
+
+
 ROUTES = [
     ("/", index, ["GET"]), ("/static/<path:name>", static_file, ["GET"]),
     ("/api/meta", api_meta, ["GET"]), ("/api/inventory", api_inventory, ["GET"]), ("/api/scan", api_scan, ["POST"]),
     ("/api/raw", api_raw, ["GET"]), ("/api/decide", api_decide, ["POST"]), ("/api/backends", api_backends, ["GET"]),
     ("/api/judges", api_judges, ["GET"]), ("/api/export/scan.html", export_scan_html, ["GET"]),
     ("/api/export/scan.json", export_scan_json, ["GET"]), ("/api/export/inventory.html", export_inventory_html, ["GET"]),
+    ("/api/check", api_check, ["POST"]), ("/api/check/approve", api_check_approve, ["POST"]),
+    ("/api/rehearse", api_rehearse_start, ["POST"]), ("/api/rehearse/<job_id>", api_rehearse_poll, ["GET"]),
+    ("/api/verify", api_verify, ["GET"]), ("/api/lock", api_lock, ["POST"]),
 ]
 
 

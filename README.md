@@ -24,11 +24,33 @@ the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below
 
 | step | what you do | command |
 |---|---|---|
-| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url>` (phase 3) |
+| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url or npm:pkg or pypi:pkg>` |
 | 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` |
 | 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` |
-| 4. First run in a box | no network, no real credentials | `unpick rehearse <path>` (phase 3) |
-| 5. Pin and re-check | lockfile, diff on update | `unpick lock` / `verify` (phase 3) |
+| 4. First run in a box | no network, no real credentials | `unpick rehearse <path or check id>` |
+| 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` |
+
+**Before install.** `unpick check` fetches into `~/.unpick/quarantine/` with nothing executed (git hooks,
+fsmonitor and submodules off; archives checked for path traversal, links and zip bombs; npm and PyPI
+downloads checked against the registry's digest), shows who made it, scans it, and `--approve <id>`
+prints the install command (never runs it) and adds it to `unpick.lock.json`.
+
+**The hook is the control, the watcher is the backstop.** `unpick hook install claude-code` (or `codex`,
+`cursor`; `--dry-run` shows the settings change first, `uninstall` removes it) runs `check` before an agent
+installs a skill, plugin or MCP server, or edits an MCP config, and blocks on unaccepted findings at or
+above `--min-severity` (default high). It fails closed on installs it cannot check
+(`UNPICK_HOOK_FAIL_OPEN=1` to allow them). A plugin install you type yourself is not a tool call, so no hook
+sees it. `unpick watch` scans what lands in the agents' folders and notifies you; `--print-service
+launchd|systemd|windows` prints a run-at-login recipe.
+
+**First run in a box.** `unpick rehearse` copies the component into a throwaway home holding only fake
+secrets, starts a disposable agent driven by the local Granite model inside Docker (no network, read-only
+root, all capabilities dropped, no new privileges, process limit), gives it a harmless task (`--task`), and
+records every file it opens, program it starts and connection it tries (strace inside the box, on every
+host OS). It needs Docker, `unpick judges install fallback --online` and `unpick rehearse --build --online`
+once. It is evidence, not proof: a component can behave differently outside the box, later, or only when a
+task triggers it. In testing, demo sample A did nothing when asked to summarise a README, and piped base64
+into bash when asked to use the skill.
 
 Also: `unpick inventory` lists every AI component already on this machine and in this project,
 `unpick decide <id> accept|reject|ask-author` records what you concluded about a finding, and
@@ -61,6 +83,11 @@ is no telemetry, no auto-update and no version check.
 | `unpick judges install fallback --online` | PyPI and GitHub (runtime), huggingface.co (model) | download requests for llama-cpp-python and one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
 | `scan --backends jiffy --online` | Jiffy Labs API (commercial; the author's company) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
+| `unpick check <url or registry ref>` (network on by default for this command; `--offline` skips provenance) | the git host, registry.npmjs.org, pypi.org / files.pythonhosted.org, api.github.com | the repository or package name; downloads it into quarantine |
+| `unpick outdated --online` | registry.npmjs.org, pypi.org, api.github.com, the git host | the names of locked components; fetches new git versions into quarantine |
+| `unpick rehearse --build --online` | Docker Hub, Debian mirrors, PyPI and GitHub | image and package downloads, once |
+| `unpick rehearse --canary-dns <email or webhook>` | canarytokens.org (Thinkst) | a memo and the email address or webhook URL you give |
+| the installed hook (`unpick hook install ...`) | whatever `check` contacts | runs `check` on what an agent is about to install |
 | `scan --judge claude-code:<model>` | Anthropic, via the Claude Code CLI | the full content of every scanned file. Asks first, every session |
 | `scan --judge gemini:<model>` | Google, via the Gemini CLI | the full content of every scanned file. Asks first, every session |
 | `scan --judge api:<provider>` | the provider's API (Anthropic, OpenAI or xAI) | the full content of every scanned file. Asks first, every session. UNVERIFIED endpoints, see below |

@@ -30,7 +30,7 @@ async function api(path, body) {
 }
 
 // ---- navigation and theme -------------------------------------------------------------------------
-const screens = ["inventory", "scan", "backends"];
+const screens = ["inventory", "scan", "check", "rehearse", "verify", "backends"];
 function show() {
   const name = screens.includes(location.hash.slice(1)) ? location.hash.slice(1) : "scan";
   for (const s of screens) document.getElementById(`screen-${s}`).hidden = s !== name;
@@ -279,6 +279,120 @@ async function loadBackends() {
     el("td", { class: "mono", text: k }), el("td", { text: v === null ? "neither flagged anything" : `${Math.round(v * 100)}%` }))));
   document.getElementById("agree-empty").hidden = agreement.length > 0;
 }
+
+// ---- check -------------------------------------------------------------------------------------------
+let checked = null;
+document.getElementById("check-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const ref = document.getElementById("check-ref").value.trim();
+  if (!ref) return;
+  const strip = document.getElementById("check-strip");
+  strip.replaceChildren(el("span", { text: `Fetching ${ref} into quarantine. Nothing is executed.` }));
+  const { status, data } = await api("/api/check", { ref, offline: document.getElementById("check-offline").checked });
+  if (status !== 200) { strip.replaceChildren(el("span", { class: "net", text: data.error || "check failed" })); return; }
+  checked = data;
+  strip.replaceChildren(el("span", {}, el("b", { text: "quarantine " }), data.id),
+    el("span", {}, el("b", { text: "network " }), data.network.length ? data.network.join("; ") : "none"));
+  const facts = Object.entries(data.provenance || {}).filter(([k, v]) => v !== null && v !== "" && k !== "project_urls" && !(Array.isArray(v) && !v.length));
+  document.getElementById("check-facts").replaceChildren(...facts.flatMap(([k, v]) => [el("dt", { text: k.replaceAll("_", " ") }), el("dd", { text: Array.isArray(v) ? v.join(", ") : String(v) })]));
+  const qs = data.questions.length ? data.questions.map(q => el("li", { class: "bad", text: q }))
+    : [el("li", { text: data.provenance && Object.keys(data.provenance).length ? "Nothing stood out. That is not the same as safe." : "No provenance lookup was made." })];
+  document.getElementById("check-questions").replaceChildren(...qs);
+  document.getElementById("check-card").hidden = false;
+  const s = data.scan.summary;
+  document.getElementById("check-summary").textContent = `${s.open} open finding(s) in ${data.scan.files.length} file(s). Read each one before approving.`;
+  document.getElementById("check-result").hidden = false;
+  document.getElementById("check-command").hidden = true;
+});
+document.getElementById("check-open").addEventListener("click", () => {
+  if (!checked) return;
+  last = checked.scan;
+  location.hash = "#scan";
+  document.getElementById("scan-path").value = checked.root;
+  renderScan();
+});
+document.getElementById("check-approve").addEventListener("click", async () => {
+  if (!checked) return;
+  const { status, data } = await api("/api/check/approve", { id: checked.id });
+  const pre = document.getElementById("check-command");
+  pre.textContent = status === 200 ? `# Not run. Copy it yourself if you agree:\n${data.install_command}\n# Locked in ${data.lockfile}` : data.error;
+  pre.hidden = false;
+});
+
+// ---- rehearse ----------------------------------------------------------------------------------------
+document.getElementById("rehearse-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const path = document.getElementById("rehearse-path").value.trim();
+  if (!path) return;
+  const strip = document.getElementById("rehearse-strip");
+  document.getElementById("rehearse-timeline").replaceChildren();
+  document.getElementById("rehearse-verdict").hidden = true;
+  const { status, data } = await api("/api/rehearse", { path, task: document.getElementById("rehearse-task").value });
+  if (status !== 200) { strip.replaceChildren(el("span", { class: "net", text: data.error })); return; }
+  strip.replaceChildren(el("span", { text: "Box running: no network, fake secrets, local model. This takes a few minutes." }));
+  pollRehearse(data.job);
+});
+
+function eventItem(ev, evidence) {
+  const blob = JSON.stringify(ev.input || {});
+  const hit = evidence.some(i => typeof i.at === "string" && i.at === ev.ts);
+  return el("li", { class: hit ? "hit" : null }, el("span", { text: `${(ev.ts || "").slice(11, 19)}  ` }),
+    el("span", { class: "tool", text: ev.tool }), ` ${blob.slice(0, 220)}`);
+}
+
+async function pollRehearse(job) {
+  const { data } = await api(`/api/rehearse/${job}`);
+  const evidence = data.result ? data.result.evidence : [];
+  document.getElementById("rehearse-timeline").replaceChildren(...data.events.map(ev => eventItem(ev, evidence)),
+    ...evidence.filter(i => typeof i.at === "number").map(i => el("li", { class: "hit", text: `trace  ${i.rule}  ${i.detail}` })));
+  if (data.status === "error") {
+    document.getElementById("rehearse-strip").replaceChildren(el("span", { class: "net", text: data.error }));
+    return;
+  }
+  if (data.status !== "done") { setTimeout(() => pollRehearse(job), 2000); return; }
+  const r = data.result;
+  const card = document.getElementById("rehearse-verdict");
+  card.className = `card verdict${r.findings.length ? " bad" : ""}`;
+  document.getElementById("rehearse-verdict-text").textContent = r.verdict;
+  document.getElementById("rehearse-evidence").replaceChildren(...r.evidence.map(i => el("li", { class: "bad", text: `${i.rule}: ${i.detail}` })));
+  document.getElementById("rehearse-scope").textContent = r.scope;
+  card.hidden = false;
+  document.getElementById("rehearse-strip").replaceChildren(el("span", {}, el("b", { text: "done " }), `${r.events.length} tool call(s), network none, model ${r.box.model}`));
+}
+
+// ---- verify ------------------------------------------------------------------------------------------
+function diffClass(line) {
+  if (line.startsWith("+") && !line.startsWith("+++")) return "add";
+  if (line.startsWith("-") && !line.startsWith("---")) return "del";
+  return null;
+}
+
+function diffBlock(text) {
+  return el("pre", { class: "diff" }, ...text.split("\n").map(line => el("span", { class: diffClass(line), text: line + "\n" })));
+}
+
+document.getElementById("verify-run").addEventListener("click", async () => {
+  const strip = document.getElementById("verify-strip");
+  const { status, data } = await api("/api/verify");
+  if (status !== 200) { strip.replaceChildren(el("span", { class: "net", text: data.error })); return; }
+  strip.replaceChildren(el("span", {}, el("b", { text: "unchanged " }), String(data.unchanged)),
+    el("span", {}, el("b", { text: "changed " }), String(data.changed.length)),
+    el("span", {}, el("b", { text: "added " }), String(data.added.length)), el("span", {}, el("b", { text: "removed " }), String(data.removed.length)));
+  const cards = data.changed.map(c => el("article", { class: "card change" },
+    el("h2", { text: `${c.name} ` }, el("span", { class: `chip ${c.kind}`, text: c.kind })),
+    el("p", { class: "muted", text: c.path + (c.commit ? `  commit ${c.commit.old} -> ${c.commit.new}` : "") }),
+    ...(c.config_changes || []).map(ch => el("p", { class: "mono", text: `${ch.field}: ${JSON.stringify(ch.old)} -> ${JSON.stringify(ch.new)}` })),
+    ...(c.files || []).flatMap(f => [el("p", { class: "mono", text: `${f.status} ${f.file}` }), f.diff ? diffBlock(f.diff) : null]),
+    c.scan ? el("p", { text: `Re-scan: ${c.scan.open} open finding(s).` }) : null));
+  const simple = [...data.added.map(a => el("p", { text: `added: ${a.kind} ${a.name} ${a.display_path}` })),
+                  ...data.removed.map(a => el("p", { text: `removed: ${a.kind} ${a.name} ${a.path}` }))];
+  document.getElementById("verify-list").replaceChildren(...cards, ...(simple.length ? [el("div", { class: "card" }, ...simple)] : []),
+    ...(data.ok ? [el("div", { class: "card", text: "Everything matches the lockfile." })] : []));
+});
+document.getElementById("verify-pin").addEventListener("click", async () => {
+  const { data } = await api("/api/lock", {});
+  document.getElementById("verify-strip").replaceChildren(el("span", { text: `Pinned ${data.components} component(s) in unpick.lock.json.` }));
+});
 
 loadJudges();
 loadInstalledBackends();

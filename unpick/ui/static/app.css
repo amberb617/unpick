@@ -114,3 +114,22 @@ dialog::backdrop { background: rgba(4, 14, 39, 0.6); }
 [data-theme="dark"] .finding a, [data-theme="dark"] .card a { color: var(--pink-500); }
 [data-theme="dark"] .runstrip { background: var(--bg-subtle); border: 1px solid var(--border-strong); }
 .row .collapsed { background: var(--pill-bg-red); color: var(--pill-fg-red); border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; font-weight: 700; }
+
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 12px; font-size: 14px; }
+.facts dt { font: 700 12px var(--font-mono); color: var(--fg-muted); text-transform: uppercase; }
+.facts dd { margin: 0; word-break: break-all; }
+.questions { margin: 0; padding-left: 20px; } .questions li { margin: 6px 0; font-weight: 600; }
+.questions li.bad { color: var(--pill-fg-red); }
+pre.command { background: var(--navy-900); color: var(--blue-200); padding: 12px 14px; border-radius: var(--radius-md); font: 14px var(--font-mono); white-space: pre-wrap; }
+.timeline { list-style: none; margin: 0; padding: 0; font: 13px var(--font-mono); }
+.timeline li { border-left: 3px solid var(--border-strong); padding: 6px 12px; margin-left: 4px; }
+.timeline li.hit { border-left: 6px solid var(--red-500); background: var(--pill-bg-red); font-weight: 700; }
+.timeline .tool { font-weight: 700; color: var(--fg-strong); }
+.verdict { border: 2px solid var(--navy-900); box-shadow: var(--shadow-offset-rest); }
+.verdict.bad { border-color: var(--red-500); }
+.change { margin-bottom: 16px; } .change h2 .chip { margin-left: 8px; }
+pre.diff { font: 12px/1.45 var(--font-mono); background: var(--bg-subtle); padding: 8px; border-radius: var(--radius-sm); overflow-x: auto; white-space: pre; }
+pre.diff .add { color: #1d6b2f; background: #e9f3e9; display: block; } pre.diff .del { color: var(--pill-fg-red); background: var(--pill-bg-red); display: block; }
+[data-theme="dark"] pre.diff .add { color: #b8e6b8; background: #12301a; }
+@media (max-width: 1400px) { .two-col { grid-template-columns: 1fr; } }

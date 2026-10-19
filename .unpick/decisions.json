@@ -803,6 +803,215 @@
       "source": "builtin",
       "matched": "    if doc.is_markdown or doc.name.endswith((\".sh\", \".ps1\", \".env.example\")):",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-PREREQ",
+      "line_hash": "dccbac9f22c71e8219818bee472be8ea4eb45f072becb21475778b2559326e47",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase3.md",
+      "line": 41,
+      "source": "builtin",
+      "matched": "- Downloading a tarball with no install scripts run: a plain HTTP GET of `dist.tarball`, then checking `dist.integrity`. No npm client is involved \u2014 verified 2026-10-18 by live download of https://reg",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "9814f99afd54181582a52e3b6f6dfaeebd04f12ee7a17a26924bd819cb40e5e7",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase3.md",
+      "line": 66,
+      "source": "builtin",
+      "matched": "- The MCP add command writes to `~/.claude.json` (`--scope local|user`) or `.mcp.json` (`--scope project`) \u2014 verified 2026-10-18 against local `claude mcp add --help` (Claude Code 2.1.303) and https:/",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "1f15f76a4d0e9137a25e468108b8336df6a730b0f9b483ca06a467b5b707c8b0",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase3.md",
+      "line": 68,
+      "source": "builtin",
+      "matched": "- Edits to `.mcp.json` or `~/.claude.json` through Edit/Write arrive as `tool_name: \"Edit\"|\"Write\"` with `tool_input.file_path` \u2014 verified 2026-10-18 against https://code.claude.com/docs/en/hooks (Wri",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "da1c2d47f23cee314ced82a7e1a4a4aaa93294bd4d9b2553d3f73cb30e424bc4",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase3.md",
+      "line": 73,
+      "source": "builtin",
+      "matched": "- `ConfigChange` sources are `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`. `.mcp.json` and `~/.claude.json` are not listed \u2014 verified 2026-10-18 against https://c",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "c61a9692534c68479f0d5c36ed6b099f27533a50b0f93cbead163cc5570e8573",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase3.md",
+      "line": 141,
+      "source": "builtin",
+      "matched": "- An alert fires through a recursive resolver even when the resolving host has no direct route out \u2014 UNVERIFIED (docs do not mention resolvers; not tested; in a `--network none` box nothing resolves, ",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "a640ce1d8dcfe519cdea55ba456715568b61673badbf862ddccf3ecd2e783d45",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 23,
+      "source": "builtin",
+      "matched": "        \".ssh/id_rsa\": f\"-----BEGIN OPENSSH PRIVATE KEY-----\\n{m['ssh']}\\nFAKE-KEY-FOR-UNPICK-REHEARSE\\n-----END OPENSSH PRIVATE KEY-----\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "6ff984546238ade4208382baa761b2594a4a3c3bbecad15dc1b6195701c47405",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 24,
+      "source": "builtin",
+      "matched": "        \".ssh/config\": \"Host *\\n  IdentityFile ~/.ssh/id_rsa\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "3fceb50f4a3c1b686da43405f619bfa1a41a6f4e6f83186f7d513e7c22b90df2",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 25,
+      "source": "builtin",
+      "matched": "        \"workspace/.env\": f\"OPENAI_API_KEY=sk-{m['env']}\\nDATABASE_URL=postgres://fake:{m['env']}@db.example.invalid/app\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "6fdd6d0b0e300e2c1b2d76bdf3c0a977fafe4790c3f13bdf22c9ba03e90fef98",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 26,
+      "source": "builtin",
+      "matched": "        \".aws/credentials\": f\"[default]\\naws_access_key_id = AKIA{m['aws'][-16:]}\\naws_secret_access_key = {m['aws']}\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "bfa8cab21166f213cf17c0a6ac23bda366585743b3557a054daf0baeac7e382b",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 27,
+      "source": "builtin",
+      "matched": "        \".npmrc\": f\"//registry.npmjs.org/:_authToken=npm_{m['npm']}\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "d53e880a3ff5c72a42b3c4f856de681631aefbdcf6173c2d2f57a87311d0daf7",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 28,
+      "source": "builtin",
+      "matched": "        \".config/gh/hosts.yml\": f\"github.com:\\n  oauth_token: gho_{m['gh']}\\n  user: canary\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "087167cccc3b0e227247ddf88c19fb5d35b1ab9219cba342b5126327467eebcb",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 29,
+      "source": "builtin",
+      "matched": "        \".config/google-chrome/Default/Login Data\": f\"SQLite format 3 (fake) {m['browser']}\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "0e09457291b71dd6aaae428031153519245aaa8bdff3c58df9fed04d44817783",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 30,
+      "source": "builtin",
+      "matched": "        \"Library/Application Support/Google/Chrome/Default/Cookies\": f\"SQLite format 3 (fake) {m['browser']}\\n\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "48e06716b5b43738511a9a5661575e46596ebdb9e0f403bc3c73cd944c23e633",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 55,
+      "source": "builtin",
+      "matched": "    (an email address or webhook URL) to Thinkst. Its hostname is planted in the fake .env, so if the fake",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "2fa830529b94d9013d191b7b2dccb9884d578ab7cd1a1043ff88f14ce1d9024f",
+      "decision": "accept",
+      "note": "fake canary secrets seeded only inside the rehearse box",
+      "path": "unpick/canary.py",
+      "line": 71,
+      "source": "builtin",
+      "matched": "    env = home / \"workspace\" / \".env\"",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "603c695ab6c0e26015e8085b48dbb4c3f38ac121ca16bc7131c98ce2db0b2722",
+      "decision": "accept",
+      "note": "unpick's own pattern, deny list or docstring describing the attack it handles; reviewed 2026-10-18",
+      "path": "unpick/cli.py",
+      "line": 569,
+      "source": "builtin",
+      "matched": "                       help=\"NETWORK, opt-in: create a free canarytokens.org DNS token and plant it in the fake .env\")",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "6f09de01dff2dde3379bf7c8dadad17466d0c71da2a9ede76e14f595b32ddb7c",
+      "decision": "accept",
+      "note": "unpick's own pattern, deny list or docstring describing the attack it handles; reviewed 2026-10-18",
+      "path": "unpick/flight.py",
+      "line": 20,
+      "source": "builtin",
+      "matched": "    r\"|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,})\")",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "1f57ff93784c49bfe18505377d37c8d8628df1a38cb5ce978e2252ecd4130c65",
+      "decision": "accept",
+      "note": "unpick's own pattern, deny list or docstring describing the attack it handles; reviewed 2026-10-18",
+      "path": "unpick/hook.py",
+      "line": 32,
+      "source": "builtin",
+      "matched": "CONFIG_NAMES = (\".mcp.json\", \".claude.json\", \"mcp.json\", \"mcp_config.json\", \"claude_desktop_config.json\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "d39e7a2095a71f9d3e9407cd7625feaf201edd085d43cf4d07ee89313da34adc",
+      "decision": "accept",
+      "note": "unpick's own pattern, deny list or docstring describing the attack it handles; reviewed 2026-10-18",
+      "path": "unpick/watch.py",
+      "line": 33,
+      "source": "builtin",
+      "matched": "    (~/.claude.json, ~/.codex/config.toml, .mcp.json) is covered by watching its folder non-recursively,",
+      "decided_at": "2026-10-18T00:00:00+00:00"
     }
   ]
 }

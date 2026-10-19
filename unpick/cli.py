@@ -370,6 +370,83 @@ def cmd_outdated(args) -> int:
     return 1 if any(r.get("outdated") or r.get("publisher_changed") for r in rows) else 0
 
 
+def cmd_hook(args) -> int:
+    from unpick import hook
+
+    if args.action == "run":
+        return hook.run(args.agent, min_severity=args.min_severity)
+    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run)
+    def render(d):
+        verb = "would change" if d["dry_run"] else "changed"
+        console.print(f"{verb} {esc(d['path'])}" if d["changed"] else f"no change needed in {esc(d['path'])}")
+        if d["diff"]:
+            console.print(esc(d["diff"].rstrip()), highlight=False)
+        if not d["dry_run"] and d["changed"]:
+            console.print("[dim]A timestamped backup of the previous file sits next to it.[/]")
+    _out(args, r, render)
+    return 0
+
+
+def cmd_watch(args) -> int:
+    from unpick import watch
+
+    if args.print_service:
+        print(watch.service(args.print_service), end="")
+        return 0
+    if args.list:
+        _out(args, [str(p) for p in watch.roots(Path(args.project))], lambda d: [console.print(esc(p)) for p in d])
+        return 0
+    watch.run(Path(args.project))
+    return 0
+
+
+def cmd_record(args) -> int:
+    from unpick import flight
+
+    try:
+        flight.append({**json.loads(sys.stdin.read() or "{}"), "agent": args.agent})
+    except (json.JSONDecodeError, OSError):
+        pass  # the recorder must never break the agent
+    return 0
+
+
+def cmd_rehearse(args) -> int:
+    from unpick import quarantine, rehearse
+
+    if args.build:
+        if not args.online:
+            print("unpick: building the box downloads python:3.12-slim, Debian packages and llama-cpp-python; re-run with --online",
+                  file=sys.stderr)
+            return 2
+        code, log = rehearse.build_image()
+        _out(args, {"image": rehearse.IMAGE, "exit_code": code, "log": log}, lambda d: console.print(esc(d["log"][-800:])))
+        return 0 if code == 0 else 2
+    if not args.component:
+        print("unpick: give a component path or a check id", file=sys.stderr)
+        return 2
+    target = Path(args.component)
+    if not target.exists():
+        try:
+            target = Path(quarantine.load_meta(args.component)[1]["root"])
+        except quarantine.Refused as e:
+            print(f"unpick: {e}", file=sys.stderr)
+            return 2
+    try:
+        r = rehearse.run(target, task=args.task, max_steps=args.max_steps, keep=args.keep, canary_dns=args.canary_dns)
+    except rehearse.NotReady as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    def render(d):
+        console.print(f"[bold]box:[/] network none, read-only root, no capabilities, fake secrets only, model {esc(d['box']['model'])}")
+        for e in d["events"]:
+            console.print(f"  {esc(e['ts'][11:19])} {esc(str(e['tool']))} {esc(json.dumps(e['input'])[:140])}")
+        for i in d["evidence"]:
+            console.print(f"  [bold red]{i['rule']}[/] {esc(i['detail'])}")
+        console.print(f"\n[bold]verdict:[/] {esc(d['verdict'])}\n[dim]{esc(d['scope'])}[/]")
+    _out(args, r, render)
+    return 1 if r["findings"] else 0
+
+
 def cmd_ui(args) -> int:
     try:
         from unpick.ui.server import serve
@@ -462,6 +539,37 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--remember", action="store_true")
     s.add_argument("--project", default=".")
     s.set_defaults(fn=cmd_check)
+
+    s = sub.add_parser("hook", parents=[common], help="install, remove or run the pre-install hook for an agent")
+    s.add_argument("action", choices=["install", "uninstall", "run"])
+    s.add_argument("agent", choices=["claude-code", "codex", "cursor"])
+    s.add_argument("--dry-run", action="store_true", help="show the settings change without writing it")
+    s.add_argument("--min-severity", choices=["low", "medium", "high"], default=None,
+                   help="block at this severity or above (default high, or $UNPICK_HOOK_MIN_SEVERITY)")
+    s.set_defaults(fn=cmd_hook)
+
+    s = sub.add_parser("watch", parents=[common], help="scan AI components as they land (a backstop to the hook)")
+    s.add_argument("--project", default=".")
+    s.add_argument("--list", action="store_true", help="show the folders that would be watched")
+    s.add_argument("--print-service", choices=["launchd", "systemd", "windows"], help="print a run-at-login recipe")
+    s.set_defaults(fn=cmd_watch)
+
+    s = sub.add_parser("record", parents=[common], help="flight recorder: append the hook event on stdin to ~/.unpick/flight")
+    s.add_argument("--agent", default="claude-code")
+    s.set_defaults(fn=cmd_record)
+
+    for alias in ("rehearse", "detonate"):
+        s = sub.add_parser(alias, parents=[common], help="first run in a no-network box with fake secrets (alias: detonate)"
+                           if alias == "rehearse" else argparse.SUPPRESS)
+        s.add_argument("component", nargs="?", help="component path, or a check id from `unpick check`")
+        s.add_argument("--task", default="Summarise the README in this folder.")
+        s.add_argument("--max-steps", type=int, default=8)
+        s.add_argument("--keep", action="store_true", help="keep the box's home and trace folder for inspection")
+        s.add_argument("--canary-dns", metavar="EMAIL_OR_WEBHOOK",
+                       help="NETWORK, opt-in: create a free canarytokens.org DNS token and plant it in the fake .env")
+        s.add_argument("--build", action="store_true", help="build the box image (needs --online, once)")
+        s.add_argument("--online", action="store_true")
+        s.set_defaults(fn=cmd_rehearse)
 
     s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
     s.add_argument("--project", default=".")
