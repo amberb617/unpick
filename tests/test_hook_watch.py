@@ -127,3 +127,9 @@ def test_real_installs_inside_scripts_are_found(script, ref):
 
 def test_unparseable_script_errs_toward_checking():
     assert hook.targets("echo 'unterminated ; claude mcp add x -- npx -y pkg") == ["npm:pkg"]
+
+
+def test_unquoted_heredoc_substitutions_still_count():
+    script = "cat <<EOF\ninstalled: $(npx skills add acme/x)\nEOF"
+    assert hook.targets(script) == ["https://github.com/acme/x"]
+    assert hook.targets(script.replace("<<EOF", "<<'EOF'")) == []

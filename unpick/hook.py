@@ -54,16 +54,24 @@ SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "|&", ";;"}
 SHELLS = {"sh", "bash", "zsh", "dash", "ksh"}
 
 
+SUBST = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
+
+
 def _strip_heredocs(script: str) -> str:
-    """Drop heredoc bodies: their text is data handed to a program, not commands the shell runs."""
+    """Drop heredoc bodies: their text is data handed to a program, not commands the shell runs.
+
+    A quoted delimiter (<<'EOF') makes the whole body plain text. An unquoted one (<<EOF) still runs its
+    $(...) and backtick substitutions, so those are kept as commands of their own."""
     out, lines, i = [], script.split("\n"), 0
     while i < len(lines):
         line = lines[i]
         out.append(line)
-        ends = [m.group(2) for m in HEREDOC.finditer(line)]
+        docs = [(m.group(2), bool(m.group(1))) for m in HEREDOC.finditer(line)]
         i += 1
-        for end in ends:
+        for end, quoted in docs:
             while i < len(lines) and lines[i].strip() != end:
+                if not quoted:
+                    out.extend(a or b for a, b in SUBST.findall(lines[i]))
                 i += 1
             i += 1  # the terminator line
     return "\n".join(out)
