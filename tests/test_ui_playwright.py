@@ -284,3 +284,33 @@ def test_next_steps_follow_the_latest_scan_and_blank_recover_is_refused(ui, page
     page.fill("#recover-component", "")
     page.click("#recover-form button[type=submit]")
     page.locator("#recover-component-err", has_text="whole computer").wait_for()
+
+
+def test_start_web_tab_runs_the_check(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url)
+    assert page.is_hidden("#start-web-form")
+    page.click("#tab-web")
+    assert page.is_hidden("#start-form") and page.get_attribute("#tab-web", "aria-selected") == "true"
+    page.fill("#start-ref", str(kit / "sample-a"))
+    page.click("#start-web-form button[type=submit]")
+    page.wait_for_selector("#check-result:not([hidden])")
+    assert page.url.endswith("#check")
+
+
+def test_result_cards_wait_for_a_run_and_first_save_is_possible(ui, page, monkeypatch, tmp_path):
+    from unpick import lock
+    url, kit = ui
+    page.goto(url + "#recover")
+    assert page.is_hidden("#recover-out") and page.is_visible("#isolated-list")
+    page.goto(url + "#rehearse")
+    assert page.is_hidden("#rehearse-out")
+    def no_lockfile(*a, **k):
+        raise FileNotFoundError("no lockfile at x; run `unpick lock` first")
+    monkeypatch.setattr(lock, "verify", no_lockfile)
+    page.goto(url + "#verify")
+    page.click("#verify-run")
+    page.locator("#verify-strip", has_text="Nothing is saved as approved yet").wait_for()
+    assert page.is_enabled("#verify-pin")  # the first save must not be a dead end

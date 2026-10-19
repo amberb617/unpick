@@ -74,7 +74,8 @@ def main() -> None:
             page.wait_for_selector(".finding", timeout=600_000)
 
         scan("sample-a", True)
-        page.screenshot(path=str(SHOTS / "slide-17.png"), clip={"x": 0, "y": 0, "width": 1920, "height": 420})
+        page.locator("details.options").evaluate("d => d.open = false")
+        page.screenshot(path=str(SHOTS / "slide-17.png"))  # verdict plus "Scan details": every source that ran, nothing sent
         page.locator("#L24").scroll_into_view_if_needed()
         page.screenshot(path=str(SHOTS / "slide-18.png"))
         scan("sample-b", False)
@@ -106,7 +107,7 @@ fresh with `unpick demo`; no personal paths appear.
 | 18 | Sample A rendered vs raw: the three planted lines, the hidden sentence decoded | `unpick raw demo/sample-a/SKILL.md` or the Scan screen | screenshots/slide-18.png |
 | 19 | Sample B: a flag is a question, accepted with a note | `unpick scan demo/sample-b`, then `unpick decide <id> accept --note ...` | screenshots/slide-19.png |
 | 23 | Reading the raw bytes with no install (macOS / Linux; PowerShell in docs/HANDOUT-COMMANDS.md) | the three commands in docs/HANDOUT-COMMANDS.md | screenshots/slide-23.png |
-| 25 | Free, open source, offline-capable: maintainer, licence and network behaviour of each scanner | `unpick backends`, or the Backends and judges screen | screenshots/slide-25.png |
+| 25 | Free, open source, offline-capable: maintainer, licence and network behaviour of each scanner | `unpick backends`, or the Settings screen | screenshots/slide-25.png |
 | B2 | A poisoned MCP tool description read without starting any server | `unpick scan demo/tools.json --backends installed` | screenshots/slide-B2.png |
 
 Also in docs/screenshots/ui/ (from the Playwright tests): rehearse.png (the box run of sample A),

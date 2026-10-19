@@ -44,12 +44,12 @@ the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below
 
 | step | what you do | command | UI screen |
 |---|---|---|---|
-| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url or npm:pkg or pypi:pkg>` | Check |
-| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` | Scan (split view) |
-| 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` | Scan |
-| 4. First run in a box | no network, no real credentials | `unpick rehearse <path or check id>` | Rehearse |
-| 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` | Verify |
-| When it got through | contain, rotate, find out what happened | `unpick recover <component>` | Recover |
+| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url or npm:pkg or pypi:pkg>` | Scan, "From the web" tab |
+| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` | Scan result, "Read it raw" |
+| 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` | Scan, "On this computer" tab |
+| 4. First run in a box | no network, no real credentials | `unpick rehearse <path or check id>` | Test run |
+| 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` | Changes |
+| When it got through | contain, rotate, find out what happened | `unpick recover <component>` | Something got in? |
 
 `unpick report <path> --html out.html` puts the scan, judge opinions, a saved rehearsal, your decisions
 and (with `--inventory`) the inventory in one self-contained file that prints in black and white.

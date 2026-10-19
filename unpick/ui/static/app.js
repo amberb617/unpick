@@ -105,13 +105,13 @@ function show() {
   const name = screens.includes(wanted) ? wanted : "start";
   for (const s of screens) $(`screen-${s}`).hidden = s !== name;
   document.querySelectorAll("[data-screen]").forEach(a => {
-    if (a.dataset.screen === name) a.setAttribute("aria-current", "page");
+    if (a.dataset.screen.split(" ").includes(name)) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
   if (name === "inventory" && !inventoryLoaded) loadInventory();
   if (name === "backends") loadBackends();
   if (name === "recover") loadIsolated();
-  const heading = $(`screen-${name}`).querySelector("h1");
+  const heading = [...$(`screen-${name}`).querySelectorAll("h1")].find(h => h.offsetParent !== null);
   if (heading && document.activeElement !== document.body) heading.focus();
 }
 window.addEventListener("hashchange", show);
@@ -139,7 +139,7 @@ document.addEventListener("click", async (e) => {
   e.preventDefault();
   const r = await fetch(a.dataset.export, { headers: { "X-Unpick-Token": TOKEN } }).catch(() => null);
   if (!r || !r.ok) {
-    const here = { "#scan": "runstrip", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
+    const here = { "#scan": "remedy-note", "#check": "check-strip", "#verify": "verify-strip", "#recover": "recover-strip" }[location.hash] || null;
     if (here) errorStrip(here, "Nothing to download yet: run it first.");
     else a.after(el("span", { class: "field-err", text: "Nothing to download yet." }));
     return;
@@ -163,9 +163,35 @@ async function sample(kind) {
   location.hash = "#scan";
   runScan();
 }
-$("try-dangerous").addEventListener("click", () => sample("dangerous"));
-$("try-safe").addEventListener("click", () => sample("safe"));
 document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => sample(b.dataset.sample)));
+function selectEntry(tab) {
+  const web = tab === "web";
+  $("tab-local").setAttribute("aria-selected", web ? "false" : "true");
+  $("tab-web").setAttribute("aria-selected", web ? "true" : "false");
+  $("tab-local").tabIndex = web ? -1 : 0;
+  $("tab-web").tabIndex = web ? 0 : -1;
+  $("start-form").hidden = web;
+  $("start-web-form").hidden = !web;
+  $("entry-foot").textContent = web ? "unpick asks GitHub, npm or PyPI who published it, then reads the copy on this computer."
+    : "Scans run on this computer. Nothing leaves it.";
+}
+$("tab-local").addEventListener("click", () => selectEntry("local"));
+$("tab-web").addEventListener("click", () => selectEntry("web"));
+document.querySelector(".seg").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = $("tab-local").getAttribute("aria-selected") === "true" ? "web" : "local";
+  selectEntry(next);
+  $(next === "web" ? "tab-web" : "tab-local").focus();
+});
+$("start-web-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = $("start-ref").value.trim();
+  if (!v) { setError("start-ref", "Paste a GitHub link, npm:package or pypi:package."); return; }
+  setError("start-ref", null);
+  $("check-ref").value = v;
+  location.hash = "#check";
+  $("check-form").requestSubmit();
+});
 $("start-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const v = $("start-path").value.trim();
@@ -247,7 +273,7 @@ $("inv-scan").addEventListener("click", async () => {
     const { status, data } = await api("/api/scan", { path: r.path });
     if (status !== 200) { r.item.replaceChildren(el("b", { text: "Could not scan " }), r.path, `: ${data.error || status}`); continue; }
     const serious = data.findings.filter(f => f.severity === "high").length;
-    let word = "CLEAR";
+    let word = "NO WARNINGS";
     if (serious) word = "STOP";
     else if (data.findings.length) word = "REVIEW";
     const kept = data;
@@ -299,8 +325,12 @@ async function runScan() {
     return;
   }
   if (status !== 200) {
-    if (last) $("verdict").replaceChildren(el("span", { class: "verdict-word", text: "FAILED" }),
-      el("div", {}, el("p", { class: "verdict-head", text: "This scan failed" }), el("p", { class: "verdict-sub", text: "What you see below is the previous result." })));
+    if (last) {
+      $("verdict").className = "verdict-hero failed";
+      $("verdict").replaceChildren(verdictBlock("FAILED", "Nothing new was checked"),
+        el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: "This scan failed" }),
+          el("p", { class: "verdict-sub", text: "What you see below is the previous result." })));
+    }
     setError("scan-path", data.error && data.error.includes("does not exist")
       ? `There is no file or folder at ${path}. Check the spelling, or paste the full path.` : (data.error || `Scan failed (${status}).`));
     return;
@@ -315,8 +345,10 @@ async function runScan() {
 }
 
 const SEV_WORD = { high: "SERIOUS", medium: "WARNING", low: "NOTE", info: "INFO" };
-const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Needs the author's answer" };
-const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: needs the author's answer (saved here only)." };
+const SEV_MANY = { high: "SERIOUS", medium: "WARNINGS", low: "NOTES", info: "INFO" };
+const sourceName = (x) => (x === "builtin" ? "built-in checks" : x.replace(/^backend:/, "").replace(/^judge:/, "AI reviewer "));
+const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Not sure: ask the author" };
+const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: ask the author. Nobody was contacted." };
 
 function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
@@ -345,14 +377,23 @@ function renderVerdict() {
     head = `Review before installing: ${plural(other, "warning", "warnings")}`;
     sub = "None looks serious on its own. Read each one and decide.";
   }
-  v.className = `verdict-banner ${level}`;
-  v.replaceChildren(el("span", { class: "verdict-word", text: { bad: "STOP", review: "REVIEW", ok: "CLEAR" }[level] }),
-    el("div", {}, el("p", { class: "verdict-head", text: head }),
-      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") })));
+  const counts = ["high", "medium", "low", "info"].map(sev => [sev, open.filter(f => f.severity === sev).length]).filter(([, n]) => n);
+  v.className = `verdict-hero ${level}`;
+  v.replaceChildren(verdictBlock({ bad: "STOP", review: "REVIEW", ok: "NO WARNINGS" }[level], VERDICT_ACTION[level]),
+    el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }),
+      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") }),
+      counts.length ? el("div", { class: "count-row" }, ...counts.map(([sev, n]) => el("span", { class: `sev ${sev}`, text: `${n} ${(n === 1 ? SEV_WORD : SEV_MANY)[sev]}` }))) : null));
+}
+
+const VERDICT_ACTION = { bad: "Do not install it", review: "Read each warning, then decide", ok: "This does not prove it is safe" };
+function verdictBlock(word, action) {
+  return el("div", { class: "verdict-block" }, el("span", { class: "verdict-label", text: "Verdict" }),
+    el("strong", { class: "verdict-word", text: word }), el("span", { class: "verdict-action", text: action }));
 }
 
 function renderRemedy() {
   const open = openFindings().length;
+  $("warn-count").textContent = `${open} open`;
   $("remedy").hidden = open === 0;
   $("remedy-note").textContent = "";
 }
@@ -392,11 +433,18 @@ function renderScan() {
   renderVerdict();
   renderRemedy();
   const net = last.summary.network_calls;
-  const sources = last.sources.length;
+  const name = last.target.replace(/[\\/]+$/, "").split(/[\\/]/).pop();
+  $("scan-name").textContent = name;
+  $("scan-source").textContent = last.target;
+  const total = allFindings().length;
+  $("scan-summary").textContent = `unpick read ${plural(last.files.length, "file", "files")} and found ${plural(total, "warning", "warnings")}`
+    + (total ? ` in ${plural(new Set(allFindings().map(f => f.path)).size, "file", "files")}.` : ".");
+  const fact = (k, v, cls) => [el("dt", { text: k }), el("dd", { class: cls || null, text: v })];
   $("runstrip").replaceChildren(
-    el("span", { text: `Checked ${plural(last.files.length, "file", "files")} with ${plural(sources, "checker", "checkers")}` }),
-    el("span", { class: net.length ? "net" : null, text: net.length ? `Sent: ${net.map(r => r.network_detail).join("; ")}` : "Nothing left this computer" }),
-    ...(last.skipped && last.skipped.length ? [el("span", { text: `${plural(last.skipped.length, "file", "files")} not readable` })] : []));
+    ...fact("Files read", String(last.files.length)),
+    ...fact("Checked by", last.sources.map(sourceName).join(", ")),
+    ...fact("Sent anywhere", net.length ? net.map(x => x.network_detail).join("; ") : "Nothing", net.length ? "net" : null),
+    ...(last.skipped && last.skipped.length ? fact("Not readable", plural(last.skipped.length, "file", "files")) : []));
   const counts = {};
   for (const f of openFindings()) counts[f.path] = (counts[f.path] || 0) + 1;
   const files = [...last.files].sort((a, b) => (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b));
@@ -489,7 +537,7 @@ function rawParts(raw) {
 
 function agreementText(f) {
   if (last.sources.length < 2) return "Found by the built-in checks.";
-  return `Flagged by ${f.agreed_by.length} of ${plural(last.sources.length, "checker", "checkers")}: ${f.agreed_by.join(", ")}.`;
+  return `Flagged by ${f.agreed_by.length} of ${plural(last.sources.length, "checker", "checkers")}: ${f.agreed_by.map(sourceName).join(", ")}.`;
 }
 
 function showInFile(line) {
@@ -500,14 +548,23 @@ function showInFile(line) {
   setTimeout(() => row.classList.remove("pulse"), 1600);
 }
 
+// Undecided first, then severity, then what more checkers agree on, then unpick's own plain-language checks, then line.
+const SEV_ORDER = { high: 0, medium: 1, low: 2, info: 3 };
+function sortFindings(findings) {
+  const own = (f) => (f.source === "builtin" ? 0 : 1);
+  return [...findings].sort((a, b) => (a.decision === "accept") - (b.decision === "accept") || SEV_ORDER[a.severity] - SEV_ORDER[b.severity]
+    || b.agreed_by.length - a.agreed_by.length || own(a) - own(b) || a.line - b.line);
+}
+
+const expanded = new Set();
 function renderFindings(findings) {
   const box = $("findings");
   if (!findings.length) {
-    box.replaceChildren(el("div", { class: "card empty", text: "No warnings in this file." }));
+    box.replaceChildren(el("p", { class: "empty", text: "No warnings in this file." }));
     return;
   }
-  const order = { high: 0, medium: 1, low: 2, info: 3 };
-  const sorted = [...findings].sort((a, b) => (a.decision === "accept") - (b.decision === "accept") || order[a.severity] - order[b.severity] || a.line - b.line);
+  const sorted = sortFindings(findings);
+  if (![...expanded].some(id => findings.some(f => f.id === id))) expanded.add(sorted[0].id);
   box.replaceChildren(...sorted.map(f => findingCard(f, findings)));
 }
 
@@ -519,17 +576,24 @@ function findingCard(f, findings) {
     type: "button", class: "j-btn secondary small", "aria-pressed": f.decision === choice ? "true" : "false", text: label,
     onclick: () => decide(f, choice, findings) }));
   const ctx = el("pre", {}, ...f.context.map(c => el("span", { class: c.line === f.line ? "hit" : null, text: `${String(c.line).padStart(4)}  ${c.text}${NL}` })));
-  return el("article", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}` },
-    el("div", { class: "top" }, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
-      kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
-      f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the file`, onclick: () => showInFile(f.line) }) : null),
-    el("h3", { class: "msg", text: sentence(f.message) }),
-    decided || el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
-    decided ? null : el("p", { class: "meta", text: "Saved on this computer only, for this exact line; nothing is sent. If the line changes, the warning comes back." }),
-    el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
-    el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
-    f.context.length ? ctx : null,
-    el("p", { class: "meta", text: `${agreementText(f)} Rule ${f.rule_id}.` }));
+  const status = f.decision ? el("span", { class: `pill ${{ accept: "green", reject: "red", "ask-author": "lavender" }[f.decision]}`, text: DECISION_LABEL[f.decision] }) : null;
+  const card = el("details", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}`,
+    open: expanded.has(f.id) },
+    el("summary", {}, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
+      el("h3", { class: "msg", text: sentence(f.message) }),
+      el("span", { class: "where" }, status, status ? " " : null, kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
+        f.line ? ` line ${f.line}` : "")),
+    el("div", { class: "body" },
+      el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
+      el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
+      f.context.length ? ctx : null,
+      decided || el("div", { class: "decide-box" }, el("p", { class: "decide-q", text: "What do you make of it?" }),
+        el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
+        el("p", { class: "meta-line", text: "Not sure? Leave it open and do not install yet. A choice is saved on this computer only, for this exact line, and contacts nobody. If the line changes, the warning comes back." })),
+      el("p", { class: "meta-line" }, `${agreementText(f)} Rule ${f.rule_id}. `,
+        f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the raw file`, onclick: () => showInFile(f.line) }) : null)));
+  card.addEventListener("toggle", () => { if (card.open) expanded.add(f.id); else expanded.delete(f.id); });
+  return card;
 }
 
 async function decide(f, choice, findings) {
@@ -557,7 +621,7 @@ async function decide(f, choice, findings) {
     row.classList.toggle("flag", on);
   });
   const card = [...document.querySelectorAll(".finding")].find(c => c.getAttribute("aria-label").endsWith(f.message));
-  if (card) (card.querySelector(".decided-line button") || card.querySelector(".decide button")).focus();
+  if (card) (card.querySelector(".decided-line button") || card.querySelector(".decide button") || card.querySelector("summary")).focus({ preventScroll: true });
 }
 
 // ---- check -----------------------------------------------------------------------------------------
@@ -619,6 +683,7 @@ $("rehearse-form").addEventListener("submit", async (e) => {
   setError("rehearse-path", null);
   $("rehearse-timeline").replaceChildren();
   $("rehearse-verdict").hidden = true;
+  $("rehearse-out").hidden = false;
   const { status, data } = await api("/api/rehearse", { path, task: $("rehearse-task").value });
   if (status !== 200) { setError("rehearse-path", data.error); return; }
   $("rehearse-go").disabled = true;
@@ -666,9 +731,17 @@ function diffBlock(text) {
 $("verify-run").addEventListener("click", async () => {
   const { status, data } = await busy($("verify-run"), "Checking...", () => api("/api/verify"));
   if (status !== 200) {
-    errorStrip("verify-strip", (data.error || "").includes("lockfile") ? "Nothing saved as approved yet. Use \"Save the current state as approved\" first." : data.error);
+    if ((data.error || "").includes("lockfile")) {
+      lastVerify = { ok: true, first: true };  // nothing to compare with yet: saving is the first step
+      $("verify-pin").disabled = false;
+      $("verify-empty").hidden = true;
+      strip("verify-strip", "Nothing is saved as approved yet. Save the current state as approved, and later checks compare with it.");
+      return;
+    }
+    errorStrip("verify-strip", data.error);
     return;
   }
+  $("verify-empty").hidden = true;
   strip("verify-strip", data.ok ? "Everything matches what you approved." :
     `${plural(data.changed.length, "add-on changed", "add-ons changed")}, ${data.added.length} new, ${data.removed.length} removed, ${data.unchanged} unchanged.`);
   const cards = data.changed.map(c => el("article", { class: "card change" },
@@ -715,6 +788,7 @@ async function runRecover(apply) {
   const { status, data } = await api("/api/recover", body);
   if (status !== 200) { errorStrip("recover-strip", data.error); return null; }
   const planned = data.contain.filter(x => x.startsWith("would"));
+  $("recover-out").hidden = false;
   recoverPlan = apply ? null : { component: body.component, since: body.since };
   strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
     `${planned.length ? "Not disabled yet. Use \"Disable it now\" when you are ready." : "Nothing to disable."} ${plural(Object.keys(data.reach.rotate).length, "service needs", "services need")} new keys.`);
