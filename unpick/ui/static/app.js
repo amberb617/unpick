@@ -30,7 +30,7 @@ async function api(path, body) {
 }
 
 // ---- navigation and theme -------------------------------------------------------------------------
-const screens = ["inventory", "scan", "check", "rehearse", "verify", "backends"];
+const screens = ["inventory", "scan", "check", "rehearse", "verify", "recover", "backends"];
 function show() {
   const name = screens.includes(location.hash.slice(1)) ? location.hash.slice(1) : "scan";
   for (const s of screens) document.getElementById(`screen-${s}`).hidden = s !== name;
@@ -392,6 +392,42 @@ document.getElementById("verify-run").addEventListener("click", async () => {
 document.getElementById("verify-pin").addEventListener("click", async () => {
   const { data } = await api("/api/lock", {});
   document.getElementById("verify-strip").replaceChildren(el("span", { text: `Pinned ${data.components} component(s) in unpick.lock.json.` }));
+});
+
+// ---- recover -----------------------------------------------------------------------------------------
+async function runRecover(apply) {
+  const body = { component: document.getElementById("recover-component").value.trim() || null,
+                 since: document.getElementById("recover-since").value.trim() || null, apply };
+  const strip = document.getElementById("recover-strip");
+  strip.replaceChildren(el("span", { text: apply ? "Containing..." : "Running the runbook. Nothing is changed." }));
+  const { status, data } = await api("/api/recover", body);
+  if (status !== 200) { strip.replaceChildren(el("span", { class: "net", text: data.error })); return null; }
+  strip.replaceChildren(el("span", { text: data.summary }));
+  document.getElementById("recover-contain-list").replaceChildren(
+    ...data.contain.map(x => el("li", { class: x.startsWith("would") ? null : "bad", text: x })),
+    ...data.processes.map(p => el("li", { class: "bad", text: `running: pid ${p.pid} ${p.command}` })),
+    ...(data.contain.length ? [] : [el("li", { text: "No component named, so nothing to move." })]));
+  document.getElementById("recover-contain").disabled = apply || !data.contain.some(x => x.startsWith("would"));
+  document.getElementById("recover-rotate").replaceChildren(...Object.values(data.reach.rotate).map(v => el("li", {},
+    el("label", {}, el("input", { type: "checkbox", "aria-label": `Rotated ${v.provider}` }), `${v.provider}: ${v.what}`),
+    el("p", { class: "why", text: v.how }), v.url ? el("p", { class: "because", text: v.url }) : null,
+    el("p", { class: "because", text: "because: " + v.because.join(", ") }))));
+  const lf = data.changed.lockfile;
+  document.getElementById("recover-changed").textContent = lf ? `${lf.changed.length} changed, ${lf.added.length} added, ${lf.removed.length} removed since the lockfile; ${data.changed.recent.length} file(s) modified in the window.`
+    : `${data.changed.lockfile_error}; ${data.changed.recent.length} file(s) modified in the window.`;
+  document.getElementById("recover-egress").textContent = data.egress;
+  document.getElementById("recover-report-to").replaceChildren(...(data.report_to.length ? data.report_to.map(ch => el("li", { text: `${ch.registry}: ${ch.how} ${ch.url}` }))
+    : [el("li", { text: "No registry identified; none published." })]));
+  document.getElementById("recover-count").textContent = `${data.timeline.flagged.length} of ${data.timeline.events} tool call(s) matter.`;
+  document.getElementById("recover-timeline").replaceChildren(...data.timeline.flagged.slice(-150).map(e => el("li", { class: e.why.some(w => w.startsWith("touches") || w.startsWith("decodes")) ? "hit" : null },
+    el("span", { text: `${(e.ts || "").slice(0, 19).replace("T", " ")}  ${e.agent}  ` }), el("span", { class: "tool", text: e.tool }),
+    ` ${e.why.join("; ")}  ${JSON.stringify(e.input).slice(0, 160)}`)));
+  return data;
+}
+document.getElementById("recover-form").addEventListener("submit", (e) => { e.preventDefault(); runRecover(false); });
+document.getElementById("recover-contain").addEventListener("click", async () => {
+  const plan = [...document.querySelectorAll("#recover-contain-list li")].map(li => li.textContent).join("\n");
+  if (await askConsent(`Contain now? unpick will do exactly this, keeping backups of every edited config:\n${plan}`)) runRecover(true);
 });
 
 loadJudges();

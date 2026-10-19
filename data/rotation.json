@@ -1,0 +1,381 @@
+[
+  {
+    "id": "github-pat",
+    "provider": "GitHub",
+    "matches": [
+      "^GITHUB_TOKEN$",
+      "^GH_TOKEN$",
+      "^GITHUB_PAT$",
+      "^GH_ENTERPRISE_TOKEN$",
+      "^GITHUB_PERSONAL_ACCESS_TOKEN$",
+      "(^|[\\\\/])\\.git-credentials$"
+    ],
+    "what": "Personal access token (classic or fine-grained)",
+    "how": "Settings > Developer settings > Personal access tokens > Fine-grained tokens or Tokens (classic) > Delete, then create a replacement.",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens",
+    "source": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
+  },
+  {
+    "id": "github-cli-oauth",
+    "provider": "GitHub",
+    "matches": [
+      "(^|[\\\\/])\\.config[\\\\/]gh[\\\\/]hosts\\.yml$",
+      "(^|[\\\\/])GitHub CLI[\\\\/]hosts\\.yml$"
+    ],
+    "what": "GitHub CLI OAuth token",
+    "how": "gh auth logout only removes the token locally; revoke the GitHub CLI app under Settings > Applications > Authorized OAuth Apps to kill every gh token.",
+    "url": "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps",
+    "cli": "gh auth logout && gh auth login",
+    "source": "https://cli.github.com/manual/gh_auth_logout"
+  },
+  {
+    "id": "github-oauth-apps",
+    "provider": "GitHub",
+    "matches": [],
+    "what": "Third-party OAuth app grants",
+    "how": "Settings > Integrations > Applications > Authorized OAuth Apps > Revoke (or Revoke all).",
+    "url": "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps",
+    "source": "https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/reviewing-your-authorized-oauth-apps"
+  },
+  {
+    "id": "github-ssh-keys",
+    "provider": "GitHub",
+    "matches": [
+      "(^|[\\\\/])\\.ssh[\\\\/]id_[A-Za-z0-9_]+$"
+    ],
+    "what": "SSH keys registered on GitHub",
+    "how": "Settings > SSH and GPG keys > Delete every key you cannot match to ssh-add -l -E sha256 on a clean machine.",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/reviewing-your-ssh-keys",
+    "source": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/reviewing-your-ssh-keys"
+  },
+  {
+    "id": "github-sessions",
+    "provider": "GitHub",
+    "matches": [],
+    "what": "GitHub web and mobile sessions",
+    "how": "Settings > Sessions > Revoke session for each web session; Revoke for each mobile device.",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/viewing-and-managing-your-sessions",
+    "source": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/viewing-and-managing-your-sessions"
+  },
+  {
+    "id": "gitlab-pat",
+    "provider": "GitLab",
+    "matches": [
+      "^GITLAB_TOKEN$",
+      "^GL_TOKEN$",
+      "^GITLAB_PRIVATE_TOKEN$",
+      "(^|[\\\\/])glab-cli[\\\\/]config\\.yml$"
+    ],
+    "what": "GitLab personal access token",
+    "how": "Avatar > Edit profile > Access > Personal access tokens > ellipsis > Revoke (or Rotate for a same-scope replacement).",
+    "url": "https://gitlab.com/-/user_settings/personal_access_tokens",
+    "source": "https://docs.gitlab.com/user/profile/personal_access_tokens/"
+  },
+  {
+    "id": "npm-token",
+    "provider": "npm",
+    "matches": [
+      "^NPM_TOKEN$",
+      "^NODE_AUTH_TOKEN$",
+      "^NPM_AUTH_TOKEN$",
+      "(^|[\\\\/])\\.npmrc$"
+    ],
+    "what": "npm access token",
+    "how": "Run npm token list, then revoke each token by id (not the truncated value); revocation can take up to an hour.",
+    "url": "https://docs.npmjs.com/revoking-access-tokens",
+    "cli": "npm token list; npm token revoke <id>",
+    "source": "https://docs.npmjs.com/cli/v11/commands/npm-token"
+  },
+  {
+    "id": "pypi-token",
+    "provider": "PyPI",
+    "matches": [
+      "^PYPI_TOKEN$",
+      "^PYPI_API_TOKEN$",
+      "^TWINE_PASSWORD$",
+      "^UV_PUBLISH_TOKEN$",
+      "(^|[\\\\/])\\.pypirc$"
+    ],
+    "what": "PyPI API token",
+    "how": "Account settings > API tokens: remove the token and add a scoped replacement; if activity looks suspicious, reset the password and email admin@pypi.org.",
+    "url": "https://pypi.org/manage/account/",
+    "source": "https://pypi.org/help/"
+  },
+  {
+    "id": "aws-access-key",
+    "provider": "AWS",
+    "matches": [
+      "^AWS_ACCESS_KEY_ID$",
+      "^AWS_SECRET_ACCESS_KEY$",
+      "^AWS_SESSION_TOKEN$",
+      "(^|[\\\\/])\\.aws[\\\\/]credentials$",
+      "(^|[\\\\/])\\.aws[\\\\/]config$"
+    ],
+    "what": "IAM user access key",
+    "how": "Create a new key, move apps to it, set the old key Inactive, then delete it (IAM console > Users > Security credentials > Access keys).",
+    "url": "https://console.aws.amazon.com/iam/",
+    "cli": "aws iam create-access-key; aws iam update-access-key --access-key-id <old> --status Inactive; aws iam delete-access-key --access-key-id <old>",
+    "source": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id-credentials-access-keys-update.html"
+  },
+  {
+    "id": "aws-sso",
+    "provider": "AWS",
+    "matches": [
+      "(^|[\\\\/])\\.aws[\\\\/]sso[\\\\/]cache[\\\\/]",
+      "(^|[\\\\/])\\.aws[\\\\/]cli[\\\\/]cache[\\\\/]"
+    ],
+    "what": "IAM Identity Center cached tokens",
+    "how": "aws sso logout removes all cached SSO tokens and derived temporary credentials across profiles; server-side session end is not documented.",
+    "url": "https://docs.aws.amazon.com/cli/latest/reference/sso/logout.html",
+    "cli": "aws sso logout",
+    "source": "https://docs.aws.amazon.com/cli/latest/reference/sso/logout.html"
+  },
+  {
+    "id": "gcloud-user",
+    "provider": "Google Cloud",
+    "matches": [
+      "(^|[\\\\/])\\.config[\\\\/]gcloud[\\\\/]",
+      "(^|[\\\\/])gcloud[\\\\/](credentials\\.db|access_tokens\\.db|legacy_credentials)",
+      "^CLOUDSDK_AUTH_ACCESS_TOKEN$"
+    ],
+    "what": "gcloud user credentials",
+    "how": "gcloud auth revoke --all revokes user tokens server-side and deletes them locally; it only deletes service-account credentials locally.",
+    "url": "https://docs.cloud.google.com/sdk/gcloud/reference/auth/revoke",
+    "cli": "gcloud auth revoke --all",
+    "source": "https://docs.cloud.google.com/sdk/gcloud/reference/auth/revoke"
+  },
+  {
+    "id": "gcp-sa-key",
+    "provider": "Google Cloud",
+    "matches": [
+      "^GOOGLE_APPLICATION_CREDENTIALS$",
+      "^GOOGLE_CREDENTIALS$",
+      "^GCP_SA_KEY$",
+      "(^|[\\\\/])application_default_credentials\\.json$"
+    ],
+    "what": "Service-account key (JSON)",
+    "how": "Disable the key with gcloud iam service-accounts keys disable, then delete it once nothing uses it; disabling does not revoke already-issued short-lived tokens.",
+    "url": "https://docs.cloud.google.com/iam/docs/keys-disable-enable",
+    "cli": "gcloud iam service-accounts keys disable KEY_ID --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com --project=PROJECT_ID",
+    "source": "https://docs.cloud.google.com/iam/docs/keys-disable-enable"
+  },
+  {
+    "id": "azure-cli",
+    "provider": "Azure",
+    "matches": [
+      "(^|[\\\\/])\\.azure[\\\\/]"
+    ],
+    "what": "Azure CLI cached login",
+    "how": "az logout signs out the current account and az account clear wipes the local subscription cache; neither rotates a secret.",
+    "url": "https://learn.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest",
+    "cli": "az logout; az account clear",
+    "source": "https://learn.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest"
+  },
+  {
+    "id": "azure-sp-secret",
+    "provider": "Azure",
+    "matches": [
+      "^AZURE_CLIENT_SECRET$",
+      "^ARM_CLIENT_SECRET$",
+      "^AZURE_CLIENT_CERTIFICATE_PATH$"
+    ],
+    "what": "Service principal / app registration secret",
+    "how": "List the app's credentials, delete the exposed one by key id, and reset to issue a new secret.",
+    "url": "https://learn.microsoft.com/en-us/cli/azure/ad/app/credential?view=azure-cli-latest",
+    "cli": "az ad app credential list --id <appId>; az ad app credential delete --id <appId> --key-id <keyId>; az ad app credential reset --id <appId> --append",
+    "source": "https://learn.microsoft.com/en-us/cli/azure/ad/app/credential?view=azure-cli-latest"
+  },
+  {
+    "id": "openai-key",
+    "provider": "OpenAI",
+    "matches": [
+      "^OPENAI_API_KEY$",
+      "^OPENAI_ADMIN_KEY$",
+      "(^|[\\\\/])\\.codex[\\\\/]auth\\.json$"
+    ],
+    "what": "OpenAI API key",
+    "how": "Delete the key at platform.openai.com/settings/organization/api-keys and create a new one; revocation takes effect within seconds.",
+    "url": "https://platform.openai.com/settings/organization/api-keys",
+    "source": "https://developers.openai.com/api/reference/overview"
+  },
+  {
+    "id": "anthropic-key",
+    "provider": "Anthropic",
+    "matches": [
+      "^ANTHROPIC_API_KEY$",
+      "^ANTHROPIC_AUTH_TOKEN$",
+      "^CLAUDE_API_KEY$"
+    ],
+    "what": "Anthropic API key",
+    "how": "Claude Console > API keys > three-dot menu > Delete API Key, then Create Key.",
+    "url": "https://platform.claude.com/settings/keys",
+    "source": "https://support.claude.com/en/articles/8384961-what-should-i-do-if-i-suspect-my-api-key-has-been-compromised"
+  },
+  {
+    "id": "gemini-key",
+    "provider": "Google AI Studio",
+    "matches": [
+      "^GEMINI_API_KEY$",
+      "^GOOGLE_API_KEY$",
+      "^GOOGLE_GENERATIVE_AI_API_KEY$"
+    ],
+    "what": "Gemini API key",
+    "how": "Create a replacement in AI Studio, deploy it, then disable the leaked key in the Cloud console and review usage.",
+    "url": "https://aistudio.google.com/apikey",
+    "source": "https://ai.google.dev/gemini-api/docs/api-key"
+  },
+  {
+    "id": "xai-key",
+    "provider": "xAI",
+    "matches": [
+      "^XAI_API_KEY$",
+      "^GROK_API_KEY$"
+    ],
+    "what": "xAI API key",
+    "how": "console.x.ai > correct team > API Keys > three-dot menu > Delete key (or Disable key), then create a replacement.",
+    "url": "https://console.x.ai/",
+    "source": "https://docs.x.ai/console/faq/security"
+  },
+  {
+    "id": "huggingface-token",
+    "provider": "Hugging Face",
+    "matches": [
+      "^HF_TOKEN$",
+      "^HUGGING_FACE_HUB_TOKEN$",
+      "^HUGGINGFACEHUB_API_TOKEN$",
+      "(^|[\\\\/])huggingface[\\\\/](token|stored_tokens)$"
+    ],
+    "what": "Hugging Face user access token",
+    "how": "Settings > Access Tokens > Manage > delete or refresh; anyone can also invalidate a token via POST /api/credentials/revoke.",
+    "url": "https://huggingface.co/settings/tokens",
+    "source": "https://huggingface.co/docs/hub/security-tokens"
+  },
+  {
+    "id": "slack-token",
+    "provider": "Slack",
+    "matches": [
+      "^SLACK_(BOT_|USER_|APP_)?TOKEN$",
+      "^SLACK_SIGNING_SECRET$",
+      "^SLACK_CLIENT_SECRET$"
+    ],
+    "what": "Slack bot (xoxb-), user (xoxp-) or app-level (xapp-) token",
+    "how": "Reissue the token from the app's management console (or re-run OAuth) and revoke the old one with auth.revoke.",
+    "url": "https://api.slack.com/apps",
+    "source": "https://docs.slack.dev/authentication/tokens"
+  },
+  {
+    "id": "stripe-key",
+    "provider": "Stripe",
+    "matches": [
+      "^STRIPE_(SECRET|API|RESTRICTED)_KEY$",
+      "^STRIPE_SK$"
+    ],
+    "what": "Stripe secret (sk_) or restricted (rk_) key",
+    "how": "API keys page > overflow menu > Rotate key with expiration Now; the default grace period keeps the old key alive up to 7 days.",
+    "url": "https://dashboard.stripe.com/apikeys",
+    "source": "https://docs.stripe.com/keys"
+  },
+  {
+    "id": "dockerhub-pat",
+    "provider": "Docker Hub",
+    "matches": [
+      "^DOCKER(HUB)?_(PASSWORD|TOKEN|PAT)$",
+      "^DOCKER_AUTH_CONFIG$",
+      "(^|[\\\\/])\\.docker[\\\\/]config\\.json$"
+    ],
+    "what": "Docker Hub personal access token",
+    "how": "Docker Home > avatar > Account settings > Personal access tokens > actions menu > Deactivate or Delete.",
+    "url": "https://app.docker.com/",
+    "source": "https://docs.docker.com/security/access-tokens/personal-access-tokens/"
+  },
+  {
+    "id": "cloudflare-token",
+    "provider": "Cloudflare",
+    "matches": [
+      "^CLOUDFLARE_API_(TOKEN|KEY)$",
+      "^CF_API_(TOKEN|KEY)$",
+      "(^|[\\\\/])\\.wrangler[\\\\/]config[\\\\/]"
+    ],
+    "what": "Cloudflare API token",
+    "how": "My Profile > API Tokens > three-dot menu > Roll > Confirm; the previous token stops working.",
+    "url": "https://dash.cloudflare.com/profile/api-tokens",
+    "source": "https://developers.cloudflare.com/fundamentals/api/how-to/roll-token/"
+  },
+  {
+    "id": "ssh-key",
+    "provider": "SSH",
+    "matches": [
+      "(^|[\\\\/])\\.ssh[\\\\/]id_(rsa|dsa|ecdsa|ed25519)(_sk)?$",
+      "(^|[\\\\/])\\.ssh[\\\\/]authorized_keys2?$"
+    ],
+    "what": "SSH private key",
+    "how": "Generate a new key with ssh-keygen -t ed25519, delete the old public key's line from ~/.ssh/authorized_keys on every host, and remove it from every service.",
+    "url": "https://man.openbsd.org/sshd.8",
+    "cli": "ssh-keygen -t ed25519 -C \"you@example.com\"",
+    "source": "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent"
+  },
+  {
+    "id": "chrome-passwords",
+    "provider": "Google Chrome",
+    "matches": [
+      "(^|[\\\\/])Chrome[\\\\/].*[\\\\/]Login Data$",
+      "(^|[\\\\/])Chrome[\\\\/].*[\\\\/]Cookies$"
+    ],
+    "what": "Chrome saved passwords and cookies",
+    "how": "From a clean device, run Google Password Manager Checkup and change every compromised password on its site, then delete stale entries.",
+    "url": "https://passwords.google.com/",
+    "source": "https://support.google.com/chrome/answer/95606"
+  },
+  {
+    "id": "firefox-passwords",
+    "provider": "Mozilla Firefox",
+    "matches": [
+      "(^|[\\\\/])(logins\\.json|key4\\.db|cookies\\.sqlite)$"
+    ],
+    "what": "Firefox saved logins and cookies",
+    "how": "UNVERIFIED: change each saved password from a clean device and remove entries in about:logins.",
+    "url": "https://support.mozilla.org/en-US/kb/edit-or-delete-login-firefox-password-manager",
+    "source": "UNVERIFIED (support.mozilla.org blocked fetch on 2026-10-18)"
+  },
+  {
+    "id": "safari-passwords",
+    "provider": "Apple Safari / Passwords",
+    "matches": [
+      "(^|[\\\\/])Library[\\\\/]Keychains[\\\\/]",
+      "(^|[\\\\/])Library[\\\\/]Cookies[\\\\/]Cookies\\.binarycookies$"
+    ],
+    "what": "Safari / iCloud Keychain saved passwords",
+    "how": "Open the Passwords app, change any password flagged as leaked on its site, and delete stale entries (Edit > Delete Password).",
+    "url": "https://support.apple.com/guide/passwords/delete-a-password-or-passkey-mchl4c57fbf8/mac",
+    "source": "https://support.apple.com/guide/security/password-security-recommendations-sec7f0432063/web"
+  },
+  {
+    "id": "google-sessions",
+    "provider": "Google",
+    "matches": [],
+    "what": "Google account session cookies",
+    "how": "Google Account > Security & sign-in > Manage all devices > sign out every session you do not recognise, including all with the same device name.",
+    "url": "https://google.com/devices",
+    "source": "https://support.google.com/accounts/answer/3067630"
+  },
+  {
+    "id": "microsoft-sessions",
+    "provider": "Microsoft",
+    "matches": [],
+    "what": "Microsoft account session cookies",
+    "how": "Advanced security options > Sign out everywhere > Sign out; allow up to 24 hours, and sign out Xbox separately.",
+    "url": "https://support.microsoft.com/en-us/accounts-billing/manage/how-to-sign-out-of-your-microsoft-account-everywhere",
+    "source": "https://support.microsoft.com/en-us/accounts-billing/manage/how-to-sign-out-of-your-microsoft-account-everywhere"
+  },
+  {
+    "id": "metamask-srp",
+    "provider": "MetaMask",
+    "matches": [
+      "(^|[\\\\/])Local Extension Settings[\\\\/]nkbihfbeogaeaoehlefnkodbefgpgknn([\\\\/]|$)"
+    ],
+    "what": "MetaMask Secret Recovery Phrase",
+    "how": "Create a new wallet on a different browser or device, store its new phrase offline, send remaining funds to it, and stop using the old wallet.",
+    "url": "https://support.metamask.io/stay-safe/protect-yourself/ive-been-hacked-scammed-unauthorized-transactions-on-my-account/",
+    "source": "https://support.metamask.io/stay-safe/protect-yourself/ive-been-hacked-scammed-unauthorized-transactions-on-my-account/"
+  }
+]

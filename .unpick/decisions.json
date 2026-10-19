@@ -1012,6 +1012,105 @@
       "source": "builtin",
       "matched": "    (~/.claude.json, ~/.codex/config.toml, .mcp.json) is covered by watching its folder non-recursively,",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "0c9e6c0c5182710e9d88e7e16674f5fe76410a620af52ed441f876414a0ae1aa",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase4.md",
+      "line": 81,
+      "source": "builtin",
+      "matched": "- Env vars are `GEMINI_API_KEY` or `GOOGLE_API_KEY`; if both are set, `GOOGLE_API_KEY` wins \u2014 verified 2026-10-18 against https://ai.google.dev/gemini-api/docs/api-key",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "c4c683bfe899fe577cccaa20753509c200ce1e59dd22988d0890cd874c466aeb",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/verified/phase4.md",
+      "line": 117,
+      "source": "builtin",
+      "matched": "- sshd reads `~/.ssh/authorized_keys` and `~/.ssh/authorized_keys2` by default, one key per line, `#` lines are comments; delete the old key's line on every host \u2014 verified 2026-10-18 against https://",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "17ae954e410afa85e59339fe2a0d1227ad843cfc5a535342d2eee463e079a504",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 36,
+      "source": "builtin",
+      "matched": "    \"~/.ssh\", \"~/.aws/credentials\", \"~/.aws/config\", \"~/.config/gcloud\", \"~/.azure\", \"~/.npmrc\", \"~/.pypirc\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "7d9fc0e603c3a81a4257876070efd7f9fee99635258bc71214e0dda4f3f3a087",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 37,
+      "source": "builtin",
+      "matched": "    \"~/.netrc\", \"~/.git-credentials\", \"~/.config/gh/hosts.yml\", \"~/.docker/config.json\", \"~/.kube/config\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "347d051b9f75326ca3d3d74a1e7f028188bb466070a0f9047a3c47cad5d0a94c",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 39,
+      "source": "builtin",
+      "matched": "    \"~/Library/Keychains\", \"~/Library/Application Support/Google/Chrome\", \"~/Library/Application Support/Firefox\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "82966d2b77a4d7b57336faa0bb1c18732293d1957011c4704b459ce0ab7ef0ec",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 40,
+      "source": "builtin",
+      "matched": "    \"~/Library/Application Support/BraveSoftware\", \"~/Library/Safari\", \"~/.config/google-chrome\", \"~/.mozilla/firefox\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "5aca9e58cf36b24988519e62e3edd47821021be51d8248972b7964f936b393b4",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 41,
+      "source": "builtin",
+      "matched": "    \"~/.config/BraveSoftware\", \"%LOCALAPPDATA%/Google/Chrome/User Data\", \"%APPDATA%/Mozilla/Firefox\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "800dbd035cfb086ca5ee720083f4208359c8ddca62daecb1624f0f68e6577c24",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 43,
+      "source": "builtin",
+      "matched": "    \"~/Library/Application Support/Claude/claude_desktop_config.json\", \"~/.claude.json\", \"~/.codex/auth.json\",",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "e1688a2193e529be39bfdfe9f08e45a88e84551729dbc765ce699ac6124cc7a3",
+      "decision": "accept",
+      "note": "unpick's own pattern, path list or docstring describing what it handles; reviewed 2026-10-18",
+      "path": "unpick/recover.py",
+      "line": 145,
+      "source": "builtin",
+      "matched": "    for p in sorted(project.rglob(\".env*\"))[:50]:",
+      "decided_at": "2026-10-18T00:00:00+00:00"
     }
   ]
 }

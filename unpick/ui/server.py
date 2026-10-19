@@ -219,6 +219,27 @@ def api_lock():
     return jsonify({"components": len(data["components"])})
 
 
+def api_recover():
+    from datetime import datetime
+
+    from unpick import recover
+    body = request.get_json(force=True) or {}
+    since = None
+    if body.get("since"):
+        try:
+            since = datetime.fromisoformat(body["since"]).astimezone()
+        except ValueError:
+            return jsonify({"error": "since must be an ISO date or datetime"}), 400
+    r = recover.run(body.get("component") or None, _ctx()["project"], since, apply=bool(body.get("apply")))
+    _ctx()["incident"] = r
+    return jsonify(r)
+
+
+def export_incident():
+    r = _ctx().get("incident") or abort(404)
+    return _download(Path(r["report"]).read_text(encoding="utf-8"), "text/markdown", Path(r["report"]).name)
+
+
 ROUTES = [
     ("/", index, ["GET"]), ("/static/<path:name>", static_file, ["GET"]),
     ("/api/meta", api_meta, ["GET"]), ("/api/inventory", api_inventory, ["GET"]), ("/api/scan", api_scan, ["POST"]),
@@ -228,6 +249,7 @@ ROUTES = [
     ("/api/check", api_check, ["POST"]), ("/api/check/approve", api_check_approve, ["POST"]),
     ("/api/rehearse", api_rehearse_start, ["POST"]), ("/api/rehearse/<job_id>", api_rehearse_poll, ["GET"]),
     ("/api/verify", api_verify, ["GET"]), ("/api/lock", api_lock, ["POST"]),
+    ("/api/recover", api_recover, ["POST"]), ("/api/export/incident.md", export_incident, ["GET"]),
 ]
 
 

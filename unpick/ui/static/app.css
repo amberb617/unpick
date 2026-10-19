@@ -133,3 +133,7 @@ pre.diff { font: 12px/1.45 var(--font-mono); background: var(--bg-subtle); paddi
 pre.diff .add { color: #1d6b2f; background: #e9f3e9; display: block; } pre.diff .del { color: var(--pill-fg-red); background: var(--pill-bg-red); display: block; }
 [data-theme="dark"] pre.diff .add { color: #b8e6b8; background: #12301a; }
 @media (max-width: 1400px) { .two-col { grid-template-columns: 1fr; } }
+
+.checklist { list-style: none; padding: 0; margin: 0; } .checklist li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.checklist label { display: flex; gap: 10px; align-items: baseline; font-weight: 600; } .checklist .because { font: 12px var(--font-mono); color: var(--fg-muted); margin: 4px 0 0 26px; word-break: break-all; }
+#screen-recover h2 + p { margin-top: 0; }

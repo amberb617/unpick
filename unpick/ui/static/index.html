@@ -17,6 +17,7 @@
       <a href="#check" data-screen="check">Check</a>
       <a href="#rehearse" data-screen="rehearse">Rehearse</a>
       <a href="#verify" data-screen="verify">Verify</a>
+      <a href="#recover" data-screen="recover">Recover</a>
       <a href="#backends" data-screen="backends">Backends and judges</a>
     </nav>
     <button class="ghost" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
@@ -107,6 +108,30 @@
       </div>
       <div class="runstrip" id="verify-strip">Compares every component with unpick.lock.json; changed text files show as a diff.</div>
       <div id="verify-list"></div>
+    </section>
+
+    <section id="screen-recover" class="screen" hidden>
+      <div class="screen-head">
+        <div><p class="eyebrow">WHEN IT GOT THROUGH</p><h1>Contain, rotate, find out what happened</h1></div>
+        <form class="actions" id="recover-form">
+          <input id="recover-component" type="text" size="28" placeholder="Component name or path (blank: whole machine)" aria-label="Suspected component">
+          <input id="recover-since" type="text" size="18" placeholder="Since, e.g. 2026-10-17" aria-label="Start of the window">
+          <button class="j-btn" type="submit">Run the runbook (changes nothing)</button>
+          <button class="j-btn danger" id="recover-contain" type="button" disabled>Contain now</button>
+          <a class="j-btn secondary" href="#" data-export="/api/export/incident.md">Export incident report</a>
+        </form>
+      </div>
+      <div class="runstrip" id="recover-strip">Secret values are never shown: names and locations only. If a stealer ran, rotation is not optional.</div>
+      <div class="two-col">
+        <section>
+          <article class="card"><h2>1. Contain</h2><ul id="recover-contain-list" class="questions"></ul></article>
+          <article class="card"><h2>2. Rotate</h2><ul id="recover-rotate" class="checklist"></ul></article>
+          <article class="card"><h2>4. Changed on disk</h2><p id="recover-changed"></p>
+            <h2>5. Watch outbound connections</h2><p id="recover-egress"></p>
+            <h2>6. Report the component</h2><ul id="recover-report-to"></ul></article>
+        </section>
+        <section class="card"><h2>3. What the agents did</h2><p class="muted" id="recover-count"></p><ol id="recover-timeline" class="timeline"></ol></section>
+      </div>
     </section>
 
     <section id="screen-backends" class="screen" hidden>

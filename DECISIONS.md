@@ -120,6 +120,24 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     up) and matches installs only where a command starts. An unparseable script still gets the old
     whole-text match, which errs toward blocking.
 
+## Phase 4
+
+30. **recover changes nothing without `--yes`** (the UI asks in a dialog that lists every action). Moving a
+    component and editing configs are hard to undo in the middle of an incident; a dry run first is cheap.
+
+31. **TOML configs are not rewritten.** Python's standard library reads TOML but does not write it, so for
+    a Codex `[mcp_servers.x]` table recover prints the exact edit to make by hand. JSONC configs are
+    rewritten without their comments; the backup keeps the original.
+
+32. **Session logs are parsed for Claude Code, Codex and Gemini CLI only.** None of these formats is
+    documented by its vendor; they were read from local files (keys only) on 2026-10-18 and a parser that
+    finds nothing says so. Cursor writes no tool-call log; OpenCode's storage is UNVERIFIED and skipped.
+
+33. **Rotation and abuse-report data** (data/rotation.json, data/abuse_channels.json) carry a source URL per
+    entry. UNVERIFIED items: OpenAI dashboard deletion steps (help pages returned 403), Firefox password
+    steps and Ledger's recovery guidance (pages could not be read), npm `token revoke` vs `token delete`
+    (the two npm doc pages disagree), and Smithery (no abuse channel published).
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

@@ -447,6 +447,47 @@ def cmd_rehearse(args) -> int:
     return 1 if r["findings"] else 0
 
 
+def cmd_recover(args) -> int:
+    from datetime import datetime
+
+    from unpick import recover
+
+    if not args.component and not args.all:
+        print("unpick: name a component (or its path), or pass --all", file=sys.stderr)
+        return 2
+    since = None
+    if args.since:
+        try:
+            since = datetime.fromisoformat(args.since)
+        except ValueError:
+            print("unpick: --since takes an ISO date or datetime, e.g. 2026-10-17 or 2026-10-17T09:00", file=sys.stderr)
+            return 2
+        if since.tzinfo is None:
+            since = since.astimezone()
+    r = recover.run(None if args.all else args.component, Path(args.project), since, apply=args.yes)
+    def render(d):
+        console.print(f"[bold]{esc(d['summary'])}[/]\n")
+        console.print("[bold]1. Contain[/]")
+        for x in d["contain"]:
+            console.print(f"   {esc(x)}")
+        for p in d["processes"]:
+            console.print(f"   [red]running[/] pid {p['pid']}: {esc(p['command'])}")
+        console.print("[bold]2. Rotate[/] (names and locations only)")
+        for v in d["reach"]["rotate"].values():
+            console.print(f"   [ ] {esc(v['provider'])}: {esc(v['what'])}. {esc(v['how'])} {esc(v['url'] or '')}")
+        console.print(f"[bold]3. Agent actions that matter:[/] {len(d['timeline']['flagged'])} of {d['timeline']['events']}")
+        for e in d["timeline"]["flagged"][-15:]:
+            console.print(f"   {esc(str(e['ts']))} {esc(str(e['agent']))} {esc(str(e['tool']))}: {esc('; '.join(e['why']))}")
+        lf = d["changed"].get("lockfile")
+        console.print(f"[bold]4. Changed on disk:[/] {len(lf['changed']) if lf else 'no lockfile'}; modified since: {len(d['changed']['recent'])}")
+        console.print(f"[bold]5. Egress:[/] {esc(d['egress'])}")
+        for ch in d["report_to"]:
+            console.print(f"[bold]6. Report to[/] {esc(ch['registry'])}: {esc(ch['url'])}")
+        console.print(f"\nFull report: {esc(d['report'])}")
+    _out(args, r, render)
+    return 0
+
+
 def cmd_ui(args) -> int:
     try:
         from unpick.ui.server import serve
@@ -570,6 +611,14 @@ def build_parser() -> argparse.ArgumentParser:
         s.add_argument("--build", action="store_true", help="build the box image (needs --online, once)")
         s.add_argument("--online", action="store_true")
         s.set_defaults(fn=cmd_rehearse)
+
+    s = sub.add_parser("recover", parents=[common], help="incident runbook: contain, rotate, what happened, report")
+    s.add_argument("component", nargs="?", help="component name or path")
+    s.add_argument("--all", action="store_true", help="no single suspect: run every step for the whole machine")
+    s.add_argument("--since", help="start of the window (ISO date or datetime)")
+    s.add_argument("--yes", action="store_true", help="actually contain (move the component, edit configs with backups)")
+    s.add_argument("--project", default=".")
+    s.set_defaults(fn=cmd_recover)
 
     s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
     s.add_argument("--project", default=".")

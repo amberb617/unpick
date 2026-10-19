@@ -1,0 +1,62 @@
+[
+  {
+    "registry": "npm",
+    "how": "On the package page click Report malware, fill in the form with all affected versions, and Send Report.",
+    "url": "https://www.npmjs.com/support",
+    "source": "https://docs.npmjs.com/reporting-malware-in-an-npm-package/"
+  },
+  {
+    "registry": "PyPI",
+    "how": "Sign in, open the project page, click Report project as malware at the bottom of the sidebar, and link the bad lines via inspector.pypi.io. security@pypi.org is only for flaws in PyPI itself.",
+    "url": "https://pypi.org/security/",
+    "source": "https://pypi.org/security/"
+  },
+  {
+    "registry": "GitHub",
+    "how": "Repository About sidebar > Report repository, or the ... menu > Report content, or the abuse contact form.",
+    "url": "https://support.github.com/contact/report-abuse?category=report-abuse&report=other&report_type=unspecified",
+    "source": "https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam"
+  },
+  {
+    "registry": "Open VSX",
+    "how": "Email openvsx@eclipse-foundation.org; registry vulnerabilities go through eclipse.org/security.",
+    "url": "mailto:openvsx@eclipse-foundation.org",
+    "source": "https://blogs.eclipse.org/post/mika%C3%ABl-barbero/open-vsx-security-update-october-2025"
+  },
+  {
+    "registry": "VS Code Marketplace",
+    "how": "On the extension's Marketplace page, use Report a concern at the bottom of the More Info section.",
+    "url": "https://marketplace.visualstudio.com/vscode",
+    "source": "https://code.visualstudio.com/docs/configure/extensions/extension-runtime-security"
+  },
+  {
+    "registry": "ClawHub / OpenClaw",
+    "how": "Signed in, click Report skill on the skill page; packages use the package reporting command/API (not named in docs).",
+    "url": "https://clawhub.ai/",
+    "source": "https://docs.openclaw.ai/clawhub/moderation"
+  },
+  {
+    "registry": "skills.sh (Vercel)",
+    "how": "Report through Vercel's coordinated disclosure process and include the skill URL.",
+    "url": "https://security.vercel.com/",
+    "source": "https://www.skills.sh/contact"
+  },
+  {
+    "registry": "Official MCP Registry",
+    "how": "Report abuse to the underlying package registry (npm, PyPI, Docker Hub) and open a GitHub issue titled 'Abuse report: ...'.",
+    "url": "https://github.com/modelcontextprotocol/registry/issues",
+    "source": "https://modelcontextprotocol.io/registry/faq"
+  },
+  {
+    "registry": "Smithery",
+    "how": "none published",
+    "url": null,
+    "source": "https://smithery.ai/docs/llms.txt"
+  },
+  {
+    "registry": "Hugging Face",
+    "how": "Repository three-dot menu > Report the repository; this opens a public discussion.",
+    "url": "https://huggingface.co/docs/hub/moderation",
+    "source": "https://huggingface.co/docs/hub/moderation"
+  }
+]

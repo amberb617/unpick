@@ -64,6 +64,29 @@ in docs/screenshots/ui/.
 Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothing was scanned"),
 3 a requested backend or judge was unavailable.
 
+## When it got through
+
+`unpick recover <component>` (or `--all` when there is no single suspect; `--since 2026-10-17` sets the
+window) runs the incident runbook in order:
+
+1. **Contain.** Move the component into `~/.unpick/quarantine/incident-<time>/`, remove its entries from
+   agent configs (each edited file is backed up first), and list running processes started from it.
+   Without `--yes` this only prints exactly what it would do.
+2. **Rotate.** Credentials and private files reachable from the agent's environment, as a checklist grouped
+   by provider with the official rotation page for each. Names and locations only, never values.
+3. **What the agents did.** The flight recorder plus Claude Code, Codex and Gemini CLI session logs for the
+   window: commands that touched secrets, decoded or downloaded code, contacted hosts, or mentioned the
+   component. Cursor keeps no tool-call log on disk; add the flight recorder as a hook (`unpick record`) so
+   there is one.
+4. **What changed on disk,** against the last lockfile and by modification time.
+5. **Watch outbound connections from now on:** LuLu (macOS), OpenSnitch (Linux), Windows Firewall logging.
+6. **Report** the component to the registry it came from.
+
+It writes `incident-<time>.md`, a plain-language summary you can hand to someone more technical.
+
+**If a credential stealer ran, rotation is not optional.** unpick cannot undo exfiltration. Recovery means
+containment, rotation, and knowing what happened.
+
 ## A flag is a question, not a verdict
 
 Every finding carries its rule id, its source (`builtin`, `backend:<name>`, `judge:<model>` or
