@@ -435,3 +435,21 @@ def test_quarantine_from_the_ui_never_follows_a_symlink(ui, page, monkeypatch, t
     link.symlink_to(docs)
     r = page.request.post(url + "api/isolate", data={"path": str(link)}, headers={"X-Unpick-Token": "playwright-token"})
     assert r.status == 200 and (docs / "taxes.pdf").is_file() and not link.exists()
+
+
+def test_report_and_quarantine_follow_the_result_on_screen(ui, page, monkeypatch, tmp_path):
+    import json
+    url, kit = ui
+    page.goto(url + "#scan")
+    page.fill("#scan-path", "sample-b")
+    page.click("#scan-go")
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")
+    with page.expect_download() as dl:
+        page.click("a[data-export='/api/export/scan.json']")
+    report = json.loads(Path(dl.value.path()).read_text(encoding="utf-8"))
+    assert report["summary"]["open"] == 0 and report["summary"]["accepted"] == 1  # the decision is in the report
+    cfg = tmp_path / "other.json"
+    r = page.request.post(url + "api/isolate", data={"path": str(kit / "sample-b"), "component": f"{cfg}#evil"},
+                          headers={"X-Unpick-Token": "playwright-token"})
+    assert r.status == 400 and "not part of the result" in r.json()["error"] and (kit / "sample-b").exists()

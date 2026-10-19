@@ -224,9 +224,8 @@ function fillFilter(id, values) {
 }
 $("inv-search").addEventListener("input", () => renderInventory());
 
-// The inventory entry a scan came from. An MCP server or hook lives inside a shared settings file, so
-// quarantine must take out that one entry, never the file.
-let scanComponent = null;
+// A scan started from an Installed row keeps that row on its result (last.component). An MCP server or hook
+// lives inside a shared settings file, so quarantine must take out that one entry, never the file.
 function scanPath(path, component = null) {
   $("scan-path").value = path;
   location.hash = "#scan";
@@ -243,7 +242,7 @@ function renderInventory() {
   $("inv-table").querySelector("tbody").replaceChildren(...rows.map(r => {
     const path = r.path.split("#")[0];
     return el("tr", {},
-      el("td", {}, el("input", { type: "checkbox", class: "inv-pick", "data-path": path, "aria-label": `Select ${r.name}` })),
+      el("td", {}, el("input", { type: "checkbox", class: "inv-pick", "data-path": path, "data-component": r.path, "aria-label": `Select ${r.name}` })),
       el("td", { class: "name", title: `SHA-256 ${r.sha256}` }, r.name),
       el("td", {}, el("span", { class: `chip ${r.kind}`, text: r.kind.replace("-", " ") })),
       el("td", { class: "nowrap", text: r.host }),
@@ -265,8 +264,13 @@ $("inv-all").addEventListener("change", (e) => {
   pickChanged();
 });
 $("inv-scan").addEventListener("click", async () => {
-  const paths = [...new Set([...document.querySelectorAll(".inv-pick:checked")].map(c => c.dataset.path))];
-  if (paths.length === 1) { scanPath(paths[0]); return; }
+  const picked = [...document.querySelectorAll(".inv-pick:checked")];
+  const paths = [...new Set(picked.map(c => c.dataset.path))];
+  if (picked.length === 1) {
+    const row = inventoryRows.find(x => x.path === picked[0].dataset.component);
+    scanPath(paths[0], row || null);
+    return;
+  }
   location.hash = "#scan";
   $("scan-empty").hidden = true;
   const list = $("batch");
@@ -348,7 +352,7 @@ async function runScan(component = null) {
     return;
   }
   last = data;
-  scanComponent = component && component.path.includes("#") ? component : null;
+  last.component = component && component.path.includes("#") ? component : null;
   setBack(false);
   $("scan-empty").hidden = true;
   $("batch").hidden = true;
@@ -416,13 +420,13 @@ function renderRemedy() {
 
 $("do-quarantine").addEventListener("click", async () => {
   if (!last) return;
-  const what = scanComponent
-    ? `unpick takes only the "${scanComponent.name}" entry out of ${last.target}, and keeps a backup of the file. Every other setting stays.`
+  const what = last.component
+    ? `unpick takes only the "${last.component.name}" entry out of ${last.target}, and keeps a backup of the file. Every other setting stays.`
     : `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it.`;
-  const ok = await confirmDialog({ title: scanComponent ? `Disable only ${scanComponent.name}?` : "Stop your AI from loading this?", yes: "Move it to quarantine",
+  const ok = await confirmDialog({ title: last.component ? `Disable only ${last.component.name}?` : "Stop your AI from loading this?", yes: "Move it to quarantine",
     text: `${what} You can put it back from "Something got in?", under "In quarantine now".` });
   if (!ok) return;
-  const { status, data } = await api("/api/isolate", { path: last.target, component: scanComponent ? scanComponent.path : null });
+  const { status, data } = await api("/api/isolate", { path: last.target, component: last.component ? last.component.path : null });
   $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "Something got in?", under "In quarantine now".` : (data.error || "Could not move it.");
 });
 
@@ -459,7 +463,8 @@ function renderScan() {
   $("scan-source").textContent = last.target;
   const total = allFindings().length;
   $("scan-summary").textContent = `unpick read ${plural(last.files.length, "file", "files")} and found ${plural(total, "warning", "warnings")}`
-    + (total ? ` in ${plural(new Set(allFindings().map(f => f.path)).size, "file", "files")}.` : ".");
+    + (total ? ` in ${plural(new Set(allFindings().map(f => f.path)).size, "file", "files")}.` : ".")
+    + (last.component ? ` Only the shared settings file that lists ${last.component.name} was checked, not the server's own code or tools. Some warnings may belong to other entries in it.` : "");
   const fact = (k, v, cls) => [el("dt", { text: k }), el("dd", { class: cls || null, text: v })];
   $("runstrip").replaceChildren(
     ...fact("Files read", String(last.files.length)),
@@ -692,7 +697,7 @@ function renderCheckSummary() {
   $("check-open").className = open ? "j-btn" : "j-btn secondary";
   $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
   $("check-approve").className = open ? "link-btn" : "j-btn secondary";  // approving past warnings is possible, never the obvious button
-  $("check-approve").textContent = "Save this copy to compare later, and show the install command";
+  $("check-approve").textContent = "Save a record of this download, and show the install command";
 }
 window.addEventListener("hashchange", () => { if (location.hash === "#check") renderCheckSummary(); });
 function setBack(toCheck) {
@@ -715,12 +720,12 @@ $("check-approve").addEventListener("click", async () => {
   const ok = await confirmDialog({ title: open ? `Save this copy, with ${plural(open, "open warning", "open warnings")}?` : "Save this copy?",
     yes: open ? "Save the copy anyway" : "Save the copy", danger: open > 0,
     text: (open ? "" : "No open warnings is not the same as safe. ")
-      + "This keeps the exact copy so a later change stands out, then shows the install command. unpick will not run it, and saving does not mean the add-on is safe to install." });
+      + "This records the exact files you checked, then shows the install command. unpick will not run it, and saving does not mean it is safe. Changes does not watch this download: after you install it, use Changes to save the installed version." });
   if (!ok) return;
   const { status, data } = await api("/api/check/approve", { id: checked.id });
   const pre = $("check-command");
   if (status !== 200) { errorStrip("check-strip", data.error || "Could not save the copy."); return; }
-  pre.textContent = `# Not run, and not a safety verdict. Copy it only if you still want to install:${NL}${data.install_command}${NL}# Saved as the copy to compare later, in ${data.lockfile}`;
+  pre.textContent = `# Not run, and not a safety verdict. Copy it only if you still want to install:${NL}${data.install_command}${NL}# A record of the checked files is in ${data.lockfile}. After installing, save the installed version under Changes.`;
   pre.hidden = false;
 });
 
@@ -817,7 +822,7 @@ $("verify-run").addEventListener("click", async () => {
     c.scan && c.scan.open ? el("button", { type: "button", class: "j-btn small", text: "Review the warnings", onclick: () => scanPath(c.path) }) : null));
   lastVerify = data;
   $("verify-pin").disabled = false;
-  const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}` })),
+  const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}. Not scanned for warnings: scan it under Installed.` })),
                   ...data.removed.map(a => el("p", { text: `Removed: ${a.name} (${a.kind})` }))];
   $("verify-list").replaceChildren(...cards, ...(simple.length ? [el("div", { class: "card" }, ...simple)] : []));
 });
@@ -856,6 +861,7 @@ async function runRecover(apply) {
   $("recover-out").hidden = false;
   recoverPlan = apply ? null : { component: body.component, since: body.since };
   const failed = apply && data.contain.some(x => !x.startsWith("moved "));
+  if (apply) loadIsolated();
   if (failed) errorStrip("recover-strip", "Not fully disabled. Follow the manual steps under 1. Contain it.");
   else strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
     `${planned.length ? "Not disabled yet. Use \"Disable it now\" when you are ready." : "Nothing to disable."} ${plural(Object.keys(data.reach.rotate).length, "service needs", "services need")} new keys.`);
@@ -865,7 +871,7 @@ async function runRecover(apply) {
     ...(data.contain.length ? [] : [el("li", { text: "No add-on named, so there is nothing to disable." })]));
   $("recover-contain").disabled = apply || planned.length === 0;
   $("recover-rotate").replaceChildren(...Object.values(data.reach.rotate).map(v => el("li", {},
-    el("label", {}, el("input", { type: "checkbox" }), `${v.provider}: ${v.what}`),
+    el("p", { class: "key-what" }, el("b", { text: `On this computer: ${v.provider}` }), `: ${v.what}`),
     el("p", { class: "why", text: v.how }), v.url ? el("p", { class: "because" }, el("a", { href: v.url.startsWith("https://") ? v.url : null, target: "_blank", rel: "noopener noreferrer", text: v.url })) : null,
     el("p", { class: "because", text: "Found: " + v.because.join(", ") }))));
   const lf = data.changed.lockfile;

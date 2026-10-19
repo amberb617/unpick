@@ -1,6 +1,6 @@
 # Slides: what each one shows and how to reproduce it
 
-Generated 2026-10-19 by `python tests/slides.py` from unpick 0.2.0 at commit `d6a3debb0dabb15a25f68a9e89e82c5d0919c992`.
+Generated 2026-10-19 by `python tests/slides.py` from unpick 0.2.0 at commit `7cd13e1f064a518651f4033db37a26dfdf320ccb`.
 Screenshots are 2x PNGs (3840x2160 for full screens) in docs/screenshots/. The demo kit is regenerated
 fresh with `unpick demo`; no personal paths appear.
 

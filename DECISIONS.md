@@ -205,6 +205,14 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 48. **Warnings are ordered for a newcomer:** undecided, then severity, then how many checkers agree, then
     unpick's own plain-language checks before another scanner's terse rule names.
 
+49. **Quarantine from the UI acts on one add-on, decided by the server.** An entry in a shared settings file
+    is removed alone; a file holding other add-ons' entries, or a folder holding several add-ons, is never
+    moved whole, whatever the page sends; links are moved, never followed.
+
+50. **Nothing the UI saves is called an approval.** A web check saves "a record of this download"; Changes
+    saves "a copy to compare later". Both say they are not a safety verdict. Re-locking keeps the download
+    records, and a lockfile holding only those counts as a first run.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

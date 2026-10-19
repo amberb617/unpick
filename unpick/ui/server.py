@@ -129,10 +129,13 @@ def api_decide():
         return jsonify({"error": "unknown finding"}), 400
     path = decisions.project_file(ctx["project"])
     if body.get("choice") == "undo":
+        f["decision"] = None  # f is the same dict the shown result holds, so a report reflects it
         return jsonify({"undone": decisions.forget(path, f)})
     if body.get("choice") not in decisions.CHOICES:
         return jsonify({"error": "unknown choice"}), 400
-    return jsonify(decisions.record(path, f, body["choice"], body.get("note", "")))
+    saved = decisions.record(path, f, body["choice"], body.get("note", ""))
+    f["decision"] = body["choice"]
+    return jsonify(saved)
 
 
 def api_demo():
@@ -160,7 +163,10 @@ def _download(doc: str, mimetype: str, name: str) -> Response:
 def _shown_scan() -> dict:
     """The result the page is showing (it names it in a header), so a report never describes another add-on."""
     ctx = _ctx()
-    return ctx.get("results", {}).get(request.headers.get("X-Unpick-Target", "")) or ctx["last"] or abort(404)
+    res = ctx.get("results", {}).get(request.headers.get("X-Unpick-Target", "")) or ctx["last"] or abort(404)
+    every = res["findings"] + res["accepted"]
+    accepted = sum(1 for f in every if f.get("decision") == "accept")  # counts follow decisions made since the scan
+    return {**res, "summary": {**res.get("summary", {}), "open": len(every) - accepted, "accepted": accepted}}
 
 
 def export_scan_html():
@@ -299,6 +305,8 @@ def api_isolate():
     components = inventory.discover(project=_ctx()["project"])
     want = str(body.get("component") or "")
     try:
+        if "#" in want and Path(want.partition("#")[0]) != t:
+            return jsonify({"error": "That add-on is not part of the result on screen. Scan it again and retry."}), 400
         if "#" in want:  # one entry in a shared config, chosen from Installed: take out only that entry
             c = next((c for c in components if c["path"] == want), None)
             if not c:
@@ -308,7 +316,7 @@ def api_isolate():
         if shared:
             names = ", ".join(sorted({c["name"] for c in shared})[:6])
             return jsonify({"error": f"{t} also holds {len(shared)} other add-ons ({names}). unpick will not move it whole. "
-                                     "Open the one you mean from Installed and move that one."}), 400
+                                     "Scan the one you mean from Installed, then move it."}), 400
         return jsonify(isolate.isolate({"path": str(t), "name": t.name}, reason="quarantined from the UI"))
     except isolate.CannotIsolate as e:
         return jsonify({"error": str(e)}), 400
