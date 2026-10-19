@@ -243,8 +243,21 @@ def settings_path(agent: str) -> Path:
             "cursor": home / ".cursor" / "hooks.json"}[agent]
 
 
+def _strings(obj):
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _strings(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _strings(v)
+
+
 def _ours(entry) -> bool:
-    return bool(MARK_RX.search(json.dumps(entry).replace("\\\\", "/")))
+    """Is this hook entry one unpick wrote? Checks the command strings themselves, not their JSON form,
+    so Windows paths, unpick.exe and quoted paths all match."""
+    return any(MARK_RX.search(s) for s in _strings(entry))
 
 
 def _quote(path: str) -> str:
