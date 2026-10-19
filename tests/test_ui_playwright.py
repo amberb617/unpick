@@ -75,7 +75,8 @@ def test_decide_from_ui(ui, page):
     assert "Review before installing" in page.locator("#verdict").inner_text()
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")
-    assert "No warnings from these checks" in page.locator("#verdict").inner_text()  # counts update live
+    verdict = page.locator("#verdict").inner_text()
+    assert "No unresolved warnings" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
     assert page.locator("#file-list .count").first.inner_text() == "0"
     assert (kit / ".unpick" / "decisions.json").is_file()
     page.screenshot(path=str(SHOTS / "scan-false-positive-accepted.png"))
@@ -203,3 +204,44 @@ def test_laptop_width_keeps_warnings_on_screen(ui, page):
     box = page.locator(".finding").first.bounding_box()
     assert box and box["y"] < 800 and box["x"] < 1280
     page.screenshot(path=str(SHOTS / "scan-laptop.png"))
+
+
+def test_recover_never_acts_on_an_unpreviewed_target(ui, page, monkeypatch, tmp_path):
+    from unpick import recover
+    url, _ = ui
+    calls = []
+    def fake(q, p, since, apply):
+        calls.append((q, apply))
+        return {"summary": "", "contain": [f"would move: {q}"], "processes": [], "report": str(tmp_path / "r.md"),
+                "reach": {"rotate": {}, "files": [], "env_names": [], "unmatched": []}, "timeline": {"events": 0, "flagged": []},
+                "changed": {"lockfile": None, "lockfile_error": "none", "recent": []}, "egress": "", "report_to": []}
+    monkeypatch.setattr(recover, "run", fake)
+    page.goto(url + "#recover")
+    page.fill("#recover-component", "skill-a")
+    page.click("#recover-form button[type=submit]")
+    page.wait_for_selector("#recover-contain:not([disabled])")
+    page.fill("#recover-component", "skill-b")  # typing a new target throws the previewed plan away
+    assert page.is_disabled("#recover-contain")
+    page.click("#recover-form button[type=submit]")
+    page.wait_for_selector("#recover-contain:not([disabled])")
+    page.click("#recover-contain")
+    page.click("#confirm-yes")
+    page.wait_for_function("1")
+    page.wait_for_timeout(300)
+    assert calls[-1] == ("skill-b", True) and ("skill-a", True) not in calls
+
+
+def test_scan_selected_scans_every_selected_add_on(ui, page, monkeypatch):
+    from unpick import inventory
+    url, kit = ui
+    items = [{"kind": "skill", "host": "claude-code", "scope": "user", "name": n, "path": str(kit / n), "display_path": n,
+              "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None} for n in ("sample-a", "sample-b")]
+    monkeypatch.setattr(inventory, "discover", lambda **k: items)
+    page.goto(url + "#inventory")
+    page.wait_for_selector(".inv-pick")
+    page.check("#inv-all")
+    assert "2 selected" in page.inner_text("#inv-scan")
+    page.click("#inv-scan")
+    page.wait_for_function("1")
+    page.locator("#batch-list li", has_text="sample-b:").wait_for()
+    assert page.locator("#batch-list li", has_text="STOP").count() == 1 and page.locator("#batch-list li").count() == 2

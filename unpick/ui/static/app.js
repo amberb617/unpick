@@ -150,7 +150,7 @@ let samples = null;
 async function sample(kind) {
   if (!samples) {
     const { status, data } = await api("/api/demo", {});
-    if (status !== 200) { errorStrip("runstrip", data.error || "Could not create the samples."); return; }
+    if (status !== 200) { setError(location.hash === "#scan" ? "scan-path" : "start-path", data.error || "Could not create the samples."); return; }
     samples = data.samples;
   }
   $("scan-path").value = samples[kind];
@@ -227,9 +227,27 @@ $("inv-all").addEventListener("change", (e) => {
   document.querySelectorAll(".inv-pick").forEach(c => { c.checked = e.target.checked; });
   pickChanged();
 });
-$("inv-scan").addEventListener("click", () => {
+$("inv-scan").addEventListener("click", async () => {
   const paths = [...new Set([...document.querySelectorAll(".inv-pick:checked")].map(c => c.dataset.path))];
-  scanPath(paths[0]);
+  if (paths.length === 1) { scanPath(paths[0]); return; }
+  location.hash = "#scan";
+  $("scan-empty").hidden = true;
+  const list = $("batch");
+  list.hidden = false;
+  const rows = paths.map(p => ({ path: p, item: el("li", { text: `Waiting: ${p}` }) }));
+  $("batch-list").replaceChildren(...rows.map(r => r.item));
+  for (const r of rows) {
+    r.item.textContent = `Scanning: ${r.path}`;
+    const { status, data } = await api("/api/scan", { path: r.path });
+    if (status !== 200) { r.item.replaceChildren(el("b", { text: "Could not scan " }), r.path, `: ${data.error || status}`); continue; }
+    const serious = data.findings.filter(f => f.severity === "high").length;
+    let word = "CLEAR";
+    if (serious) word = "STOP";
+    else if (data.findings.length) word = "REVIEW";
+    const kept = data;
+    r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${plural(data.findings.length, "warning", "warnings")} `,
+      el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = kept; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
+  }
 });
 
 // ---- scan ------------------------------------------------------------------------------------------
@@ -281,7 +299,10 @@ async function runScan() {
   }
   last = data;
   $("scan-empty").hidden = true;
+  $("batch").hidden = true;
   $("scan-results").hidden = false;
+  if (!$("rehearse-path").value) $("rehearse-path").value = path;
+  if (!$("recover-component").value) $("recover-component").value = path;
   renderScan();
 }
 
@@ -297,15 +318,21 @@ function renderVerdict() {
   const serious = open.filter(f => f.severity === "high").length;
   const other = open.length - serious;
   const dismissed = allFindings().length - open.length;
+  const unread = open.filter(f => f.rule_id === "RT-UNREAD").length;
   const v = $("verdict");
   let level = "ok";
-  let head = "No warnings from these checks";
+  let head = dismissed ? "No unresolved warnings" : "No warnings from these checks";
   let sub = "That is not the same as safe. Read it raw, and test-run it before you trust it.";
+  if (unread && open.length === unread) {
+    level = "review";
+    head = `Scan incomplete: ${plural(unread, "file", "files")} could not be read`;
+    sub = "unpick cannot see inside bundles, WebAssembly or compiled files. Treat them as unchecked.";
+  }
   if (serious) {
     level = "bad";
     head = `Do not install yet: ${plural(serious, "serious problem", "serious problems")}`;
     sub = other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.";
-  } else if (other) {
+  } else if (other && !(unread && open.length === unread)) {
     level = "review";
     head = `Review before installing: ${plural(other, "warning", "warnings")}`;
     sub = "None looks serious on its own. Read each one and decide.";
@@ -313,7 +340,7 @@ function renderVerdict() {
   v.className = `verdict-banner ${level}`;
   v.replaceChildren(el("span", { class: "verdict-word", text: { bad: "STOP", review: "REVIEW", ok: "CLEAR" }[level] }),
     el("div", {}, el("p", { class: "verdict-head", text: head }),
-      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as false alarms.` : "") })));
+      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") })));
 }
 
 function renderScan() {
@@ -396,7 +423,13 @@ function rawParts(raw) {
         if (text) out.push(text);
         text = "";
         const run = raw.slice(i, j);
-        out.push(el("span", { class: "collapsed", title: run, text: `[${n} hidden characters]` }));
+        const btn = el("button", { type: "button", class: "collapsed", "aria-expanded": "false", text: `[${n} hidden characters: show]` });
+        btn.addEventListener("click", () => {
+          const open = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", open ? "false" : "true");
+          btn.textContent = open ? `[${n} hidden characters: show]` : run;
+        });
+        out.push(btn);
         i = j;
         continue;
       }
@@ -449,12 +482,17 @@ function findingCard(f, findings) {
     el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
     f.context.length ? ctx : null,
     decided || el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
+    decided ? null : el("p", { class: "meta", text: "Your choice is saved for this exact line. If the line changes, the warning comes back." }),
     el("p", { class: "meta", text: `${agreementText(f)} Rule ${f.rule_id}.` }));
 }
 
 async function decide(f, choice, findings) {
-  const { status } = await api("/api/decide", { id: f.id, choice });
-  if (status !== 200) return;
+  const { status, data } = await api("/api/decide", { id: f.id, choice });
+  if (status !== 200) {
+    const card = [...document.querySelectorAll(".finding")].find(c => c.getAttribute("aria-label").endsWith(f.message));
+    if (card) card.append(el("p", { class: "field-err", text: data.error || "Your decision was not saved. Try again." }));
+    return;
+  }
   f.decision = choice === "undo" ? null : choice;
   renderVerdict();
   renderFindings(findings);
@@ -486,6 +524,7 @@ $("check-form").addEventListener("submit", async (e) => {
   const { status, data } = await busy($("check-go"), "Checking...", () => api("/api/check", { ref, offline: $("check-offline").checked }));
   if (status !== 200) { $("check-strip").hidden = true; setError("check-ref", data.error || "The check failed."); return; }
   checked = data;
+  $("rehearse-path").value = data.id;
   strip("check-strip", `Saved in quarantine as ${data.id}.`, data.network.length ? `Contacted: ${data.network.join("; ")}.` : "Nothing was sent.");
   const facts = Object.entries(data.provenance || {}).filter(([k, v]) => v !== null && v !== "" && k !== "project_urls" && !(Array.isArray(v) && !v.length));
   $("check-facts").replaceChildren(...facts.flatMap(([k, v]) => [el("dt", { text: k.replaceAll("_", " ") }), el("dd", { text: Array.isArray(v) ? v.join(", ") : String(v) })]));
@@ -589,26 +628,43 @@ $("verify-run").addEventListener("click", async () => {
     el("p", { class: "muted", text: c.path + (c.commit ? `  commit ${c.commit.old} to ${c.commit.new}` : "") }),
     ...(c.config_changes || []).map(ch => el("p", { class: "mono", text: `${ch.field}: ${JSON.stringify(ch.old)} became ${JSON.stringify(ch.new)}` })),
     ...(c.files || []).flatMap(f => [el("p", { class: "mono", text: `${f.status}: ${f.file}` }), f.diff ? diffBlock(f.diff) : null]),
-    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings." }) : null));
+    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings." }) : null,
+    c.scan && c.scan.open ? el("button", { type: "button", class: "j-btn small", text: "Review the warnings", onclick: () => scanPath(c.path) }) : null));
+  lastVerify = data;
   const simple = [...data.added.map(a => el("p", { text: `New: ${a.name} (${a.kind}) at ${a.display_path}` })),
                   ...data.removed.map(a => el("p", { text: `Removed: ${a.name} (${a.kind})` }))];
   $("verify-list").replaceChildren(...cards, ...(simple.length ? [el("div", { class: "card" }, ...simple)] : []));
 });
+let lastVerify = null;
 $("verify-pin").addEventListener("click", async () => {
+  let scope = "every add-on on this computer, as it is right now";
+  if (lastVerify && !lastVerify.ok) {
+    const names = [...lastVerify.changed, ...lastVerify.added].map(c => c.name);
+    scope += `, including ${plural(names.length, "add-on", "add-ons")} that changed or are new: ${names.slice(0, 8).join(", ")}${names.length > 8 ? " and more" : ""}`;
+  }
   const ok = await confirmDialog({ title: "Save the current state as approved?", yes: "Save as approved", danger: false,
-    text: "From now on, unpick compares every add-on with how it is right now. Anything already changed will stop showing as a change." });
+    text: `This saves ${scope}. Future checks compare against this. Anything already changed will stop showing as a change.` });
   if (!ok) return;
-  const { data } = await api("/api/lock", {});
+  const { status, data } = await api("/api/lock", {});
+  if (status !== 200) { errorStrip("verify-strip", data.error || "Could not save."); return; }
   strip("verify-strip", `Saved ${plural(data.components, "add-on", "add-ons")} as approved.`);
 });
 
 // ---- recover ---------------------------------------------------------------------------------------
+let recoverPlan = null;  // the exact target that was previewed; containment only ever acts on this
+["recover-component", "recover-since"].forEach(id => $(id).addEventListener("input", () => {
+  recoverPlan = null;
+  $("recover-contain").disabled = true;
+}));
 async function runRecover(apply) {
-  const body = { component: $("recover-component").value.trim() || null, since: $("recover-since").value || null, apply };
+  if (apply && !recoverPlan) return null;
+  const body = apply ? { ...recoverPlan, apply: true }
+    : { component: $("recover-component").value.trim() || null, since: $("recover-since").value || null, apply: false };
   strip("recover-strip", apply ? "Disabling it..." : "Working out the recovery steps. Nothing is changed.");
   const { status, data } = await api("/api/recover", body);
   if (status !== 200) { errorStrip("recover-strip", data.error); return null; }
   const planned = data.contain.filter(x => x.startsWith("would"));
+  recoverPlan = apply ? null : { component: body.component, since: body.since };
   strip("recover-strip", apply ? "Done. Each edited settings file was backed up first." :
     `${planned.length ? "Not disabled yet. Use \"Disable it now\" when you are ready." : "Nothing to disable."} ${plural(Object.keys(data.reach.rotate).length, "service needs", "services need")} new keys.`);
   $("recover-contain-list").replaceChildren(
@@ -638,8 +694,9 @@ async function runRecover(apply) {
 }
 $("recover-form").addEventListener("submit", (e) => { e.preventDefault(); runRecover(false); });
 $("recover-contain").addEventListener("click", async () => {
+  if (!recoverPlan) return;
   const plan = [...document.querySelectorAll("#recover-contain-list li")].map(li => li.textContent).join(NL);
-  const ok = await confirmDialog({ title: "Disable this add-on now?", yes: "Disable it",
+  const ok = await confirmDialog({ title: `Disable ${recoverPlan.component || "these add-ons"} now?`, yes: "Disable it",
     text: `unpick will do exactly this, and back up every settings file it edits:${NL}${plan}` });
   if (ok) runRecover(true);
 });

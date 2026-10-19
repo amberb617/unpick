@@ -177,7 +177,7 @@ table.grid { width: 100%; border-collapse: collapse; font-size: 14px; }
 .row.flag .raw { font-weight: 700; }
 .row.differs .rendered { color: var(--fg-muted); }
 .row.pulse { outline: 3px solid var(--navy-900); outline-offset: -3px; }
-.row .collapsed { background: var(--pill-bg-red); color: var(--pill-fg-red); border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; font-weight: 700; }
+button.collapsed { font: inherit; cursor: pointer; text-align: left; } .row .collapsed { background: var(--pill-bg-red); color: var(--pill-fg-red); border: 1px dashed currentColor; border-radius: 4px; padding: 0 4px; font-weight: 700; }
 .hidden-row { display: grid; grid-template-columns: 76px 1fr; border-bottom: 1px solid var(--border); }
 .hidden-text { margin: 6px 12px 8px; padding: 8px 12px; border: 2px dashed var(--red-500); border-radius: var(--radius-sm); font: 15px var(--font-body); color: var(--pill-fg-red); background: var(--bg-elevated); }
 .hidden-row.soft .hidden-text { border-color: var(--border-strong); color: var(--fg-muted); font-size: 13px; }
