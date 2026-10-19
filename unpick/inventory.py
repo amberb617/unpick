@@ -227,6 +227,18 @@ def _mcp(cfg: Path, host, scope, key, fmt, loc):
                              entry=name, loc=loc)
 
 
+def _npm_plugins(cfg: Path, scope, loc):
+    """OpenCode's `plugin` array names npm packages that load into the agent."""
+    try:
+        data = load_config(cfg, "jsonc")
+    except (ValueError, OSError):
+        return
+    for name in data.get("plugin", []) if isinstance(data, dict) else []:
+        if isinstance(name, str):
+            yield _component("plugin", "opencode", scope, cfg, name, provenance=f"npm:{name}",
+                             sha=hashlib.sha256(name.encode()).hexdigest(), entry=f"plugin:{name}", loc=loc)
+
+
 def _hooks(cfg: Path, host, scope, key, fmt, loc):
     try:
         data = load_config(cfg, fmt)
@@ -260,6 +272,10 @@ def from_location(loc: dict, project: Path):
             yield from _plugins(p, host, scope, loc)
         elif kind == "mcp-config" and p.is_file():
             yield from _mcp(p, host, scope, loc.get("mcp_key"), loc.get("format"), loc)
+            if host == "opencode":
+                yield from _npm_plugins(p, scope, loc)
+        elif kind == "autorun-file" and p.is_file():
+            yield _component("autorun-file", host, scope, p, p.name, loc=loc)
         elif kind == "settings-hooks" and p.is_file():
             yield from _hooks(p, host, scope, loc.get("hooks_key") or "hooks", loc.get("format"), loc)
         elif kind == "rules-dir" and p.is_dir():

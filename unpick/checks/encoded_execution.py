@@ -30,6 +30,10 @@ PIPES = [
     (re.compile(r"\|\s*base64\s+(-d|-D|--decode)\b.*\|\s*(" + SHELL + ")", re.I), "base64 decoded into a shell"),
     (re.compile(r"\b(curl|wget)\b[^|\n]*\|\s*(" + SHELL + ")", re.I), "download piped into a shell"),
     (re.compile(r"\b(sh|bash|zsh)\s+(-c\s+)?[\"']?\$\(\s*(curl|wget)\b", re.I), "shell runs a downloaded script"),
+    # Download (and maybe decode) into a file, then run that file: the Zenity skills.sh payload (2026-07).
+    (re.compile(r"\b(curl|wget|iwr|irm|invoke-webrequest)\b[^\n]*?(>\s*|-o\s+|-outfile\s+)([\w./~$%\\-]+)[^\n]*?(&&|;|\|\|)\s*"
+                r"(sudo\s+)?(node|bun|deno|python3?|bash|sh|zsh|pwsh|powershell|chmod\s+\+x|\.\/|start|cmd)", re.I),
+     "downloads to a file, then runs it"),
     (re.compile(r"\b(iex|invoke-expression)\b.{0,10}\(?\s*(iwr|irm|invoke-webrequest|invoke-restmethod|new-object\s+net\.webclient)", re.I), "PowerShell downloads and runs code"),
     (re.compile(r"\b(iwr|irm|invoke-webrequest|invoke-restmethod)\b[^|\n]*\|\s*(iex|invoke-expression)\b", re.I), "PowerShell downloads and runs code"),
     (re.compile(r"\binvoke-expression\b", re.I), "Invoke-Expression runs a string as code"),

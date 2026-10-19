@@ -72,6 +72,8 @@ def _print_scan(d: dict) -> None:
         console.print(f"         [dim]false positive when: {esc(f['false_positive'])}[/]")
     s = d["summary"]
     console.print(f"\n[bold]{s['open']} open finding(s), {s['accepted']} accepted.[/] By source: {s['by_source']}")
+    if d.get("skipped"):
+        console.print(f"[dim]{len(d['skipped'])} file(s) not read (binary, too large or not text); see --json \"skipped\".[/]")
     if len(d["sources"]) > 1:
         console.print(f"Agreement (Jaccard on file+line): {s['agreement']}")
     if s["open"]:

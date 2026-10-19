@@ -4695,5 +4695,484 @@
     "source": "https://ampcode.com/docs/customize/skills",
     "verified": true,
     "note": "Also .claude/skills."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": "opencode.jsonc",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "JSONC variant of opencode.json; the plugin array lists npm packages."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/opencode.jsonc",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "mac"
+    ],
+    "path": "/Library/Application Support/opencode/opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Managed (admin) config."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "linux"
+    ],
+    "path": "/etc/opencode/opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Managed (admin) config."
+  },
+  {
+    "host": "opencode",
+    "kind": "mcp-config",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%ProgramData%\\opencode\\opencode.json",
+    "mcp_key": "mcp",
+    "hooks_key": null,
+    "format": "json",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Managed (admin) config."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/agents",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/agents",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\agents",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/agent",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/agent",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\agent",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/commands",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/commands",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\commands",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/command",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/command",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\command",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/modes",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/modes",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\modes",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/mode",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/mode",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\mode",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/tools",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/tools",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\tools",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".opencode/tool",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "mac",
+      "linux"
+    ],
+    "path": "~/.config/opencode/tool",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "opencode",
+    "kind": "rules-dir",
+    "scope": "user",
+    "os": [
+      "windows"
+    ],
+    "path": "%USERPROFILE%\\.config\\opencode\\tool",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "dir",
+    "source": "https://opencode.ai/docs/config/",
+    "verified": true,
+    "note": "Added 2026-10-18 from docs/research/2026-10-landscape.md item 7."
+  },
+  {
+    "host": "vscode",
+    "kind": "autorun-file",
+    "scope": "project",
+    "os": [
+      "mac",
+      "linux",
+      "windows"
+    ],
+    "path": ".vscode/tasks.json",
+    "mcp_key": null,
+    "hooks_key": null,
+    "format": "jsonc",
+    "source": "https://code.visualstudio.com/docs/editor/tasks#_run-behavior",
+    "verified": true,
+    "note": "runOptions.runOn folderOpen runs a task when the folder opens; planted by the CHAINDROP worm (2026-08-04)."
   }
 ]

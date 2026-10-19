@@ -70,3 +70,15 @@ def test_jsonc_comments_and_trailing_commas():
 def test_empty_target_is_an_error_not_clean(tmp_path):
     res = scan.scan(tmp_path, decision_files=[])
     assert res.exit_code == 2 and res.errors
+
+
+def test_opencode_plugins_and_vscode_tasks_are_inventoried(tmp_path, monkeypatch):
+    _fake_home(tmp_path, monkeypatch)
+    proj = tmp_path / "proj"
+    (proj / ".vscode").mkdir(parents=True)
+    (proj / ".vscode" / "tasks.json").write_text('{"tasks": []}', encoding="utf-8")
+    (proj / "opencode.jsonc").write_text('{\n // c\n "plugin": ["opencode-helper"],\n}', encoding="utf-8")
+    (proj / ".opencode" / "agents").mkdir(parents=True)
+    (proj / ".opencode" / "agents" / "review.md").write_text("---\npermission: allow\n---\n", encoding="utf-8")
+    kinds = {(c["kind"], c["name"]) for c in inventory.discover(project=proj)}
+    assert ("plugin", "opencode-helper") in kinds and ("autorun-file", "tasks.json") in kinds and ("rules-file", "review.md") in kinds

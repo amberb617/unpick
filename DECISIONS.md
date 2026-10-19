@@ -74,6 +74,26 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     complexity of 15 or less and no empty `except`; an AST test for nested conditional expressions.
     pnpm, not npm, wherever a Node tool is installed.
 
+## After the October 2026 landscape review
+
+21. **Built from docs/research/2026-10-landscape.md** (its top items, all offline): `RT-AUTORUN` (project hooks
+    and folder-open tasks, the CHAINDROP pair), `RT-AGENT-SETTINGS` (approval flips and base-URL reroutes
+    for Claude Code, VS Code, OpenCode, Codex, Gemini CLI, plus "export ANTHROPIC_BASE_URL=" in prose),
+    `RT-MCP-LAUNCH` (unpinned `npx -y`/`uvx`, mcp-remote < 0.1.16, plain-http remotes, hidden binaries),
+    `RT-GIT-AUTORUN` (.git/config and .gitattributes that run programs), download-to-file-then-run in
+    `RT-ENCODED-EXEC` (the Zenity payload), `RT-UNREAD` (bundles, WebAssembly and binaries that cannot be
+    read are findings, and every skipped file is listed), and the OpenCode inventory surface.
+    Before: a CHAINDROP reproduction and the Zenity payload scored 0 findings. After: both are caught.
+
+22. **Not yet built, queued:** a CI-workflow check for agent actions on `issues` / `pull_request_target`
+    with unrestricted tools (Clinejection, "Comment and Control"); an install-redirect check for prose
+    that steers the agent away from the registry to a look-alike source; and in phase 3, `lock`/`verify`
+    that checks HEAD against the pinned SHA, refuses branch names shaped like a SHA (Claude Code
+    CVE-2026-86063) and verifies NVIDIA `skill.oms.sig` signatures offline.
+
+23. **No CHAINDROP file hashes shipped.** The report suggests matching published `setup.mjs` hashes; none
+    were found in a primary source, and inventing them is worse than not having them.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

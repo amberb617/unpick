@@ -86,3 +86,10 @@ def test_yara_x_falls_back_to_python_package(monkeypatch):
     mod = backends.adapters()["yara-x"]
     monkeypatch.setattr(mod, "which", lambda cmd: None)
     assert mod.command(Path("x"))[1:3] == ["-m", "unpick.backends._yarax_runner"]
+
+
+def test_bundled_yara_rules_exist_and_compile():
+    mod = backends.adapters()["yara-x"]
+    assert mod.RULES.is_file(), mod.RULES
+    yara_x = pytest.importorskip("yara_x")
+    yara_x.compile(mod.RULES.read_text(encoding="utf-8"))

