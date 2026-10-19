@@ -103,8 +103,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 25. **rehearse is offline only for now.** The spec allows a hosted model with exactly one allowed API host.
     Not built: a no-network box plus a local model already works, and a per-host egress allowance needs a
-    proxy inside the box. Recommendation: add it only if Granite's tool calling proves too weak in practice.
-    **OPEN.**
+    proxy inside the box. Decided 2026-10-18: not building it.
 
 26. **The hook fails closed.** An install the hook cannot resolve (an MCP add whose server is a local
     binary, say) is denied with the reason and the override, `UNPICK_HOOK_FAIL_OPEN=1`.
@@ -116,9 +115,10 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 29. **A hook must read the command, not the text around it.** On 2026-10-18 the Jiffy CLI hook on this
     machine blocked a shell script because a heredoc of documentation contained an MCP-add example.
-    unpick's hook matches install commands too; its `targets()` has the same weakness for commands that
-    embed install text in a string. Accepted for now: it fails toward blocking. **OPEN:** parse shell
-    words before matching.
+    unpick's hook had the same weakness. Fixed 2026-10-18: `targets()` now splits the script into real shell
+    commands first (quoted text stays one word, heredoc bodies are skipped, `sh -c` and `eval` are opened
+    up) and matches installs only where a command starts. An unparseable script still gets the old
+    whole-text match, which errs toward blocking.
 
 ## Phase 2 (looking ahead)
 

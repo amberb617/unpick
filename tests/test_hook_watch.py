@@ -101,3 +101,29 @@ def test_watch_scan_and_report_logs(tmp_path, monkeypatch, kit):
 @pytest.mark.parametrize("kind,needle", [("launchd", "RunAtLoad"), ("systemd", "WantedBy=default.target"), ("windows", "/SC ONLOGON")])
 def test_service_recipes(kind, needle):
     assert needle in watch.service(kind)
+
+
+@pytest.mark.parametrize("script", [
+    "python3 - <<'EOF'\nprint('example: claude mcp add x -- ./bin')\nEOF",
+    "cat > notes.md <<EOF\nRun claude mcp add mail -- npx -y mail-mcp to install.\nEOF",
+    'echo "claude mcp add x -- npx -y pkg"',
+    "git commit -m 'docs: explain npx skills add acme/x'",
+    "grep -n 'claude mcp add' README.md",
+])
+def test_install_text_that_is_only_data_is_ignored(script):
+    assert hook.targets(script) == []
+
+
+@pytest.mark.parametrize("script,ref", [
+    ("cd proj && claude mcp add mail -- npx -y mail-mcp@2", "npm:mail-mcp@2"),
+    ("FOO=1 sudo claude mcp add mail -- npx -y mail-mcp@2", "npm:mail-mcp@2"),
+    ("sh -c 'claude mcp add mail -- npx -y mail-mcp@2'", "npm:mail-mcp@2"),
+    ("bash -c \"npx skills add acme/x\"", "https://github.com/acme/x"),
+    ("echo start\nnpx -y skills add acme/x\necho done", "https://github.com/acme/x"),
+])
+def test_real_installs_inside_scripts_are_found(script, ref):
+    assert hook.targets(script) == [ref]
+
+
+def test_unparseable_script_errs_toward_checking():
+    assert hook.targets("echo 'unterminated ; claude mcp add x -- npx -y pkg") == ["npm:pkg"]

@@ -39,7 +39,7 @@ INSTALLS = [
     (re.compile(r"\bcode(?:-insiders)?\s+--add-mcp\b(?P<rest>.*)"), "mcp"),
     (re.compile(r"\bclaude\s+plugin\s+(?:install|marketplace\s+add)\b(?P<rest>.*)"), "plugin"),
     (re.compile(r"\b(?:npx|pnpm\s+dlx|bunx)\s+(?:-y\s+)?skills(?:@[\w.-]+)?\s+(?:add|a|install|i|use)\b(?P<rest>.*)"), "skill"),
-    (re.compile(r"\bgit\s+clone\b(?P<rest>.*(?:skills|\.claude|\.codex|\.cursor|\.opencode)\S*)"), "skill"),
+    (re.compile(r"\bgit\s+(?:-c\s+\S+\s+)*clone\b(?P<rest>.*(?:skills|\.claude|\.codex|\.cursor|\.opencode)\S*)"), "skill"),
 ]
 PKG = re.compile(r"(?:^|\s)(?:npx|bunx|pnpm\s+dlx)\s+(?:-y\s+)?((?:@[\w.-]+/)?[\w.-]+(?:@[\w.+-]+)?)")
 UVX = re.compile(r"(?:^|\s)uvx\s+([\w.-]+(?:==[\w.+-]+)?)")
@@ -48,11 +48,76 @@ GH_SHORT = re.compile(r"(?:^|\s)([\w.-]+/[\w.-]+)(?:@[\w.-]+)?(?=\s|$)")
 
 
 # ---------------------------------------------------------------- deciding
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][\w]*)\1")
+WRAPPERS = {"sudo", "env", "command", "exec", "time", "nohup", "nice", "builtin"}
+SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "|&", ";;"}
+SHELLS = {"sh", "bash", "zsh", "dash", "ksh"}
+
+
+def _strip_heredocs(script: str) -> str:
+    """Drop heredoc bodies: their text is data handed to a program, not commands the shell runs."""
+    out, lines, i = [], script.split("\n"), 0
+    while i < len(lines):
+        line = lines[i]
+        out.append(line)
+        ends = [m.group(2) for m in HEREDOC.finditer(line)]
+        i += 1
+        for end in ends:
+            while i < len(lines) and lines[i].strip() != end:
+                i += 1
+            i += 1  # the terminator line
+    return "\n".join(out)
+
+
+def commands(script: str) -> list[list[str]] | None:
+    """Split a shell script into simple commands (lists of words). Quoted text stays one word, heredoc
+    bodies are skipped, and `sh -c '...'` is opened up. None when the script cannot be parsed."""
+    try:
+        lex = shlex.shlex(_strip_heredocs(script).replace("\n", " ; "), posix=True, punctuation_chars=";&|()")
+        lex.whitespace_split = True
+        tokens = list(lex)
+    except ValueError:
+        return None
+    out, cur = [], []
+    for t in tokens + [";"]:
+        if t in SEPARATORS:
+            if cur:
+                out.append(cur)
+            cur = []
+        else:
+            cur.append(t)
+    expanded = []
+    for words in out:
+        while words and (words[0] in WRAPPERS or re.fullmatch(r"[A-Za-z_]\w*=.*", words[0])):
+            words = words[1:]  # sudo, env FOO=bar, plain assignments
+        if len(words) >= 3 and Path(words[0]).name in SHELLS and words[1] == "-c":
+            expanded.extend(commands(words[2]) or [words])
+        elif words and words[0] == "eval":
+            expanded.extend(commands(" ".join(words[1:])) or [words])
+        elif words:
+            expanded.append(words)
+    return expanded
+
+
 def targets(command: str) -> list[str]:
-    """What an install command would fetch, as `check` refs. Empty if this is not an install."""
+    """What an install command would fetch, as `check` refs. Empty if this is not an install.
+
+    Matching runs on each real shell command, so install text inside a heredoc, a quoted string or a
+    comment is not mistaken for an install. If the script cannot be parsed, the whole text is matched,
+    which errs toward checking (and blocking) rather than letting something through."""
+    parsed = commands(command)
+    if parsed is None:
+        return _targets_in(command, anchored=False)
+    out = []
+    for words in parsed:
+        out.extend(_targets_in(" ".join(words), anchored=True))
+    return out
+
+
+def _targets_in(command: str, anchored: bool) -> list[str]:
     out = []
     for rx, kind in INSTALLS:
-        m = rx.search(command)
+        m = rx.match(command) if anchored else rx.search(command)
         if not m:
             continue
         rest = m.group("rest")
