@@ -10,6 +10,24 @@ default, and it is fully useful with nothing else installed.
 To unpick a seam is to take it apart stitch by stitch and see what was sewn in. unpick does that to a
 Markdown file. It backs the BSides Cambridge talk "The Devil Wears Markdown".
 
+## Threat model
+
+**Who this protects:** one person or a small team with no security staff, installing AI components that
+strangers wrote: skills, rules files, MCP servers, plugins and hooks.
+
+**What it assumes about the component:** it may be hostile, and it may be written to look harmless to a
+human and to a scanner: hidden Unicode, setup steps that ask you to paste a command, tool descriptions that
+instruct the model, settings that switch off approvals or reroute your API traffic, and clean versions
+that turn malicious on a later update.
+
+**What it assumes about the tools:** every scanner misses things and flags honest files, and any model can
+be talked out of a finding. So no single source decides, the judge is one witness, and every finding says
+when it is a false positive.
+
+**What it does not protect against:** a compromised machine, a malicious agent runtime itself, attacks
+that only trigger outside a rehearsal, or anything already exfiltrated. It does not replace a sandbox or a
+runtime guard (see "What unpick does not do").
+
 ## Install
 
 ```
@@ -22,13 +40,17 @@ the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below
 
 ## The five-minute triage, mapped to commands
 
-| step | what you do | command |
-|---|---|---|
-| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url or npm:pkg or pypi:pkg>` |
-| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` |
-| 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` |
-| 4. First run in a box | no network, no real credentials | `unpick rehearse <path or check id>` |
-| 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` |
+| step | what you do | command | UI screen |
+|---|---|---|---|
+| 1. Who made it? | provenance: author, age, publisher matches the name | `unpick check <url or npm:pkg or pypi:pkg>` | Check |
+| 2. Read the raw bytes | see what the model reads, not what the renderer shows | `unpick raw SKILL.md` | Scan (split view) |
+| 3. Scan offline | built-in checks, plus any scanners and judge you have | `unpick scan <path>` | Scan |
+| 4. First run in a box | no network, no real credentials | `unpick rehearse <path or check id>` | Rehearse |
+| 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` | Verify |
+| When it got through | contain, rotate, find out what happened | `unpick recover <component>` | Recover |
+
+`unpick report <path> --html out.html` puts the scan, judge opinions, a saved rehearsal, your decisions
+and (with `--inventory`) the inventory in one self-contained file that prints in black and white.
 
 **Before install.** `unpick check` fetches into `~/.unpick/quarantine/` with nothing executed (git hooks,
 fsmonitor and submodules off; archives checked for path traversal, links and zip bombs; npm and PyPI

@@ -75,7 +75,7 @@ def test_install_dry_run_then_install_then_uninstall(tmp_path, monkeypatch, agen
     hook.apply(agent, install=True, dry_run=False)
     assert hook.apply(agent, install=True, dry_run=False)["changed"] is False  # idempotent
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["keep"] and hook.MARK in json.dumps(data["hooks"])
+    assert data["keep"] and hook._ours(data["hooks"])
     assert list(path.parent.glob(path.name + ".unpick-backup-*"))
     hook.apply(agent, install=False, dry_run=False)
     assert json.loads(path.read_text(encoding="utf-8")) == {"keep": True}
