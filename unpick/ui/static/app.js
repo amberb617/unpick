@@ -686,13 +686,13 @@ function renderCheckSummary() {
   const files = plural(checked.scan.files.length, "file", "files");
   let text = `No open warnings in ${files}. That is not the same as safe.`;
   if (serious) text = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}${open > serious ? ` and ${plural(open - serious, "other warning", "other warnings")}` : ""}. Review them first.`;
-  else if (open) text = `${plural(open, "warning", "warnings")} in ${files}. Review them before you approve.`;
+  else if (open) text = `${plural(open, "warning", "warnings")} in ${files}. Read them and decide. A warning here is a reason not to install yet.`;
   $("check-summary").textContent = text;
   $("check-summary").className = serious ? "big-text bad" : "big-text";
   $("check-open").className = open ? "j-btn" : "j-btn secondary";
   $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
   $("check-approve").className = open ? "link-btn" : "j-btn secondary";  // approving past warnings is possible, never the obvious button
-  $("check-approve").textContent = open ? "Save as approved anyway, and show the install command" : "Save as approved and show the install command (not run)";
+  $("check-approve").textContent = "Save this copy to compare later, and show the install command";
 }
 window.addEventListener("hashchange", () => { if (location.hash === "#check") renderCheckSummary(); });
 function setBack(toCheck) {
@@ -712,15 +712,15 @@ $("check-open").addEventListener("click", () => {
 $("check-approve").addEventListener("click", async () => {
   if (!checked) return;
   const { open } = checkOpen();
-  if (open) {
-    const ok = await confirmDialog({ title: `Approve with ${plural(open, "open warning", "open warnings")}?`, yes: "Approve anyway",
-      text: "You have not marked these warnings as false alarms. Approving records this exact copy as trusted, and unpick will only warn you again if it changes." });
-    if (!ok) return;
-  }
+  const ok = await confirmDialog({ title: open ? `Save this copy, with ${plural(open, "open warning", "open warnings")}?` : "Save this copy?",
+    yes: open ? "Save the copy anyway" : "Save the copy", danger: open > 0,
+    text: (open ? "" : "No open warnings is not the same as safe. ")
+      + "This keeps the exact copy so a later change stands out, then shows the install command. unpick will not run it, and saving does not mean the add-on is safe to install." });
+  if (!ok) return;
   const { status, data } = await api("/api/check/approve", { id: checked.id });
   const pre = $("check-command");
-  if (status !== 200) { errorStrip("check-strip", data.error || "Could not approve it."); return; }
-  pre.textContent = `# Not run. Copy it yourself if you agree:${NL}${data.install_command}${NL}# Saved as approved in ${data.lockfile}`;
+  if (status !== 200) { errorStrip("check-strip", data.error || "Could not save the copy."); return; }
+  pre.textContent = `# Not run, and not a safety verdict. Copy it only if you still want to install:${NL}${data.install_command}${NL}# Saved as the copy to compare later, in ${data.lockfile}`;
   pre.hidden = false;
 });
 
@@ -734,9 +734,10 @@ $("rehearse-form").addEventListener("submit", async (e) => {
   setError("rehearse-task", null);
   $("rehearse-timeline").replaceChildren();
   $("rehearse-verdict").hidden = true;
-  $("rehearse-out").hidden = false;
+  $("rehearse-out").hidden = true;
   const { status, data } = await api("/api/rehearse", { path, task: $("rehearse-task").value });
-  if (status !== 200) { setError("rehearse-path", data.error); return; }
+  if (status !== 200) { setError("rehearse-path", setupHelp(data.error) || data.error); return; }
+  $("rehearse-out").hidden = false;
   $("rehearse-go").disabled = true;
   strip("rehearse-strip", "Test run in progress: no network, fake secrets, local model. This takes a few minutes.");
   pollRehearse(data.job);
@@ -755,7 +756,8 @@ async function pollRehearse(job) {
     ...evidence.filter(i => typeof i.at === "number").map(i => el("li", { class: "hit" }, el("b", { text: "WARNING SIGN  " }), i.detail)));
   if (data.status === "error" || data.error) {
     $("rehearse-go").disabled = false;
-    errorStrip("rehearse-strip", data.error || "The test run failed.");
+    if (!(data.events || []).length) $("rehearse-out").hidden = true;
+    errorStrip("rehearse-strip", setupHelp(data.error) || data.error || "The test run failed.");
     return;
   }
   if (data.status !== "done") { setTimeout(() => pollRehearse(job), 2000); return; }
@@ -766,6 +768,16 @@ async function pollRehearse(job) {
   $("rehearse-evidence").replaceChildren(...r.evidence.map(i => el("li", { class: "bad", text: i.detail })));
   $("rehearse-verdict").hidden = false;
   strip("rehearse-strip", `Finished: ${plural(r.events.length, "action", "actions")} by the test agent, nothing could leave the box.`);
+}
+
+// The test run needs three things set up once; say which, in words, with the command to run.
+function setupHelp(err) {
+  const m = /^rehearse needs (.+?)(?:: (unpick .+))?$/.exec(err || "");
+  if (!m) return null;
+  const what = { "Docker (Docker Desktop, Colima or Podman with the docker CLI)": "Docker, which runs the sealed box. Install Docker Desktop, Colima or Podman, start it, and try again.",
+    "the local model": "the small AI model that plays the test agent. Set it up once in a terminal:",
+    "its box image once": "the sealed box, built once. Set it up in a terminal:" }[m[1]] || `${m[1]}.`;
+  return `Not set up yet: ${what}${m[2] ? ` ${m[2]} (this step downloads what it needs; the test runs themselves stay offline)` : ""}`;
 }
 
 // ---- verify ----------------------------------------------------------------------------------------
@@ -787,7 +799,7 @@ $("verify-run").addEventListener("click", async () => {
       $("verify-pin").disabled = false;
       $("verify-empty").hidden = true;
       strip("verify-strip", "No saved copy to compare with, and this check did not scan your add-ons for warnings. Review them under ",
-        el("a", { href: "#inventory", text: "Installed" }), " before you save them as approved.");
+        el("a", { href: "#inventory", text: "Installed" }), ", then save a copy to compare later.");
       return;
     }
     errorStrip("verify-strip", data.error);
@@ -816,14 +828,15 @@ $("verify-pin").addEventListener("click", async () => {
   if (!lastVerify.ok) {
     const lines = [...lastVerify.changed.map(c => `changed: ${c.name} (${c.path})${c.scan && c.scan.open ? `, ${plural(c.scan.open, "warning", "warnings")}` : ""}`),
                    ...lastVerify.added.map(c => `new: ${c.name} (${c.display_path})`), ...lastVerify.removed.map(c => `removed: ${c.name}`)];
-    scope += `. That includes:${NL}${lines.join(NL)}${NL}Saving treats any warnings above as approved`;
+    scope += `. That includes:${NL}${lines.join(NL)}${NL}Any warnings above stop showing as changes`;
   }
-  const ok = await confirmDialog({ title: "Save the current state as approved?", yes: "Save as approved", danger: false,
-    text: `This saves ${scope}. Future checks compare against this. Anything already changed will stop showing as a change.` });
+  const first = lastVerify.first ? "This check did not scan your add-ons for warnings. " : "";
+  const ok = await confirmDialog({ title: "Save a copy to compare later?", yes: "Save the copy", danger: false,
+    text: `${first}This saves ${scope}. Future checks compare against it, and anything already changed stops showing as a change. It does not mean they are safe.` });
   if (!ok) return;
   const { status, data } = await api("/api/lock", {});
   if (status !== 200) { errorStrip("verify-strip", data.error || "Could not save."); return; }
-  strip("verify-strip", `Saved ${plural(data.components, "add-on", "add-ons")} as approved.`);
+  strip("verify-strip", `Saved ${plural(data.components, "add-on", "add-ons")} as the copies to compare later. That is not a safety verdict.`);
 });
 
 // ---- recover ---------------------------------------------------------------------------------------
@@ -856,8 +869,8 @@ async function runRecover(apply) {
     el("p", { class: "why", text: v.how }), v.url ? el("p", { class: "because" }, el("a", { href: v.url.startsWith("https://") ? v.url : null, target: "_blank", rel: "noopener noreferrer", text: v.url })) : null,
     el("p", { class: "because", text: "Found: " + v.because.join(", ") }))));
   const lf = data.changed.lockfile;
-  $("recover-changed").textContent = lf ? `${lf.changed.length} changed, ${lf.added.length} new and ${lf.removed.length} removed since you last approved; ${plural(data.changed.recent.length, "file", "files")} modified in the window.`
-    : `Nothing was saved as approved, so only modification times are known: ${plural(data.changed.recent.length, "file", "files")} modified in the window.`;
+  $("recover-changed").textContent = lf ? `${lf.changed.length} changed, ${lf.added.length} new and ${lf.removed.length} removed since your saved copy; ${plural(data.changed.recent.length, "file", "files")} modified in the window.`
+    : `No copy was saved to compare with, so only modification times are known: ${plural(data.changed.recent.length, "file", "files")} modified in the window.`;
   $("recover-egress").textContent = data.egress;
   $("recover-report-to").replaceChildren(...(data.report_to.length ? data.report_to.map(ch => el("li", {}, `${ch.registry}: ${ch.how} `,
     el("a", { href: ch.url.startsWith("https://") ? ch.url : null, target: "_blank", rel: "noopener noreferrer", text: ch.url })))

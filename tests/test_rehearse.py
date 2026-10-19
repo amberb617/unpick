@@ -76,3 +76,10 @@ def test_recorded_rehearsal_of_demo_sample_a():
     rules = {i["rule"] for i in items}
     assert {"RT-REHEARSE-ENCODED", "RT-REHEARSE-SPAWN"} <= rules
     assert "run commands that decode" in rehearse.verdict(items, "sample-a")
+
+
+def test_connect_lines_read_as_words():
+    from unpick.rehearse import _connect_detail
+    assert _connect_detail("AF_INET", 'sin_port=htons(53), sin_addr=inet_addr("192.168.5.2")').startswith("tried to reach 192.168.5.2 on port 53 (a name lookup); the box")
+    assert "inside the box itself" in _connect_detail("AF_INET", 'sin_port=htons(8080), sin_addr=inet_addr("127.0.0.1")')
+    assert _connect_detail("AF_UNIX", 'sun_path="/x"') == 'tried to connect (AF_UNIX: sun_path="/x")'
