@@ -254,6 +254,122 @@ def _install_fallback(args) -> int:
     return 0
 
 
+def cmd_lock(args) -> int:
+    from unpick import lock
+
+    data = lock.lock(Path(args.project), Path(args.lockfile) if args.lockfile else None)
+    _out(args, {"lockfile": args.lockfile or str(Path(args.project) / lock.LOCKFILE), "components": len(data["components"])},
+         lambda d: console.print(f"locked {d['components']} component(s) in {esc(d['lockfile'])}"))
+    return 0
+
+
+def _print_verify(r: dict) -> None:
+    console.print(f"{r['unchanged']} unchanged, {len(r['changed'])} changed, {len(r['added'])} added, {len(r['removed'])} removed")
+    for a in r["added"]:
+        console.print(f"[yellow]added[/]   {a['kind']} {esc(a['name'])} {esc(a['display_path'])}")
+    for a in r["removed"]:
+        console.print(f"[dim]removed[/] {a['kind']} {esc(a['name'])} {esc(a['path'])}")
+    for c in r["changed"]:
+        console.print(f"[bold red]changed[/] {c['kind']} {esc(c['name'])} {esc(c['path'])}")
+        if c.get("commit"):
+            console.print(f"   commit {c['commit']['old']} -> {c['commit']['new']}")
+        for ch in c.get("config_changes", []):
+            console.print(f"   config {esc(ch['field'])}: {esc(json.dumps(ch['old']))} -> {esc(json.dumps(ch['new']))}")
+        for f in c.get("files", []):
+            console.print(f"   {f['status']:8} {esc(f['file'])}")
+            if f.get("diff"):
+                console.print(esc(f["diff"].rstrip()), highlight=False)
+        if "scan" in c:
+            console.print(f"   re-scan: {c['scan']['open']} open finding(s)")
+
+
+def cmd_verify(args) -> int:
+    from unpick import lock
+
+    try:
+        r = lock.verify(Path(args.project), Path(args.lockfile) if args.lockfile else None, rescan=not args.no_scan)
+    except FileNotFoundError as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    if args.quiet and r["ok"]:
+        return 0
+    _out(args, r, _print_verify)
+    return 0 if r["ok"] else 1
+
+
+def _print_check(m: dict) -> None:
+    console.print(f"[bold]checked {esc(m['ref'])}[/] -> quarantine id [bold]{esc(m['id'])}[/]")
+    card = m["provenance"]
+    if card:
+        shown = {k: v for k, v in card.items() if k not in ("project_urls",) and v not in (None, "", [])}
+        console.print("who made it: " + esc(", ".join(f"{k}={v}" for k, v in shown.items())))
+    if m.get("provenance_error"):
+        console.print(f"[yellow]{esc(m['provenance_error'])}[/]")
+    if m["network"]:
+        console.print("[bold]network:[/] " + esc("; ".join(m["network"])))
+    for q in m["questions"]:
+        console.print(f"[yellow]?[/] {esc(q)}")
+    if not m["questions"] and card:
+        console.print("[dim]Nothing stood out on the provenance card. That is not the same as safe.[/]")
+    _print_scan(m["scan"])
+    console.print(f"\nRead it raw: unpick raw \"{esc(m['root'])}/<file>\"   Approve: unpick check --approve {esc(m['id'])}")
+
+
+def cmd_check(args) -> int:
+    from unpick import check, consent, judges, quarantine
+
+    consent.REMEMBER = args.remember
+    try:
+        if args.approve:
+            r = check.approve(args.approve, Path(args.project))
+            _out(args, r, lambda d: console.print(
+                f"Install command (not run; run it yourself if you agree):\n  {esc(d['install_command'])}\n"
+                f"Recorded in {esc(d['lockfile'])} with {d['open_findings_at_approval']} open finding(s) at approval."))
+            return 0
+        if not args.ref:
+            print("unpick: give a URL, npm:<pkg>, pypi:<pkg>, archive or path, or --approve <id>", file=sys.stderr)
+            return 2
+        judge = judges.default_judge() if args.judge == "auto" else args.judge
+        m = check.run(args.ref, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed, offline=args.offline)
+    except quarantine.Refused as e:
+        print(f"unpick: refused: {e}", file=sys.stderr)
+        return 2
+    _out(args, m, _print_check)
+    return 1 if m["scan"]["summary"]["open"] or m["questions"] else 0
+
+
+def cmd_outdated(args) -> int:
+    from unpick import outdated
+
+    if not args.online:
+        print("unpick: outdated asks npm, PyPI and GitHub about the components in your lockfile (by name) and "
+              "fetches new git versions into quarantine; re-run with --online", file=sys.stderr)
+        return 2
+    try:
+        rows = outdated.outdated(Path(args.project), fetch=not args.no_fetch)
+    except FileNotFoundError as e:
+        print(f"unpick: {e}", file=sys.stderr)
+        return 2
+    def render(rows):
+        for r in rows:
+            if r.get("error"):
+                console.print(f"[yellow]{esc(r['name'])}: could not check ({esc(r['error'])})[/]")
+                continue
+            flag = "[bold red]newer upstream[/]" if r.get("outdated") else "current"
+            console.print(f"{esc(r['name'])} ({r['kind']}): pinned {esc(str(r.get('pinned')))}, latest {esc(str(r.get('latest')))}: {flag}")
+            if r.get("publisher_changed"):
+                console.print(f"   [bold red]publisher changed[/]: {esc(json.dumps(r['publishers']))}")
+            if r.get("moved"):
+                console.print("   [bold red]repository was renamed or transferred[/]")
+            if r.get("note"):
+                console.print(f"   {esc(r['note'])}")
+            if r.get("diff"):
+                console.print(esc(r["diff"].rstrip()), highlight=False)
+                console.print(f"   upstream scan: {r['scan_open']} open finding(s); copy in {esc(r['quarantine'])}")
+    _out(args, rows, render)
+    return 1 if any(r.get("outdated") or r.get("publisher_changed") for r in rows) else 0
+
+
 def cmd_ui(args) -> int:
     try:
         from unpick.ui.server import serve
@@ -317,6 +433,35 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--online", action="store_true", help="allow the download that install needs")
     s.add_argument("--docker", action="store_true", help="build a Docker image for --boxed instead of installing on the host")
     s.set_defaults(fn=cmd_backends)
+
+    s = sub.add_parser("lock", parents=[common], help="pin every inventoried component with per-file hashes")
+    s.add_argument("--project", default=".")
+    s.add_argument("--lockfile")
+    s.set_defaults(fn=cmd_lock)
+
+    s = sub.add_parser("verify", parents=[common], help="compare this machine with the lockfile; diff and re-scan what changed")
+    s.add_argument("--project", default=".")
+    s.add_argument("--lockfile")
+    s.add_argument("--no-scan", action="store_true", help="skip re-scanning changed components (faster)")
+    s.add_argument("--quiet", action="store_true", help="print nothing when everything matches (for shell start)")
+    s.set_defaults(fn=cmd_verify)
+
+    s = sub.add_parser("outdated", parents=[common], help="newer upstream versions of locked components, with a diff and scan")
+    s.add_argument("--project", default=".")
+    s.add_argument("--online", action="store_true", help="required: this asks registries and GitHub")
+    s.add_argument("--no-fetch", action="store_true", help="report only; do not fetch new git versions")
+    s.set_defaults(fn=cmd_outdated)
+
+    s = sub.add_parser("check", parents=[common], help="fetch into quarantine, show who made it, scan; never installs")
+    s.add_argument("ref", nargs="?", help="GitHub/git URL, npm:<pkg>[@v], pypi:<pkg>[==v], archive or path")
+    s.add_argument("--approve", metavar="ID", help="print the install command for a checked component and lock it")
+    s.add_argument("--offline", action="store_true", help="skip the provenance lookup (fetching a URL still needs the network)")
+    s.add_argument("--backends")
+    s.add_argument("--judge")
+    s.add_argument("--boxed", action="store_true")
+    s.add_argument("--remember", action="store_true")
+    s.add_argument("--project", default=".")
+    s.set_defaults(fn=cmd_check)
 
     s = sub.add_parser("ui", parents=[common], help="open the local web UI (127.0.0.1 only)")
     s.add_argument("--project", default=".")
