@@ -1111,6 +1111,50 @@
       "source": "builtin",
       "matched": "    for p in sorted(project.rglob(\".env*\"))[:50]:",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "7a3707645e9931d182a3c0f0b75bc536587dc0888e45bd06402ea3369b849b5b",
+      "decision": "accept",
+      "note": "documentation quoting the patterns, commands and config paths unpick handles; reviewed 2026-10-18",
+      "path": "docs/HANDOUT-COMMANDS.md",
+      "line": 25,
+      "source": "builtin",
+      "matched": "**3. Grep for the red-flag words:** prerequisite, pipe to a shell, base64, `.ssh`, `.env`, \"tell the user\".",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "c5cdd078f8cfbed798ba9f487b84b97c8693141a8a82c014bad7724c9d489fae",
+      "decision": "accept",
+      "note": "documentation quoting the patterns, commands and config paths unpick handles; reviewed 2026-10-18",
+      "path": "docs/HANDOUT-COMMANDS.md",
+      "line": 29,
+      "source": "builtin",
+      "matched": " 'prereq|\\| *(ba)?sh|base64|\\.ssh|\\.env|tell the user' \\",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "1a936fe102529e1f5c8691c16b21a259a6dacc4b90e8b60f0fd672d47b4af480",
+      "decision": "accept",
+      "note": "documentation quoting the patterns, commands and config paths unpick handles; reviewed 2026-10-18",
+      "path": "docs/HANDOUT-COMMANDS.md",
+      "line": 48,
+      "source": "builtin",
+      "matched": "`LC_ALL=C`. In zsh, write it exactly as shown (`-E` with a plain `|`); `\\|` inside `$'...'` silently",
+      "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "1206a07c91a49377195beb225cf26db545e7ec33028d1543c2c36027125f0e63",
+      "decision": "accept",
+      "note": "documentation quoting the patterns, commands and config paths unpick handles; reviewed 2026-10-18",
+      "path": "docs/HANDOUT-COMMANDS.md",
+      "line": 69,
+      "source": "builtin",
+      "matched": " 'prereq|\\|\\s*(ba)?sh|base64|\\.ssh|\\.env|tell the user'",
+      "decided_at": "2026-10-18T00:00:00+00:00"
     }
   ]
 }

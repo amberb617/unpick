@@ -138,6 +138,22 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     steps and Ledger's recovery guidance (pages could not be read), npm `token revoke` vs `token delete`
     (the two npm doc pages disagree), and Smithery (no abuse channel published).
 
+## Phase 5
+
+34. **Handout commands wrap onto continuation lines** to stay within 60 characters: two of them (the
+    invisible-Unicode grep and the red-flag grep) cannot fit on one line with a real file name. Every
+    line, including continuations, is 60 or narrower.
+
+35. **Windows PowerShell 5.1 was tested on GitHub's windows-latest runner**, the only Windows machine
+    available. Its recorded output is in docs/HANDOUT-COMMANDS.md, and the job runs on every push.
+
+36. **Windows CI found five real bugs** (hook marker on unpick.exe, POSIX quoting, backslash paths in the
+    rotation matcher, cp1252 default reads, literal invisible characters in the PowerShell script). All
+    fixed; a test now fails on any literal invisible character in the repo's own sources.
+
+37. **Slide screenshots are generated, not hand-made:** `python tests/slides.py` drives the real UI at 2x
+    with the installed scanners and records the commit and every scanner version in docs/SLIDES.md.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

@@ -201,6 +201,13 @@ UNVERIFIED items are listed in docs/VERIFIED.md and warned about at run time: th
 provider endpoints, LM Studio's default port, Foundry Local's structured output, and nine inventory
 locations.
 
+## For the talk
+
+- docs/HANDOUT-COMMANDS.md: the six no-install commands (macOS/Linux and PowerShell), tested on every OS.
+- docs/SLIDES.md: what each slide shows, the command to reproduce it, the pinned commit and scanner versions.
+- docs/BENCHMARK.md: false-positive and detection rates, and which judges the adversarial corpus fooled.
+- `unpick demo`: the defanged demo kit, CC0.
+
 ## Licence
 
 Apache-2.0. The demo kit and adversarial corpus are CC0. Vendored test corpora keep their own licences
