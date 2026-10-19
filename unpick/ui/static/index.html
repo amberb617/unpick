@@ -100,7 +100,7 @@
 
     <!-- ------------------------------------------------------------- scan -->
     <section id="screen-scan" class="screen" hidden aria-labelledby="scan-title">
-      <a class="back" href="#start">Back to start</a>
+      <a class="back" href="#start" id="scan-back">Back to start</a>
       <form class="scan-bar" id="scan-form">
         <label for="scan-path">Scan a file or folder</label>
         <div class="field-row">
@@ -155,7 +155,7 @@
         <aside class="result-aside">
           <div class="side-card" id="next-card">
             <h2 class="side-title">What to do next</h2>
-            <p class="side-note">Not installed yet? Then do not install it. Scanning did not install anything.</p>
+            <p class="side-note" id="next-lead">Not installed yet? Then do not install it. Scanning did not install anything.</p>
             <div id="remedy" class="remedy" hidden>
               <button class="j-btn danger" id="do-quarantine" type="button">Move it to quarantine</button>
               <p class="side-note">If your AI already loads it, this stops that. Your files are kept, and you can put it back.</p>

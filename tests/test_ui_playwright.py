@@ -331,5 +331,24 @@ def test_web_result_follows_decisions_made_while_reviewing(ui, page, tmp_path, m
     page.click("#check-open")
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")
-    page.goto(url + "#check")
+    assert "No open warnings remain" in page.inner_text("#next-lead")
+    page.click("text=Back to the download review")
     page.locator("#check-summary", has_text="No open warnings").wait_for()
+
+
+def test_batch_result_can_be_decided_and_its_row_follows(ui, page, monkeypatch):
+    from unpick import inventory
+    url, kit = ui
+    items = [{"kind": "skill", "host": "claude-code", "scope": "user", "name": n, "path": str(kit / n), "display_path": n,
+              "sha256": "0" * 64, "modified": "2026-10-19T00:00:00", "provenance": None} for n in ("sample-b", "sample-a")]
+    monkeypatch.setattr(inventory, "discover", lambda **k: items)
+    page.goto(url + "#inventory")
+    page.wait_for_selector(".inv-pick")
+    page.check("#inv-all")
+    page.click("#inv-scan")
+    page.locator("#batch-list li", has_text="sample-a:").wait_for()  # sample-b was scanned first, so it is not the server's latest
+    page.locator("#batch-list li", has_text="sample-b:").locator("button", has_text="Open").click()
+    sync_api.expect(page.locator("#rehearse-path")).to_have_value(re.compile("sample-b$"))
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")  # the decision saved, though another scan ran after this one
+    page.locator("#batch-list li", has_text="sample-b: no open warnings").wait_for()

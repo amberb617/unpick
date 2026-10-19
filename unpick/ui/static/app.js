@@ -266,21 +266,28 @@ $("inv-scan").addEventListener("click", async () => {
   $("scan-empty").hidden = true;
   const list = $("batch");
   list.hidden = false;
-  const rows = paths.map(p => ({ path: p, item: el("li", { text: `Waiting: ${p}` }) }));
-  $("batch-list").replaceChildren(...rows.map(r => r.item));
-  for (const r of rows) {
+  batchRows = paths.map(p => ({ path: p, data: null, item: el("li", { text: `Waiting: ${p}` }) }));
+  $("batch-list").replaceChildren(...batchRows.map(r => r.item));
+  for (const r of batchRows) {
     r.item.textContent = `Scanning: ${r.path}`;
     const { status, data } = await api("/api/scan", { path: r.path });
     if (status !== 200) { r.item.replaceChildren(el("b", { text: "Could not scan " }), r.path, `: ${data.error || status}`); continue; }
-    const serious = data.findings.filter(f => f.severity === "high").length;
-    let word = "NOTHING FOUND";
-    if (serious) word = "STOP";
-    else if (data.findings.length) word = "REVIEW";
-    const kept = data;
-    r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${plural(data.findings.length, "warning", "warnings")} `,
-      el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = kept; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
+    r.data = data;
+    renderBatchRow(r);
   }
 });
+let batchRows = [];
+// Counted from the findings themselves, so a row follows the decisions made after opening it.
+function renderBatchRow(r) {
+  const open = r.data.findings.concat(r.data.accepted).filter(f => f.decision !== "accept");
+  const serious = open.filter(f => f.severity === "high").length;
+  let word = "NOTHING FOUND";
+  if (serious) word = "STOP";
+  else if (open.length) word = "REVIEW";
+  const count = open.length ? plural(open.length, "open warning", "open warnings") : "no open warnings. This does not prove it is safe.";
+  r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${count} `,
+    el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = r.data; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
+}
 
 // ---- scan ------------------------------------------------------------------------------------------
 let last = null;
@@ -336,11 +343,10 @@ async function runScan() {
     return;
   }
   last = data;
+  setBack(false);
   $("scan-empty").hidden = true;
   $("batch").hidden = true;
   $("scan-results").hidden = false;
-  $("rehearse-path").value = path;
-  $("recover-component").value = path;
   renderScan();
 }
 
@@ -396,6 +402,8 @@ function verdictBlock(word, action) {
 function renderRemedy() {
   const open = openFindings().length;
   $("warn-count").textContent = `${open} open`;
+  $("next-lead").textContent = open ? "Not installed yet? Then do not install it. Scanning did not install anything."
+    : "No open warnings remain. That does not prove it is safe: read it raw and test-run it before you decide.";
   $("remedy").hidden = open === 0;
   $("remedy-note").textContent = "";
 }
@@ -432,6 +440,8 @@ async function loadIsolated() {
 }
 
 function renderScan() {
+  $("rehearse-path").value = last.target;
+  $("recover-component").value = last.target;
   renderVerdict();
   renderRemedy();
   const net = last.summary.network_calls;
@@ -606,6 +616,7 @@ async function decide(f, choice, findings) {
     return;
   }
   f.decision = choice === "undo" ? null : choice;
+  batchRows.filter(r => r.data === last).forEach(renderBatchRow);
   renderVerdict();
   renderRemedy();
   renderFindings(findings);
@@ -669,8 +680,13 @@ function renderCheckSummary() {
   $("check-approve").textContent = open ? "Save as approved anyway, and show the install command" : "Save as approved and show the install command (not run)";
 }
 window.addEventListener("hashchange", () => { if (location.hash === "#check") renderCheckSummary(); });
+function setBack(toCheck) {
+  $("scan-back").href = toCheck ? "#check" : "#start";
+  $("scan-back").textContent = toCheck ? "Back to the download review" : "Back to start";
+}
 $("check-open").addEventListener("click", () => {
   if (!checked) return;
+  setBack(true);
   last = checked.scan;
   $("scan-path").value = checked.root;
   location.hash = "#scan";

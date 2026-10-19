@@ -94,6 +94,7 @@ def api_scan():
     if declined:
         return jsonify({"need_consent": declined["provider"], "prompt": consent.prompt_text(declined["provider"])}), 409
     ctx["last"] = res.to_dict()
+    _remember(ctx, ctx["last"])
     scan.save_last(res, ctx["project"])
     return jsonify(ctx["last"])
 
@@ -105,14 +106,23 @@ def api_raw():
     return jsonify(render.to_json(p.read_bytes().decode("utf-8", errors="replace")))
 
 
+def _remember(ctx, result: dict) -> None:
+    """Every finding shown this session stays decidable, not only the latest scan's (batch scans, web checks)."""
+    # ponytail: grows for the life of the UI process; a session scans dozens of add-ons, not thousands.
+    known = ctx.setdefault("known", {})
+    for f in result["findings"] + result["accepted"]:
+        known[f["id"]] = f
+
+
 def api_decide():
     ctx = _ctx()
     body = request.get_json(force=True) or {}
     last_file = ctx["project"] / ".unpick" / "last-scan.json"
     last = ctx["last"] or (json.loads(last_file.read_text(encoding="utf-8")) if last_file.is_file() else None)
-    if not last:
+    if not last and not ctx.get("known"):
         return jsonify({"error": "no scan yet"}), 400
-    f = next((x for x in last["findings"] + last["accepted"] if x["id"] == body.get("id")), None)
+    f = ctx.get("known", {}).get(body.get("id")) or next((x for x in (last or {}).get("findings", []) + (last or {}).get("accepted", [])
+                                                          if x["id"] == body.get("id")), None)
     if not f:
         return jsonify({"error": "unknown finding"}), 400
     path = decisions.project_file(ctx["project"])
@@ -167,7 +177,8 @@ def api_check():
         res = check.run(str(body.get("ref", "")), offline=bool(body.get("offline")))
     except (quarantine.Refused, OSError) as e:
         return jsonify({"error": str(e)}), 400
-    _ctx()["last"] = res["scan"]  # so warnings reviewed from a web check can be decided like any scan's
+    _ctx()["last"] = res["scan"]
+    _remember(_ctx(), res["scan"])  # so warnings reviewed from a web check can be decided like any scan's
     return jsonify(res)
 
 
