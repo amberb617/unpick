@@ -164,9 +164,11 @@ def api_check():
     from unpick import check, quarantine
     body = request.get_json(force=True) or {}
     try:
-        return jsonify(check.run(str(body.get("ref", "")), offline=bool(body.get("offline"))))
+        res = check.run(str(body.get("ref", "")), offline=bool(body.get("offline")))
     except (quarantine.Refused, OSError) as e:
         return jsonify({"error": str(e)}), 400
+    _ctx()["last"] = res["scan"]  # so warnings reviewed from a web check can be decided like any scan's
+    return jsonify(res)
 
 
 def api_check_approve():

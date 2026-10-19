@@ -309,3 +309,6 @@ body.present .bullets, body.present .path-help, body.present .entry-foot, body.p
 @media (prefers-reduced-motion: reduce) { .j-btn { transition: none; } .j-btn:hover { transform: none; } }
 @media print { .topbar, .actions, .decide, .scan-bar, .result-aside, .back { display: none; } body { background: #fff; } .result-grid { display: block; } }
 .screen > .card, .screen > .runstrip, .screen > .empty-card:not(#scan-empty) { max-width: 1100px; }
+.screen > .toolbar { max-width: 1100px; }
+.grid .j-btn { box-shadow: none; } .grid .j-btn:hover { box-shadow: var(--shadow-offset-rest); }
+.big-text.bad { color: var(--pill-fg-red); }

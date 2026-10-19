@@ -207,8 +207,9 @@
         <input id="rehearse-path" type="text" spellcheck="false" autocomplete="off" aria-describedby="rehearse-path-err">
         <p class="field-err" id="rehearse-path-err" hidden></p>
         <label for="rehearse-task">Task to give the test agent</label>
-        <textarea id="rehearse-task" rows="2">Summarise the README in this folder.</textarea>
-        <p class="help">Tip: a task that uses the add-on shows more than one that ignores it.</p>
+        <textarea id="rehearse-task" rows="2" placeholder="Use the pdf-tidy skill to tidy report.pdf" aria-describedby="rehearse-task-err rehearse-task-help"></textarea>
+        <p class="field-err" id="rehearse-task-err" hidden></p>
+        <p class="help" id="rehearse-task-help">Describe what you would normally ask this add-on to do. An unrelated task may never trigger its instructions.</p>
         <div><button class="j-btn" type="submit" id="rehearse-go">Start test run</button></div>
         <p class="form-foot">Needs Docker. The box has no network, no access to your files and only fake secrets.</p>
       </form>

@@ -299,6 +299,8 @@ def test_start_web_tab_runs_the_check(ui, page, tmp_path, monkeypatch):
     page.click("#start-web-form button[type=submit]")
     page.wait_for_selector("#check-result:not([hidden])")
     assert page.url.endswith("#check")
+    assert "serious" in page.inner_text("#check-summary")  # the web result says what the scan page says
+    assert page.get_attribute("#check-approve", "class") == "link-btn"  # approving past warnings is never the obvious button
 
 
 def test_result_cards_wait_for_a_run_and_first_save_is_possible(ui, page, monkeypatch, tmp_path):
@@ -313,5 +315,21 @@ def test_result_cards_wait_for_a_run_and_first_save_is_possible(ui, page, monkey
     monkeypatch.setattr(lock, "verify", no_lockfile)
     page.goto(url + "#verify")
     page.click("#verify-run")
-    page.locator("#verify-strip", has_text="Nothing is saved as approved yet").wait_for()
+    page.locator("#verify-strip", has_text="did not scan your add-ons").wait_for()
     assert page.is_enabled("#verify-pin")  # the first save must not be a dead end
+
+
+def test_web_result_follows_decisions_made_while_reviewing(ui, page, tmp_path, monkeypatch):
+    from unpick import quarantine
+    url, kit = ui
+    monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    page.goto(url + "#check")
+    page.fill("#check-ref", str(kit / "sample-b"))
+    page.check("#check-offline")
+    page.click("#check-form button[type=submit]")
+    page.locator("#check-open", has_text="Review the 1 warning").wait_for()
+    page.click("#check-open")
+    page.click(".finding .decide button:text('False alarm')")
+    page.wait_for_selector(".decided-line")
+    page.goto(url + "#check")
+    page.locator("#check-summary", has_text="No open warnings").wait_for()

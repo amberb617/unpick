@@ -370,8 +370,9 @@ function renderVerdict() {
   }
   if (serious) {
     level = "bad";
-    head = `Do not install yet: ${plural(serious, "serious problem", "serious problems")}`;
-    sub = other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.";
+    head = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}`;
+    sub = (other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.")
+      + (open.length > 1 ? " Several checks can flag the same line." : "");
   } else if (other && !(unread && open.length === unread)) {
     level = "review";
     head = `Review before installing: ${plural(other, "warning", "warnings")}`;
@@ -644,16 +645,30 @@ $("check-form").addEventListener("submit", async (e) => {
   if (!qs.length) qs = [el("li", { text: facts.length ? "Nothing stood out about who made it. That is not the same as safe." : "No who-made-it lookup was made." })];
   $("check-questions").replaceChildren(...qs);
   $("check-card").hidden = false;
-  const open = data.scan.summary.open;
-  $("check-summary").textContent = open ? `${plural(open, "warning", "warnings")} in ${plural(data.scan.files.length, "file", "files")}. Review them before you approve.`
-    : `No warnings in ${plural(data.scan.files.length, "file", "files")}. That is not the same as safe.`;
+  renderCheckSummary();
+  $("check-result").hidden = false;
+  $("check-command").hidden = true;
+});
+// Counted from the findings themselves, so decisions made while reviewing show up when you come back.
+function checkOpen() {
+  const open = checked.scan.findings.concat(checked.scan.accepted).filter(f => f.decision !== "accept");
+  return { open: open.length, serious: open.filter(f => f.severity === "high").length };
+}
+function renderCheckSummary() {
+  if (!checked) return;
+  const { open, serious } = checkOpen();
+  const files = plural(checked.scan.files.length, "file", "files");
+  let text = `No open warnings in ${files}. That is not the same as safe.`;
+  if (serious) text = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}${open > serious ? ` and ${plural(open - serious, "other warning", "other warnings")}` : ""}. Review them first.`;
+  else if (open) text = `${plural(open, "warning", "warnings")} in ${files}. Review them before you approve.`;
+  $("check-summary").textContent = text;
+  $("check-summary").className = serious ? "big-text bad" : "big-text";
   $("check-open").className = open ? "j-btn" : "j-btn secondary";
   $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
   $("check-approve").className = open ? "link-btn" : "j-btn secondary";  // approving past warnings is possible, never the obvious button
   $("check-approve").textContent = open ? "Save as approved anyway, and show the install command" : "Save as approved and show the install command (not run)";
-  $("check-result").hidden = false;
-  $("check-command").hidden = true;
-});
+}
+window.addEventListener("hashchange", () => { if (location.hash === "#check") renderCheckSummary(); });
 $("check-open").addEventListener("click", () => {
   if (!checked) return;
   last = checked.scan;
@@ -665,7 +680,7 @@ $("check-open").addEventListener("click", () => {
 });
 $("check-approve").addEventListener("click", async () => {
   if (!checked) return;
-  const open = checked.scan.summary.open;
+  const { open } = checkOpen();
   if (open) {
     const ok = await confirmDialog({ title: `Approve with ${plural(open, "open warning", "open warnings")}?`, yes: "Approve anyway",
       text: "You have not marked these warnings as false alarms. Approving records this exact copy as trusted, and unpick will only warn you again if it changes." });
@@ -684,6 +699,8 @@ $("rehearse-form").addEventListener("submit", async (e) => {
   const path = $("rehearse-path").value.trim();
   if (!path) { setError("rehearse-path", "Paste the path of the add-on."); return; }
   setError("rehearse-path", null);
+  if (!$("rehearse-task").value.trim()) { setError("rehearse-task", "Say what you would normally ask this add-on to do."); return; }
+  setError("rehearse-task", null);
   $("rehearse-timeline").replaceChildren();
   $("rehearse-verdict").hidden = true;
   $("rehearse-out").hidden = false;
@@ -738,7 +755,8 @@ $("verify-run").addEventListener("click", async () => {
       lastVerify = { ok: true, first: true };  // nothing to compare with yet: saving is the first step
       $("verify-pin").disabled = false;
       $("verify-empty").hidden = true;
-      strip("verify-strip", "Nothing is saved as approved yet. Save the current state as approved, and later checks compare with it.");
+      strip("verify-strip", "No saved copy to compare with, and this check did not scan your add-ons for warnings. Review them under ",
+        el("a", { href: "#inventory", text: "Installed" }), " before you save them as approved.");
       return;
     }
     errorStrip("verify-strip", data.error);
