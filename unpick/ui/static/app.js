@@ -273,7 +273,7 @@ $("inv-scan").addEventListener("click", async () => {
     const { status, data } = await api("/api/scan", { path: r.path });
     if (status !== 200) { r.item.replaceChildren(el("b", { text: "Could not scan " }), r.path, `: ${data.error || status}`); continue; }
     const serious = data.findings.filter(f => f.severity === "high").length;
-    let word = "NO WARNINGS";
+    let word = "NOTHING FOUND";
     if (serious) word = "STOP";
     else if (data.findings.length) word = "REVIEW";
     const kept = data;
@@ -361,7 +361,7 @@ function renderVerdict() {
   const unread = open.filter(f => f.rule_id === "RT-UNREAD").length;
   const v = $("verdict");
   let level = "ok";
-  let head = dismissed ? "No unresolved warnings" : "No warnings from these checks";
+  let head = dismissed ? "You marked every warning as a false alarm" : "These checks found nothing to show";
   let sub = "That is not the same as safe. Read it raw, and test-run it before you trust it.";
   if (unread && open.length === unread) {
     level = "review";
@@ -375,11 +375,12 @@ function renderVerdict() {
   } else if (other && !(unread && open.length === unread)) {
     level = "review";
     head = `Review before installing: ${plural(other, "warning", "warnings")}`;
-    sub = "None looks serious on its own. Read each one and decide.";
+    sub = "Read each one and decide. A smaller warning can still be a reason not to install.";
   }
   const counts = ["high", "medium", "low", "info"].map(sev => [sev, open.filter(f => f.severity === sev).length]).filter(([, n]) => n);
   v.className = `verdict-hero ${level}`;
-  v.replaceChildren(verdictBlock({ bad: "STOP", review: "REVIEW", ok: "NO WARNINGS" }[level], VERDICT_ACTION[level]),
+  const okWord = dismissed ? "YOUR CALL" : "NOTHING FOUND";
+  v.replaceChildren(verdictBlock({ bad: "STOP", review: "REVIEW", ok: okWord }[level], VERDICT_ACTION[level]),
     el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }),
       el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") }),
       counts.length ? el("div", { class: "count-row" }, ...counts.map(([sev, n]) => el("span", { class: `sev ${sev}`, text: `${n} ${(n === 1 ? SEV_WORD : SEV_MANY)[sev]}` }))) : null));
@@ -401,10 +402,10 @@ function renderRemedy() {
 $("do-quarantine").addEventListener("click", async () => {
   if (!last) return;
   const ok = await confirmDialog({ title: "Stop your AI from loading this?", yes: "Move it to quarantine",
-    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Your files are kept: you can put it back from "If something got in".` });
+    text: `unpick moves ${last.target} into its quarantine folder, so your AI can no longer load it. Your files are kept: you can put it back from "Something got in?", under "In quarantine now".` });
   if (!ok) return;
   const { status, data } = await api("/api/isolate", { path: last.target });
-  $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "If something got in".` : (data.error || "Could not move it.");
+  $("remedy-note").textContent = status === 200 ? `Moved to quarantine as ${data.id}. Undo it from "Something got in?", under "In quarantine now".` : (data.error || "Could not move it.");
 });
 
 $("do-clean").addEventListener("click", async () => {
@@ -576,7 +577,7 @@ function findingCard(f, findings) {
     type: "button", class: "j-btn secondary small", "aria-pressed": f.decision === choice ? "true" : "false", text: label,
     onclick: () => decide(f, choice, findings) }));
   const ctx = el("pre", {}, ...f.context.map(c => el("span", { class: c.line === f.line ? "hit" : null, text: `${String(c.line).padStart(4)}  ${c.text}${NL}` })));
-  const status = f.decision ? el("span", { class: `pill ${{ accept: "green", reject: "red", "ask-author": "lavender" }[f.decision]}`, text: DECISION_LABEL[f.decision] }) : null;
+  const status = f.decision ? el("span", { class: `pill ${{ accept: "", reject: "red", "ask-author": "lavender" }[f.decision]}`, text: DECISION_LABEL[f.decision] }) : null;
   const card = el("details", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}`,
     open: expanded.has(f.id) },
     el("summary", {}, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
@@ -648,6 +649,8 @@ $("check-form").addEventListener("submit", async (e) => {
     : `No warnings in ${plural(data.scan.files.length, "file", "files")}. That is not the same as safe.`;
   $("check-open").className = open ? "j-btn" : "j-btn secondary";
   $("check-open").textContent = open ? `Review the ${plural(open, "warning", "warnings")}` : "Read it raw";
+  $("check-approve").className = open ? "link-btn" : "j-btn secondary";  // approving past warnings is possible, never the obvious button
+  $("check-approve").textContent = open ? "Save as approved anyway, and show the install command" : "Save as approved and show the install command (not run)";
   $("check-result").hidden = false;
   $("check-command").hidden = true;
 });
@@ -679,7 +682,7 @@ $("check-approve").addEventListener("click", async () => {
 $("rehearse-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const path = $("rehearse-path").value.trim();
-  if (!path) { setError("rehearse-path", "Paste the path of the add-on, or a check id from step 1."); return; }
+  if (!path) { setError("rehearse-path", "Paste the path of the add-on."); return; }
   setError("rehearse-path", null);
   $("rehearse-timeline").replaceChildren();
   $("rehearse-verdict").hidden = true;
@@ -742,14 +745,14 @@ $("verify-run").addEventListener("click", async () => {
     return;
   }
   $("verify-empty").hidden = true;
-  strip("verify-strip", data.ok ? "Everything matches what you approved." :
+  strip("verify-strip", data.ok ? "Everything matches the copies you saved. That is not a safety verdict." :
     `${plural(data.changed.length, "add-on changed", "add-ons changed")}, ${data.added.length} new, ${data.removed.length} removed, ${data.unchanged} unchanged.`);
   const cards = data.changed.map(c => el("article", { class: "card change" },
     el("h2", {}, `${c.name} `, el("span", { class: `chip ${c.kind}`, text: c.kind })),
     el("p", { class: "muted", text: c.path + (c.commit ? `  commit ${c.commit.old} to ${c.commit.new}` : "") }),
     ...(c.config_changes || []).map(ch => el("p", { class: "mono", text: `${ch.field}: ${JSON.stringify(ch.old)} became ${JSON.stringify(ch.new)}` })),
     ...(c.files || []).flatMap(f => [el("p", { class: "mono", text: `${f.status}: ${f.file}` }), f.diff ? diffBlock(f.diff) : null]),
-    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings." }) : null,
+    c.scan ? el("p", { class: "big-text", text: c.scan.open ? `The new version has ${plural(c.scan.open, "warning", "warnings")}.` : "The new version has no warnings. That is not the same as safe." }) : null,
     c.scan && c.scan.open ? el("button", { type: "button", class: "j-btn small", text: "Review the warnings", onclick: () => scanPath(c.path) }) : null));
   lastVerify = data;
   $("verify-pin").disabled = false;

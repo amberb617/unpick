@@ -77,7 +77,8 @@ def test_decide_from_ui(ui, page):
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")
     verdict = page.locator("#verdict").inner_text()
-    assert "No unresolved warnings" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
+    assert "YOUR CALL" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
+    assert "NOTHING FOUND" not in verdict  # a dismissed warning is the reader's call, not an empty result
     assert page.locator("#file-list .count").first.inner_text() == "0"
     assert not page.is_visible("#remedy")  # nothing open, so no "stop the AI" button
     assert (kit / ".unpick" / "decisions.json").is_file()

@@ -56,7 +56,7 @@
           <p class="field-err" id="start-path-err" hidden></p>
           <p class="help path-help" id="start-path-help">Paste where it is, not what is in it. Mac: select it in Finder and press Option-Command-C. Windows: Shift + right-click it and choose "Copy as path".</p>
           <p class="try">Try: <button class="link-btn" type="button" id="try-dangerous" data-sample="dangerous">a dangerous sample</button>
-            <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" id="try-safe" data-sample="safe">a safe sample</button>
+            <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" id="try-safe" data-sample="safe">a sample that mentions a secret</button>
             <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" data-sample="tools">a poisoned tool list</button></p>
         </form>
         <form class="entry-panel" id="start-web-form" role="tabpanel" aria-labelledby="tab-web" hidden>
@@ -123,7 +123,7 @@
         <h1 id="scan-title" tabindex="-1">Nothing scanned yet</h1>
         <p>Paste a path above, or try one of the samples.</p>
         <div class="actions"><button class="j-btn secondary small" type="button" data-sample="dangerous">Dangerous sample</button>
-          <button class="j-btn secondary small" type="button" data-sample="safe">Safe sample</button>
+          <button class="j-btn secondary small" type="button" data-sample="safe">Mentions a secret</button>
           <button class="j-btn secondary small" type="button" data-sample="tools">Poisoned MCP tool list</button></div>
       </div>
 
@@ -132,7 +132,7 @@
       <div id="scan-results" class="result-grid" hidden>
         <div class="result-main">
           <header class="art-header">
-            <div class="chip-row"><span class="pill green dot" id="scan-status">Scan complete</span><span class="sep" aria-hidden="true">&middot;</span><span class="source" id="scan-source"></span></div>
+            <div class="chip-row"><span class="pill dot" id="scan-status">Scan finished</span><span class="sep" aria-hidden="true">&middot;</span><span class="source" id="scan-source"></span></div>
             <h1 class="result-title" id="scan-name" tabindex="-1"></h1>
             <p class="summary" id="scan-summary"></p>
           </header>
@@ -163,7 +163,7 @@
               <p class="side-note">A copy with the hidden tricks removed, for reading. It is not installed.</p>
             </div>
             <a class="j-btn secondary" href="#rehearse" id="next-rehearse">Test run it in a sealed box</a>
-            <p class="side-note">Watch what a throwaway agent does with it, with fake secrets and no network.</p>
+            <p class="side-note">Watch what a throwaway agent does with it, with fake secrets and no network. Needs Docker.</p>
             <p class="side-result" id="remedy-note" role="status"></p>
           </div>
           <div class="side-card">
@@ -194,7 +194,7 @@
         <article class="card" id="check-card" hidden><h2>Who made it</h2><ul id="check-questions" class="questions"></ul><dl id="check-facts" class="facts"></dl></article>
         <article class="card" id="check-result" hidden><h2>What the scan found</h2><p id="check-summary" class="big-text"></p>
           <div class="actions"><button class="j-btn" id="check-open" type="button">Review the warnings</button>
-          <button class="j-btn secondary" id="check-approve" type="button">Approve and show the install command</button></div>
+          <button class="j-btn secondary" id="check-approve" type="button">Save as approved and show the install command (not run)</button></div>
           <pre id="check-command" class="command" hidden></pre></article>
       </div>
     </section>
@@ -203,7 +203,7 @@
     <section id="screen-rehearse" class="screen" hidden aria-labelledby="rehearse-title">
       <div class="screen-head"><div><h1 id="rehearse-title" tabindex="-1">Test run in a sealed box</h1><p class="subtitle">A throwaway agent uses the add-on in a box with no network and fake secrets. You see what it tried to do.</p></div></div>
       <form class="form-card" id="rehearse-form">
-        <label for="rehearse-path">What to test: a file, folder or check id</label>
+        <label for="rehearse-path">Path of the add-on</label>
         <input id="rehearse-path" type="text" spellcheck="false" autocomplete="off" aria-describedby="rehearse-path-err">
         <p class="field-err" id="rehearse-path-err" hidden></p>
         <label for="rehearse-task">Task to give the test agent</label>

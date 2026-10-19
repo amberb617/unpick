@@ -254,7 +254,7 @@ table.grid { width: 100%; border-collapse: collapse; font-size: 14px; }
 .chip.mcp-server { background: var(--pill-bg-orange); color: var(--pill-fg-orange); }
 .chip.rules-file, .chip.instructions-file { background: var(--bg-tint); color: var(--fg-strong); }
 .chip.plugin, .chip.extension, .chip.hook, .chip.autorun-file { background: var(--pill-bg-pink); color: var(--pill-fg-pink); }
-.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.two-col { max-width: 1100px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 .one-col { display: flex; flex-direction: column; max-width: 1100px; }
 .facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 12px 0 0; font-size: 14px; }
 .facts dt { font: 600 11px var(--font-mono); color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -291,6 +291,7 @@ body.present .finding .msg { font-size: 22px; } body.present .finding .why, body
 body.present .split-body, body.present .finding pre, body.present .runstrip, body.present .timeline { font-size: 18px; }
 body.present .hidden-text { font-size: 20px; } body.present .j-btn { font-size: 18px; }
 body.present label, body.present .side-note, body.present .meta, body.present .link-btn, body.present .meta-line, body.present .try { font-size: 17px; }
+body.present .bullets, body.present .path-help, body.present .entry-foot, body.present .seg-tab, body.present .verdict-action, body.present .source { font-size: 17px; }
 
 @media (max-width: 1200px) {
   .scan-bar { grid-template-columns: 1fr; }
