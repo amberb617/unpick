@@ -8,7 +8,7 @@ and hooks. It is for people with no security team, no budget and no vendor accou
 default, and it is fully useful with nothing else installed.
 
 To unpick a seam is to take it apart stitch by stitch and see what was sewn in. unpick does that to a
-Markdown file. It backs the BSides Cambridge talk "The Devil Wears Markdown".
+Markdown file.
 
 ## Threat model
 
@@ -148,7 +148,7 @@ is no telemetry, no auto-update and no version check.
 | `unpick backends install <name> --docker --online` | Docker Hub and PyPI | image and package download requests |
 | `unpick judges install fallback --online` | PyPI and GitHub (runtime), huggingface.co (model) | download requests for llama-cpp-python and one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
-| `scan --backends jiffy --online` | Jiffy Labs API (commercial; the author's company) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
+| `scan --backends jiffy --online` | Jiffy Labs API (commercial) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
 | `unpick check <url or registry ref>` (network on by default for this command; `--offline` skips provenance) | the git host, registry.npmjs.org, pypi.org / files.pythonhosted.org, api.github.com | the repository or package name; downloads it into quarantine |
 | `unpick outdated --online` | registry.npmjs.org, pypi.org, api.github.com, the git host | the names of locked components; fetches new git versions into quarantine |
 | `unpick rehearse --build --online` | Docker Hub, Debian mirrors, PyPI and GitHub | image and package downloads, once |

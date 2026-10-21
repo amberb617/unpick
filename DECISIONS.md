@@ -11,8 +11,8 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
    (a GitHub user named `unpick` exists, so `github.com/unpick` is not ours). Alternates that were also
    free everywhere: `seamrip`, `tailorcheck`. Repository: `amberb617/unpick`, private until you publish it.
 
-2. **Where the code lives locally.** `~/Desktop/bsides-cambridge/unpick`, next to the talk material,
-   not under `~/jiffy/` (that folder is auto-synced from the Jiffy-Labs-AI org).
+2. **Where the code lives locally.** Next to the talk material, not under `~/jiffy/` (that folder is
+   auto-synced from the Jiffy-Labs-AI org).
 
 3. **What `scan .` skips in this repo.** `.unpickignore` skips `tests/`, `data/`, `demo/` and
    `unpick/demo_kit/`, each with a reason. The remaining findings in source and docs (the tool's own
