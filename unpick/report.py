@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from unpick import TAGLINE, __version__
+from unpick.render import finding_groups, scan_verdict
 
 CSS = (Path(__file__).resolve().parent / "ui" / "static" / "report.css")
 
@@ -44,26 +45,36 @@ def _scan_section(d: dict) -> str:
         for r in d.get("runs", [])
     )
     rows = []
-    for f in d.get("findings", []) + d.get("accepted", []):
-        ctx = "".join(f"<div class=\"ctx{' hit' if c['line'] == f['line'] else ''}\"><span>{c['line']}</span>{_e(c['text'])}</div>"
-                      for c in f.get("context", []))
-        rows.append(
-            f"<article class=\"finding\"><p>{_sev(f['severity'])} <b>{_e(f['rule_id'])}</b> "
-            f"<span class=\"badge\">{_e(f['source'])}</span> {_e(f['path'])}:{f['line']} "
-            f"&middot; agreed by {len(f.get('agreed_by', []))} of {len(d.get('sources', []))}"
-            f"{' &middot; decision: ' + _e(f['decision']) if f.get('decision') else ''}</p>"
-            f"<p>{_e(f['message'])}</p><pre>{ctx}</pre>"
-            f"<p class=\"muted\">Why: {_e(f['why'])}<br>False positive when: {_e(f['false_positive'])}</p></article>"
-        )
+    for title, group in finding_groups(d.get("findings", []) + d.get("accepted", [])):
+        rows.append(f"<h3>{_e(title)}</h3>")
+        for entry in dict.fromkeys(entry for entry, _ in group):
+            rows.append(f"<p>{_e(entry.what_it_means)}</p><p>Next step: {_e(entry.what_to_do)}</p>")
+        rows.extend(_finding_html(f, d) for _, f in group)
     s = d.get("summary", {})
     agreement = "".join(f"<tr><td>{_e(k)}</td><td>{_e(v)}</td></tr>" for k, v in (s.get("agreement") or {}).items())
     skipped = "".join(f"<li>{_e(x['path'])}: {_e(x['reason'])}</li>" for x in d.get("skipped", []))
+    errors = "".join(f"<li>{_e(e)}</li>" for e in d.get("errors", []) + d.get("unavailable", []))
     return (
-        f"<section><h2>Scan of {_e(d.get('target'))}</h2><p>{s.get('open', 0)} open, {s.get('accepted', 0)} accepted, "
+        f"<section><h2>Scan of {_e(d.get('target'))}</h2><p><b>{_e(scan_verdict(d))}</b></p>"
+        f"<p>{s.get('open', 0)} findings to review, {s.get('accepted', 0)} previously accepted (not cleared), "
         f"{len(d.get('files', []))} files read.</p><ul>{runs or '<li>built-in checks only</li>'}</ul>"
+        + (f"<p>Checks incomplete:</p><ul>{errors}</ul>" if errors else "")
         + (f"<table><tr><th>sources</th><th>agreement</th></tr>{agreement}</table>" if agreement else "")
         + (f"<p>Not read:</p><ul>{skipped}</ul>" if skipped else "")
-        + "</section><section><h2>Findings</h2>" + ("".join(rows) or "<p>No findings.</p>") + "</section>"
+        + "</section><section><h2>Findings</h2>" + "".join(rows) + "</section>"
+    )
+
+
+def _finding_html(f: dict, d: dict) -> str:
+    ctx = "".join(f"<div class=\"ctx{' hit' if c['line'] == f['line'] else ''}\"><span>{c['line']}</span>{_e(c['text'])}</div>"
+                  for c in f.get("context", []))
+    return (
+        f"<article class=\"finding\"><p>{_sev(f['severity'])} <b>{_e(f['rule_id'])}</b> "
+        f"<span class=\"badge\">{_e(f['source'])}</span> {_e(f['path'])}:{f['line']} "
+        f"&middot; agreed by {len(f.get('agreed_by', []))} of {len(d.get('sources', []))}"
+        f"{' &middot; decision: ' + _e(f['decision']) if f.get('decision') else ''}</p>"
+        f"<p>{_e(f['message'])}</p><pre>{ctx}</pre>"
+        f"<p class=\"muted\">Why: {_e(f['why'])}<br>False positive when: {_e(f['false_positive'])}</p></article>"
     )
 
 
