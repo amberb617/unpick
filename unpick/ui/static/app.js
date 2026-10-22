@@ -341,12 +341,13 @@ const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a
 function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
 
-// Three verdicts, worded for someone with no security background. The reason given is the most serious open
+// Three verdicts, worded for someone with no security background. The neutral one is never called clear or safe, and
+// is grey, not green (DECISIONS 46). YOUR CALL is that neutral state when every warning was marked a false alarm. The reason given is the most serious open
 // warning in plain words (unpick/ui/plain.py); severities, counts and rule ids sit in each card's technical details.
 const VERDICT = {
   bad: { word: "STOP", action: "Do not install it", head: "Don't install this yet." },
   review: { word: "CHECK FIRST", action: "Read each warning, then decide", head: "Check this before you install it." },
-  ok: { word: "NOTHING FOUND", action: "This does not prove it is safe", head: "These checks found no problems." },
+  ok: { word: "NO WARNINGS", action: "This does not prove it is safe", head: "These checks raised no warnings." },
 };
 function verdictLevel(findings) {
   const open = findings.filter(f => f.decision !== "accept");
@@ -371,13 +372,15 @@ function renderVerdict() {
   let sub;
   if (level === "ok") {
     if (dismissed) head = "You marked every warning as a false alarm.";
-    sub = "That does not prove it is safe: these checks read the add-on, they do not run it. Read it raw, or test-run it, before you trust it."
-      + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "");
+    sub = dismissed
+      ? `unpick still found ${plural(dismissed, "warning", "warnings")}; installing is your decision, not a safety verdict. ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.`
+      : "That does not prove it is safe: these checks read the add-on, they do not run it. Read it raw, or test-run it, before you trust it.";
   } else {
     sub = open[0].plain.short + (open.length > 1 ? ` ${plural(open.length - 1, "more thing", "more things")} to read below.` : " Details below.");
   }
   $("verdict").className = `verdict-hero ${level}`;
-  $("verdict").replaceChildren(verdictBlock(level === "ok" && dismissed ? "YOUR CALL" : VERDICT[level].word, VERDICT[level].action),
+  $("verdict").replaceChildren(verdictBlock(level === "ok" && dismissed ? "YOUR CALL" : VERDICT[level].word,
+    level === "ok" && dismissed ? "You dismissed every warning" : VERDICT[level].action),
     el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }), el("p", { class: "verdict-sub", text: sub })));
 }
 

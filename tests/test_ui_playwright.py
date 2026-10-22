@@ -78,7 +78,7 @@ def test_decide_from_ui(ui, page):
     page.wait_for_selector(".decided-line")
     verdict = page.locator("#verdict").inner_text()
     assert "YOUR CALL" in verdict and "1 warning marked as a false alarm" in verdict  # counts update live
-    assert "NOTHING FOUND" not in verdict  # a dismissed warning is the reader's call, not an empty result
+    assert "NO WARNINGS" not in verdict and "You dismissed every warning" in verdict  # the reader's call, not an empty result
     assert page.locator("#file-list .count").first.inner_text() == "0"
     assert not page.is_visible("#remedy")  # nothing open, so no "stop the AI" button
     assert (kit / ".unpick" / "decisions.json").is_file()
@@ -306,6 +306,27 @@ def test_start_link_runs_the_web_check(ui, page, tmp_path, monkeypatch):
     assert page.get_attribute("#check-approve", "class") == "link-btn"  # approving past warnings is never the obvious button
 
 
+def test_neutral_verdict_is_no_warnings_on_grey(ui, page, tmp_path):
+    url, _ = ui
+    (tmp_path / "plain").mkdir()
+    (tmp_path / "plain" / "README.md").write_text("# Notes\n", encoding="utf-8")
+    page.goto(url + "#scan")
+    page.fill("#scan-path", str(tmp_path / "plain"))
+    page.click("#scan-go")
+    page.locator("#verdict.ok").wait_for()
+    assert page.inner_text("#verdict .verdict-word") == "NO WARNINGS"
+    assert "This does not prove it is safe" in page.inner_text("#verdict .verdict-action")  # DECISIONS 46
+    block, grey = page.evaluate("""() => {
+      const probe = document.createElement("div");
+      probe.style.background = "var(--bg-subtle)";
+      document.body.append(probe);
+      const out = [getComputedStyle(document.querySelector("#verdict .verdict-block")).backgroundColor, getComputedStyle(probe).backgroundColor];
+      probe.remove();
+      return out;
+    }""")
+    assert block == grey  # the neutral block is the subtle grey, never a green
+
+
 def test_nothing_read_never_looks_clean(ui, page, tmp_path):
     url, _ = ui
     (tmp_path / "empty").mkdir()
@@ -317,7 +338,7 @@ def test_nothing_read_never_looks_clean(ui, page, tmp_path):
     page.click("#scan-go")
     page.locator("#verdict", has_text="NOT CHECKED").wait_for()
     verdict = page.inner_text("#verdict")
-    assert "NOTHING FOUND" not in verdict and "Nothing was checked" in verdict
+    assert "NO WARNINGS" not in verdict and "Nothing was checked" in verdict
     assert page.is_hidden("#split") and page.is_hidden("#remedy") and page.is_hidden("#next-rehearse")  # no stale file, nothing to act on
 
 
