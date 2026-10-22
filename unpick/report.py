@@ -11,7 +11,7 @@ import html
 from datetime import UTC, datetime
 from pathlib import Path
 
-from unpick import TAGLINE, __version__
+from unpick import __version__
 from unpick.render import finding_groups, scan_verdict
 
 CSS = (Path(__file__).resolve().parent / "ui" / "static" / "report.css")
@@ -29,7 +29,7 @@ def _page(title: str, body: str) -> str:
         "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'\">"
         f"<title>{_e(title)}</title><style>{css}</style></head><body>"
         f"<header><p class=\"kicker\">UNPICK {_e(__version__)}</p><h1>{_e(title)}</h1>"
-        f"<p class=\"muted\">{_e(TAGLINE)} Generated {_e(stamp)}.</p></header>{body}</body></html>"
+        f"<p class=\"muted\">Generated {_e(stamp)}.</p></header>{body}</body></html>"
     )
 
 

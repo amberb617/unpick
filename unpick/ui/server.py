@@ -21,7 +21,7 @@ from pathlib import Path
 
 from flask import Flask, Response, abort, current_app, jsonify, request, send_from_directory
 
-from unpick import TAGLINE, __version__, backends, consent, decisions, inventory, judges, render, report, scan
+from unpick import __version__, backends, consent, decisions, inventory, judges, render, report, scan
 
 STATIC = Path(__file__).resolve().parent / "static"
 CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "
@@ -59,7 +59,7 @@ def security_headers(resp: Response):
 
 def index():
     page = (STATIC / "index.html").read_text(encoding="utf-8")
-    page = page.replace("{{TOKEN}}", _ctx()["token"]).replace("{{VERSION}}", __version__).replace("{{TAGLINE}}", TAGLINE)
+    page = page.replace("{{TOKEN}}", _ctx()["token"]).replace("{{VERSION}}", __version__)
     return Response(page, mimetype="text/html")
 
 
@@ -68,7 +68,7 @@ def static_file(name):
 
 
 def api_meta():
-    return jsonify({"version": __version__, "project": str(_ctx()["project"]), "tagline": TAGLINE})
+    return jsonify({"version": __version__, "project": str(_ctx()["project"])})
 
 
 def api_inventory():
