@@ -52,7 +52,7 @@ def test_scan_screen(ui, page, theme):
     hidden = page.locator(".hidden-row .hidden-text").first.inner_text()
     assert "HIDDEN TEXT THE AI READS" in hidden and "collector@example.invalid" in hidden
     assert page.locator(".finding").first.locator(".decide button").count() == 3
-    assert "Do not install yet" in page.locator("#verdict").inner_text()
+    assert "Don't install this yet" in page.locator("#verdict").inner_text()
     page.locator("#L24").scroll_into_view_if_needed()
     page.screenshot(path=str(SHOTS / f"scan-{theme}.png"))
 
@@ -73,7 +73,7 @@ def test_decide_from_ui(ui, page):
     page.fill("#scan-path", "sample-b")
     page.click("#scan-form button[type=submit]")
     page.wait_for_selector(".finding")
-    assert "Review before installing" in page.locator("#verdict").inner_text()
+    assert "Check this before you install it" in page.locator("#verdict").inner_text()
     page.click(".finding .decide button:text('False alarm')")
     page.wait_for_selector(".decided-line")
     verdict = page.locator("#verdict").inner_text()
@@ -184,7 +184,7 @@ def test_start_screen_sample_runs_a_scan(ui, page, monkeypatch, tmp_path):
     page.screenshot(path=str(SHOTS / "start.png"))
     page.click("#try-dangerous")
     page.wait_for_selector(".finding")
-    assert "Do not install yet" in page.locator("#verdict").inner_text()
+    assert "Don't install this yet" in page.locator("#verdict").inner_text()
 
 
 def test_scan_errors_are_inline(ui, page):
@@ -287,20 +287,51 @@ def test_next_steps_follow_the_latest_scan_and_blank_recover_is_refused(ui, page
     page.locator("#recover-component-err", has_text="whole computer").wait_for()
 
 
-def test_start_web_tab_runs_the_check(ui, page, tmp_path, monkeypatch):
-    from unpick import quarantine
+def test_start_link_runs_the_web_check(ui, page, tmp_path, monkeypatch):
+    from unpick import check, quarantine
     url, kit = ui
     monkeypatch.setattr(quarantine, "ROOT", tmp_path / "q")
+    asked = []
+    real = check.run
+    monkeypatch.setattr(check, "run", lambda ref, offline=False: asked.append((ref, offline)) or real(str(kit / "sample-a"), offline=True))
     page.goto(url)
-    assert page.is_hidden("#start-web-form")
-    page.click("#tab-web")
-    assert page.is_hidden("#start-form") and page.get_attribute("#tab-web", "aria-selected") == "true"
-    page.fill("#start-ref", str(kit / "sample-a"))
-    page.click("#start-web-form button[type=submit]")
+    assert page.is_hidden("#scan-judge")  # advanced options stay out of the way until asked for
+    page.click("#start-advanced summary")
+    page.check("#start-offline")
+    page.fill("#start-path", "npm:pdf-tidy")
+    page.click("#start-go")
     page.wait_for_selector("#check-result:not([hidden])")
-    assert page.url.endswith("#check")
-    assert "serious" in page.inner_text("#check-summary")  # the web result says what the scan page says
+    assert page.url.endswith("#check") and asked == [("npm:pdf-tidy", True)]  # one field: a link goes to the web check
+    assert page.inner_text("#check-summary").startswith("Don't install this yet. It asks you to paste")  # verdict, then the reason
     assert page.get_attribute("#check-approve", "class") == "link-btn"  # approving past warnings is never the obvious button
+
+
+def test_nothing_read_never_looks_clean(ui, page, tmp_path):
+    url, _ = ui
+    (tmp_path / "empty").mkdir()
+    page.goto(url)
+    page.fill("#start-path", "sample-a")
+    page.click("#start-go")
+    page.wait_for_selector(".finding")
+    page.fill("#scan-path", str(tmp_path / "empty"))
+    page.click("#scan-go")
+    page.locator("#verdict", has_text="NOT CHECKED").wait_for()
+    verdict = page.inner_text("#verdict")
+    assert "NOTHING FOUND" not in verdict and "Nothing was checked" in verdict
+    assert page.is_hidden("#split") and page.is_hidden("#remedy") and page.is_hidden("#next-rehearse")  # no stale file, nothing to act on
+
+
+def test_finding_leads_with_plain_words_and_keeps_the_rule_in_details(ui, page):
+    url, _ = ui
+    page.goto(url + "#scan")
+    page.fill("#scan-path", "sample-a")
+    page.click("#scan-go")
+    page.wait_for_selector(".finding[open]")
+    card = page.locator(".finding[open]")
+    assert "What this means:" in card.inner_text() and "What to do:" in card.inner_text()
+    assert not card.locator(".tech dd.mono").is_visible()  # rule id waits behind "Technical details"
+    card.locator(".tech summary").click()
+    assert card.locator(".tech dd.mono").inner_text().startswith("RT-")
 
 
 def test_result_cards_wait_for_a_run_and_first_save_is_possible(ui, page, monkeypatch, tmp_path):

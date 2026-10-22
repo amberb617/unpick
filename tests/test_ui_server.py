@@ -91,3 +91,14 @@ def test_full_report_is_self_contained(kit, tmp_path, monkeypatch):
     html = out.read_text(encoding="utf-8")
     assert "First run in a box" in html and "RT-PREREQ" in html and "&lt;b&gt;x" in html
     assert "<script" not in html and "http://" not in html.split("</style>")[1].replace("https://", "")
+
+
+def test_every_builtin_rule_has_plain_words(client, kit):
+    from unpick.checks import all_checks
+    from unpick.scan import UNREAD_RULE
+    from unpick.ui import plain
+    assert {m.RULE_ID for m in all_checks()} | {UNREAD_RULE} <= set(plain.RULES)
+    r = client.post("/api/scan", json={"path": str(kit / "sample-a")}, headers=h())
+    found = r.get_json()["findings"]
+    assert found and all(f["plain"]["means"] and f["plain"]["todo"] for f in found)
+    assert plain.explain({"rule_id": "OTHER-TOOL-42", "severity": "high", "source": "backend:x"})["title"]  # never blank
