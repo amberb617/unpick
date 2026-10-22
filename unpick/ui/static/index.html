@@ -11,8 +11,7 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="#start" aria-label="unpick home"><span class="wordmark">unpick</span><span class="version">{{VERSION}}</span>
-      <span class="tagline">{{TAGLINE}}</span></a>
+    <a class="brand" href="#start" aria-label="unpick home"><span class="wordmark">unpick</span><span class="version">{{VERSION}}</span></a>
     <nav aria-label="Main">
       <a href="#start" data-screen="start scan check">Scan</a>
       <a href="#inventory" data-screen="inventory">Installed</a>
@@ -21,7 +20,6 @@
       <a href="#backends" data-screen="backends">Settings</a>
     </nav>
     <div class="topbar-right">
-      <button class="toggle" id="present" type="button" aria-pressed="false">Presenter</button>
       <button class="toggle" id="theme" type="button" aria-label="Switch light or dark theme">Dark</button>
       <a href="#recover" data-screen="recover" class="j-btn danger small">Something got in?</a>
     </div>
@@ -31,44 +29,40 @@
     <!-- ------------------------------------------------------------- start -->
     <section id="screen-start" class="screen" hidden aria-labelledby="start-title">
       <div class="hero">
-        <span class="eyebrow">Offline AI add-on scanner</span>
-        <h1 id="start-title" class="hero-title" tabindex="-1">Check an AI add-on <span class="accent">before</span> you install it.</h1>
-        <p class="subcopy">Skills, rules files, MCP servers and plugins can carry instructions you never see. unpick reads them
-          the way your AI does, on this computer.</p>
-        <ul class="bullets">
-          <li>Shows the hidden text a Markdown viewer leaves out</li>
-          <li>Finds setup steps and commands that download and run code</li>
-          <li>Reads files and never runs them. Nothing is sent anywhere unless you ask.</li>
-        </ul>
+        <span class="eyebrow">Offline AI add-on checker</span>
+        <h1 id="start-title" class="hero-title" tabindex="-1">Is this AI add-on safe <span class="accent">to install</span>?</h1>
+        <p class="subcopy">Skills, rules files, MCP servers (small programs that give your AI extra tools) and plugins can
+          carry instructions your AI follows but you never see. unpick reads them the way your AI does, and tells you
+          whether to install.</p>
       </div>
 
       <section class="entry" aria-label="What to check">
-        <div class="seg" role="tablist" aria-label="Where the add-on is">
-          <button class="seg-tab" role="tab" type="button" id="tab-local" aria-selected="true" aria-controls="start-form">On this computer</button>
-          <button class="seg-tab" role="tab" type="button" id="tab-web" aria-selected="false" aria-controls="start-web-form" tabindex="-1">From the web</button>
-        </div>
-        <form class="entry-panel" id="start-form" role="tabpanel" aria-labelledby="tab-local">
-          <label for="start-path">Path to a file or folder</label>
+        <form class="entry-panel" id="start-form">
+          <label for="start-path">Paste a link, or the path of a file or folder</label>
           <div class="field-row">
-            <input id="start-path" type="text" spellcheck="false" autocomplete="off" placeholder="~/Downloads/some-skill" aria-describedby="start-path-err start-path-help">
-            <button class="j-btn" type="submit">Scan it</button>
+            <input id="start-path" type="text" spellcheck="false" autocomplete="off" placeholder="https://github.com/owner/skill  or  ~/Downloads/some-skill" aria-describedby="start-path-err start-path-help">
+            <button class="j-btn" type="submit" id="start-go">Check</button>
           </div>
           <p class="field-err" id="start-path-err" hidden></p>
-          <p class="help path-help" id="start-path-help">Paste where it is, not what is in it. Mac: select it in Finder and press Option-Command-C. Windows: Shift + right-click it and choose "Copy as path".</p>
-          <p class="try">Try: <button class="link-btn" type="button" id="try-dangerous" data-sample="dangerous">a dangerous sample</button>
-            <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" id="try-safe" data-sample="safe">a sample that mentions a secret</button>
+          <p class="help path-help" id="start-path-help">A GitHub link, npm:package or pypi:package is downloaded into quarantine (a locked folder your AI
+            cannot load) and never run. For a folder on this computer, Mac: select it in Finder and press Option-Command-C.
+            Windows: Shift + right-click it and choose "Copy as path".</p>
+          <p class="try">No add-on handy? Try a sample: <button class="link-btn" type="button" id="try-dangerous" data-sample="dangerous">a dangerous one</button>
+            <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" id="try-safe" data-sample="safe">one that mentions a secret</button>
             <span aria-hidden="true">&middot;</span> <button class="link-btn" type="button" data-sample="tools">a poisoned tool list</button></p>
+          <details class="options" id="start-advanced">
+            <summary>Advanced</summary>
+            <div class="option-grid">
+              <label for="scan-judge">Second opinion from an AI reviewer (another AI reads the add-on; it never decides the result)</label>
+              <select id="scan-judge"><option value="">Off (the built-in checks still run)</option></select>
+              <label class="check"><input type="checkbox" id="scan-backends"> <span id="scan-backends-label">Also run other scanners installed here (offline)</span></label>
+              <label class="check"><input type="checkbox" id="start-offline"> Stay offline: check files on this computer only, never download</label>
+              <p class="help">Want to watch what it does? <a href="#rehearse">Test run it in a sealed box</a>, a throwaway
+                container with no network and fake secrets. Needs Docker.</p>
+            </div>
+          </details>
         </form>
-        <form class="entry-panel" id="start-web-form" role="tabpanel" aria-labelledby="tab-web" hidden>
-          <label for="start-ref">GitHub link, npm:package or pypi:package</label>
-          <div class="field-row">
-            <input id="start-ref" type="text" spellcheck="false" autocomplete="off" placeholder="https://github.com/owner/skill" aria-describedby="start-ref-err">
-            <button class="j-btn" type="submit">Download and check, without installing</button>
-          </div>
-          <p class="field-err" id="start-ref-err" hidden></p>
-          <p class="try">unpick downloads it into a quarantine folder and runs none of it. Installing is always up to you.</p>
-        </form>
-        <p class="entry-foot" id="entry-foot">Scans run on this computer. Nothing leaves it.</p>
+        <p class="entry-foot" id="entry-foot">Checks run on this computer and never run the add-on. Only a link is downloaded, from where it lives.</p>
       </section>
 
       <a class="next-card" href="#inventory"><b>Already installed something?</b>
@@ -102,26 +96,19 @@
     <section id="screen-scan" class="screen" hidden aria-labelledby="scan-title">
       <a class="back" href="#start" id="scan-back">Back to start</a>
       <form class="scan-bar" id="scan-form">
-        <label for="scan-path">Scan a file or folder</label>
+        <label for="scan-path">Check a file or folder</label>
         <div class="field-row">
           <input id="scan-path" type="text" spellcheck="false" autocomplete="off" placeholder="~/.claude/skills/pdf-tidy" aria-describedby="scan-path-err scan-path-help">
-          <button class="j-btn" type="submit" id="scan-go">Scan</button>
+          <button class="j-btn" type="submit" id="scan-go">Check</button>
         </div>
         <p class="field-err" id="scan-path-err" hidden></p>
         <p class="help path-help" id="scan-path-help">Paste where it is, not what is in it. Mac: select it in Finder and press Option-Command-C. Windows: Shift + right-click it and choose "Copy as path".</p>
-        <details class="options">
-          <summary>More checks (optional)</summary>
-          <div class="option-grid">
-            <label for="scan-judge">Second opinion from an AI</label>
-            <select id="scan-judge"><option value="">Off (the built-in checks still run)</option></select>
-            <label class="check"><input type="checkbox" id="scan-backends"> <span id="scan-backends-label">Also run other scanners installed here (offline)</span></label>
-          </div>
-        </details>
+        <p class="help path-help"><a href="#start">Advanced options</a> (AI reviewer, other scanners) are on the start page.</p>
       </form>
 
       <div id="scan-empty" class="empty-card">
-        <h1 id="scan-title" tabindex="-1">Nothing scanned yet</h1>
-        <p>Paste a path above, or try one of the samples.</p>
+        <h1 id="scan-title" tabindex="-1">Nothing checked yet</h1>
+        <p>Paste the path of a file or folder above and press Check, or try one of the samples.</p>
         <div class="actions"><button class="j-btn secondary small" type="button" data-sample="dangerous">Dangerous sample</button>
           <button class="j-btn secondary small" type="button" data-sample="safe">Mentions a secret</button>
           <button class="j-btn secondary small" type="button" data-sample="tools">Poisoned MCP tool list</button></div>
@@ -139,7 +126,7 @@
           <section class="verdict-hero" id="verdict" role="status" aria-live="polite"></section>
 
           <section class="panel-card" aria-labelledby="warn-title">
-            <header class="panel-head"><h2 class="bar-title" id="warn-title">Warnings <span class="badge" id="warn-count"></span></h2>
+            <header class="panel-head"><h2 class="bar-title" id="warn-title">What unpick found <span class="badge" id="warn-count"></span></h2>
               <ul id="file-list" class="file-tabs" aria-label="Files"></ul></header>
             <div id="findings" class="finding-list"></div>
           </section>
@@ -158,16 +145,16 @@
             <p class="side-note" id="next-lead">Not installed yet? Then do not install it. Scanning did not install anything.</p>
             <div id="remedy" class="remedy" hidden>
               <button class="j-btn danger" id="do-quarantine" type="button">Move it to quarantine</button>
-              <p class="side-note">If your AI already loads it, this stops that. Your files are kept, and you can put it back.</p>
+              <p class="side-note">Already installed? Quarantine moves it into a locked folder your AI cannot load. Your files are kept, and you can put it back.</p>
               <button class="j-btn secondary" id="do-clean" type="button">Make a review copy</button>
               <p class="side-note">A copy with the hidden tricks removed, for reading. It is not installed.</p>
             </div>
             <a class="j-btn secondary" href="#rehearse" id="next-rehearse">Test run it in a sealed box</a>
-            <p class="side-note">Watch what a throwaway agent does with it, with fake secrets and no network. Needs Docker, plus a box and a small model, each set up once.</p>
+            <p class="side-note">Optional. Watch what a throwaway AI does with it, with fake secrets and no network. Needs Docker, plus a sealed box and a small AI model, each set up once.</p>
             <p class="side-result" id="remedy-note" role="status"></p>
           </div>
           <div class="side-card">
-            <h2 class="side-title">Scan details</h2>
+            <h2 class="side-title">Check details</h2>
             <dl class="meta" id="runstrip"></dl>
             <div class="actions"><a class="link-btn" href="#" data-export="/api/export/scan.html">Download report</a>
               <a class="link-btn" href="#" data-export="/api/export/scan.json">JSON</a></div>
@@ -178,7 +165,7 @@
 
     <!-- ------------------------------------------------------------- check -->
     <section id="screen-check" class="screen" hidden aria-labelledby="check-title">
-      <div class="screen-head"><div><h1 id="check-title" tabindex="-1">Check an add-on from the web</h1><p class="subtitle">unpick downloads it into quarantine, looks up who made it, and scans it. Nothing is run.</p></div></div>
+      <div class="screen-head"><div><h1 id="check-title" tabindex="-1">Check an add-on from the web</h1><p class="subtitle">unpick downloads it into quarantine (a locked folder your AI cannot load), looks up who made it, and checks it. Nothing is run or installed.</p></div></div>
       <form class="form-card" id="check-form">
         <label for="check-ref">Web address, package name or local path</label>
         <div class="field-row">
@@ -201,7 +188,7 @@
 
     <!-- ------------------------------------------------------------- rehearse -->
     <section id="screen-rehearse" class="screen" hidden aria-labelledby="rehearse-title">
-      <div class="screen-head"><div><h1 id="rehearse-title" tabindex="-1">Test run in a sealed box</h1><p class="subtitle">A throwaway agent uses the add-on in a box with no network and fake secrets. You see what it tried to do.</p></div></div>
+      <div class="screen-head"><div><h1 id="rehearse-title" tabindex="-1">Test run in a sealed box</h1><p class="subtitle">Optional, for when you want to see it in action. A throwaway AI uses the add-on inside a sealed box (a container with no network, no access to your files and only fake secrets), and you see what it tried to do.</p></div></div>
       <form class="form-card" id="rehearse-form">
         <label for="rehearse-path">Path of the add-on</label>
         <input id="rehearse-path" type="text" spellcheck="false" autocomplete="off" aria-describedby="rehearse-path-err">
@@ -237,7 +224,7 @@
 
     <!-- ------------------------------------------------------------- recover -->
     <section id="screen-recover" class="screen" hidden aria-labelledby="recover-title">
-      <div class="screen-head"><div><h1 id="recover-title" tabindex="-1">Something got in</h1><p class="subtitle">For when an add-on you already installed turns out to be bad.</p></div></div>
+      <div class="screen-head"><div><h1 id="recover-title" tabindex="-1">Something got in</h1><p class="subtitle">For when an add-on you already installed turns out to be bad: switch it off, see which keys it could have read, and report it.</p></div></div>
       <form class="form-card" id="recover-form">
         <div class="field-row">
           <div class="field"><label for="recover-component">Which add-on: its name or path</label>
@@ -265,12 +252,12 @@
 
     <!-- ------------------------------------------------------------- settings -->
     <section id="screen-backends" class="screen" hidden aria-labelledby="be-title">
-      <div class="screen-head"><div><h1 id="be-title" tabindex="-1">Settings</h1><p class="subtitle">Optional extra scanners and AI reviewers. The built-in checks always run.</p></div></div>
-      <div class="card"><h2>Scanners <span class="muted">(all optional; the built-in checks always run)</span></h2>
+      <div class="screen-head"><div><h1 id="be-title" tabindex="-1">Settings</h1><p class="subtitle">Optional extra scanners and AI reviewers. You do not need any of them: the built-in checks always run.</p></div></div>
+      <div class="card"><h2>Other scanners <span class="muted">(also called backends: separate tools unpick can run next to its own checks; all optional)</span></h2>
         <table class="grid" id="be-table"><thead><tr><th scope="col">Name</th><th scope="col">Installed</th><th scope="col">Version</th><th scope="col">Tested</th>
         <th scope="col">Maintainer</th><th scope="col">Licence</th><th scope="col">Sends anything?</th></tr></thead><tbody></tbody></table></div>
-      <div class="card"><h2>AI reviewers <span class="muted">(a second opinion, never the verdict)</span></h2>
-        <table class="grid" id="ju-table"><thead><tr><th scope="col">Id</th><th scope="col">Where it runs</th><th scope="col">Found at</th><th scope="col">Permission</th><th scope="col">Usable</th><th scope="col">Trick test</th></tr></thead><tbody></tbody></table>
+      <div class="card"><h2>AI reviewers <span class="muted">(also called judges: another AI reads the add-on and gives a second opinion, never the verdict)</span></h2>
+        <table class="grid" id="ju-table"><thead><tr><th scope="col">Id</th><th scope="col">Where it runs</th><th scope="col">Found at</th><th scope="col">Permission</th><th scope="col">Usable</th><th scope="col">Trick test (files built to fool an AI reviewer)</th></tr></thead><tbody></tbody></table>
         <p class="muted" id="ju-default"></p></div>
       <div class="card"><h2>Agreement in the last scan</h2><table class="grid" id="agree-table"><tbody></tbody></table>
         <p class="empty" id="agree-empty">Run a scan with more than one checker to see where they agree.</p></div>

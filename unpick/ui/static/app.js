@@ -98,7 +98,7 @@ function confirmDialog({ title, text, yes, danger = true }) {
   });
 }
 
-// ---- navigation, theme, presenter mode -------------------------------------------------------------
+// ---- navigation and theme -------------------------------------------------------------------------
 const screens = ["start", "inventory", "check", "scan", "rehearse", "verify", "recover", "backends"];
 function show() {
   const wanted = location.hash.slice(1);
@@ -123,14 +123,6 @@ function setTheme(t) {
 }
 $("theme").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
 setTheme(localStorage.getItem("unpick-theme") || "light");
-
-function setPresent(on) {
-  document.body.classList.toggle("present", on);
-  $("present").setAttribute("aria-pressed", on ? "true" : "false");
-  localStorage.setItem("unpick-present", on ? "1" : "");
-}
-$("present").addEventListener("click", () => setPresent(!document.body.classList.contains("present")));
-setPresent(localStorage.getItem("unpick-present") === "1" || new URLSearchParams(location.search).has("present"));
 
 // Downloads go through fetch so the token header is sent; the browser then saves the file.
 document.addEventListener("click", async (e) => {
@@ -166,39 +158,20 @@ async function sample(kind) {
   runScan();
 }
 document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => sample(b.dataset.sample)));
-function selectEntry(tab) {
-  const web = tab === "web";
-  $("tab-local").setAttribute("aria-selected", web ? "false" : "true");
-  $("tab-web").setAttribute("aria-selected", web ? "true" : "false");
-  $("tab-local").tabIndex = web ? -1 : 0;
-  $("tab-web").tabIndex = web ? 0 : -1;
-  $("start-form").hidden = web;
-  $("start-web-form").hidden = !web;
-  $("entry-foot").textContent = web ? "unpick asks GitHub, npm or PyPI who published it, then reads the copy on this computer."
-    : "Scans run on this computer. Nothing leaves it.";
-}
-$("tab-local").addEventListener("click", () => selectEntry("local"));
-$("tab-web").addEventListener("click", () => selectEntry("web"));
-document.querySelector(".seg").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-  const next = $("tab-local").getAttribute("aria-selected") === "true" ? "web" : "local";
-  selectEntry(next);
-  $(next === "web" ? "tab-web" : "tab-local").focus();
-});
-$("start-web-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const v = $("start-ref").value.trim();
-  if (!v) { setError("start-ref", "Paste a GitHub link, npm:package or pypi:package."); return; }
-  setError("start-ref", null);
-  $("check-ref").value = v;
-  location.hash = "#check";
-  $("check-form").requestSubmit();
-});
+// One field for both: a link or package name is downloaded into quarantine and checked; anything else is a local path.
+const WEB_REF = /^(https?:\/\/|github\.com\/|gitlab\.com\/|git@|npm:|pypi:)/i;
 $("start-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const v = $("start-path").value.trim();
-  if (!v) { setError("start-path", "Paste the path of a file or folder, for example ~/Downloads/some-skill."); return; }
+  if (!v) { setError("start-path", "Paste a link (for example a GitHub address) or the path of a file or folder, for example ~/Downloads/some-skill."); return; }
   setError("start-path", null);
+  if (WEB_REF.test(v)) {
+    $("check-ref").value = v;
+    $("check-offline").checked = $("start-offline").checked;
+    location.hash = "#check";
+    $("check-form").requestSubmit();
+    return;
+  }
   $("scan-path").value = v;
   location.hash = "#scan";
   runScan();
@@ -288,13 +261,13 @@ $("inv-scan").addEventListener("click", async () => {
 let batchRows = [];
 // Counted from the findings themselves, so a row follows the decisions made after opening it.
 function renderBatchRow(r) {
-  const open = r.data.findings.concat(r.data.accepted).filter(f => f.decision !== "accept");
-  const serious = open.filter(f => f.severity === "high").length;
-  let word = "NOTHING FOUND";
-  if (serious) word = "STOP";
-  else if (open.length) word = "REVIEW";
-  const count = open.length ? plural(open.length, "open warning", "open warnings") : "no open warnings. This does not prove it is safe.";
-  r.item.replaceChildren(el("span", { class: `sev ${serious ? "high" : "low"}`, text: word }), ` ${r.path}: ${count} `,
+  const every = r.data.findings.concat(r.data.accepted);
+  const open = every.filter(f => f.decision !== "accept");
+  const level = verdictLevel(every);
+  let word = VERDICT[level].word;
+  let count = open.length ? `${VERDICT[level].head} ${plural(open.length, "open warning", "open warnings")}.` : "no open warnings. This does not prove it is safe.";
+  if (!r.data.files.length) [word, count] = ["NOT CHECKED", "no files could be read, so nothing was checked."];
+  r.item.replaceChildren(el("span", { class: `sev ${level === "bad" ? "high" : "low"}`, text: word }), ` ${r.path}: ${count} `,
     el("button", { type: "button", class: "link-btn", text: "Open", onclick: () => { last = r.data; $("scan-path").value = r.path; $("scan-results").hidden = false; renderScan(); } }));
 }
 
@@ -361,7 +334,6 @@ async function runScan(component = null) {
 }
 
 const SEV_WORD = { high: "SERIOUS", medium: "WARNING", low: "NOTE", info: "INFO" };
-const SEV_MANY = { high: "SERIOUS", medium: "WARNINGS", low: "NOTES", info: "INFO" };
 const sourceName = (x) => (x === "builtin" ? "built-in checks" : x.replace(/^backend:/, "").replace(/^judge:/, "AI reviewer "));
 const DECISION_LABEL = { accept: "False alarm", reject: "Real problem", "ask-author": "Not sure: ask the author" };
 const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a real problem.", "ask-author": "Marked: ask the author. Nobody was contacted." };
@@ -369,41 +341,49 @@ const DECISION_DONE = { accept: "Marked as a false alarm.", reject: "Marked as a
 function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
 
-function renderVerdict() {
-  const open = openFindings();
-  const serious = open.filter(f => f.severity === "high").length;
-  const other = open.length - serious;
-  const dismissed = allFindings().length - open.length;
-  const unread = open.filter(f => f.rule_id === "RT-UNREAD").length;
-  const v = $("verdict");
-  let level = "ok";
-  let head = dismissed ? "You marked every warning as a false alarm" : "These checks found nothing to show";
-  let sub = "That is not the same as safe. Read it raw, and test-run it before you trust it.";
-  if (unread && open.length === unread) {
-    level = "review";
-    head = `Scan incomplete: ${plural(unread, "file", "files")} could not be read`;
-    sub = "unpick cannot see inside bundles, WebAssembly or compiled files. Treat them as unchecked.";
-  }
-  if (serious) {
-    level = "bad";
-    head = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}`;
-    sub = (other ? `${plural(other, "more warning", "more warnings")} to review below.` : "Review each one below.")
-      + (open.length > 1 ? " Several checks can flag the same line." : "");
-  } else if (other && !(unread && open.length === unread)) {
-    level = "review";
-    head = `Review before installing: ${plural(other, "warning", "warnings")}`;
-    sub = "Read each one and decide. A smaller warning can still be a reason not to install.";
-  }
-  const counts = ["high", "medium", "low", "info"].map(sev => [sev, open.filter(f => f.severity === sev).length]).filter(([, n]) => n);
-  v.className = `verdict-hero ${level}`;
-  const okWord = dismissed ? "YOUR CALL" : "NOTHING FOUND";
-  v.replaceChildren(verdictBlock({ bad: "STOP", review: "REVIEW", ok: okWord }[level], VERDICT_ACTION[level]),
-    el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }),
-      el("p", { class: "verdict-sub", text: sub + (dismissed ? ` ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.` : "") }),
-      counts.length ? el("div", { class: "count-row" }, ...counts.map(([sev, n]) => el("span", { class: `sev ${sev}`, text: `${n} ${(n === 1 ? SEV_WORD : SEV_MANY)[sev]}` }))) : null));
+// Three verdicts, worded for someone with no security background. The neutral one is never called clear or safe, and
+// is grey, not green (DECISIONS 46). YOUR CALL is that neutral state when every warning was marked a false alarm. The reason given is the most serious open
+// warning in plain words (unpick/ui/plain.py); severities, counts and rule ids sit in each card's technical details.
+const VERDICT = {
+  bad: { word: "STOP", action: "Do not install it", head: "Don't install this yet." },
+  review: { word: "CHECK FIRST", action: "Read each warning, then decide", head: "Check this before you install it." },
+  ok: { word: "NO WARNINGS", action: "This does not prove it is safe", head: "These checks raised no warnings." },
+};
+function verdictLevel(findings) {
+  const open = findings.filter(f => f.decision !== "accept");
+  if (open.some(f => f.severity === "high")) return "bad";
+  return open.length ? "review" : "ok";
 }
 
-const VERDICT_ACTION = { bad: "Do not install it", review: "Read each warning, then decide", ok: "This does not prove it is safe" };
+// Zero files read is not a result: it must never share a look or a word with "nothing found".
+function renderNotChecked() {
+  $("verdict").className = "verdict-hero failed";
+  $("verdict").replaceChildren(verdictBlock("NOT CHECKED", "Nothing was read"),
+    el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: "Nothing was checked." }),
+      el("p", { class: "verdict-sub", text: "unpick found no files it could read at this path, so it cannot tell you anything about it. Check the path points at the add-on's folder or file, not a folder above or beside it, and try again." })));
+}
+
+function renderVerdict() {
+  if (!last.files.length) { renderNotChecked(); return; }
+  const open = sortFindings(openFindings());
+  const dismissed = allFindings().length - open.length;
+  const level = verdictLevel(allFindings());
+  let head = VERDICT[level].head;
+  let sub;
+  if (level === "ok") {
+    if (dismissed) head = "You marked every warning as a false alarm.";
+    sub = dismissed
+      ? `unpick still found ${plural(dismissed, "warning", "warnings")}; installing is your decision, not a safety verdict. ${plural(dismissed, "warning", "warnings")} marked as ${dismissed === 1 ? "a false alarm" : "false alarms"}.`
+      : "That does not prove it is safe: these checks read the add-on, they do not run it. Read it raw, or test-run it, before you trust it.";
+  } else {
+    sub = open[0].plain.short + (open.length > 1 ? ` ${plural(open.length - 1, "more thing", "more things")} to read below.` : " Details below.");
+  }
+  $("verdict").className = `verdict-hero ${level}`;
+  $("verdict").replaceChildren(verdictBlock(level === "ok" && dismissed ? "YOUR CALL" : VERDICT[level].word,
+    level === "ok" && dismissed ? "You dismissed every warning" : VERDICT[level].action),
+    el("div", { class: "verdict-body" }, el("p", { class: "verdict-head", text: head }), el("p", { class: "verdict-sub", text: sub })));
+}
+
 function verdictBlock(word, action) {
   return el("div", { class: "verdict-block" }, el("span", { class: "verdict-label", text: "Verdict" }),
     el("strong", { class: "verdict-word", text: word }), el("span", { class: "verdict-action", text: action }));
@@ -412,8 +392,10 @@ function verdictBlock(word, action) {
 function renderRemedy() {
   const open = openFindings().length;
   $("warn-count").textContent = `${open} open`;
-  $("next-lead").textContent = open ? "Not installed yet? Then do not install it. Scanning did not install anything."
-    : "No open warnings remain. That does not prove it is safe: read it raw and test-run it before you decide.";
+  let lead = "No open warnings remain. That does not prove it is safe: read it raw and test-run it before you decide.";
+  if (!last.files.length) lead = "Nothing was checked, so there is nothing to act on. Fix the path above and press Check.";
+  else if (open) lead = "Not installed yet? Then don't install it. Checking did not install anything.";
+  $("next-lead").textContent = lead;
   $("remedy").hidden = open === 0;
   $("remedy-note").textContent = "";
 }
@@ -458,11 +440,14 @@ function renderScan() {
   renderVerdict();
   renderRemedy();
   const net = last.summary.network_calls;
+  for (const id of ["warn-title", "split-title"]) $(id).closest(".panel-card").hidden = !last.files.length;
   const name = last.target.replace(/[\\/]+$/, "").split(/[\\/]/).pop();
   $("scan-name").textContent = name;
   $("scan-source").textContent = last.target;
   const total = allFindings().length;
-  $("scan-summary").textContent = `unpick read ${plural(last.files.length, "file", "files")} and found ${plural(total, "warning", "warnings")}`
+  $("scan-status").textContent = last.files.length ? "Check finished" : "Nothing read";
+  $("next-rehearse").hidden = $("next-rehearse").nextElementSibling.hidden = !last.files.length;
+  $("scan-summary").textContent = !last.files.length ? "unpick could not read any files at this path." : `unpick read ${plural(last.files.length, "file", "files")} and found ${plural(total, "thing", "things")} to look at`
     + (total ? ` in ${plural(new Set(allFindings().map(f => f.path)).size, "file", "files")}.` : ".")
     + (last.component ? ` Only the shared settings file that lists ${last.component.name} was checked, not the server's own code or tools. Some warnings may belong to other entries in it.` : "");
   const fact = (k, v, cls) => [el("dt", { text: k }), el("dd", { class: cls || null, text: v })];
@@ -489,7 +474,7 @@ function absolute(rel) {
 }
 
 async function openFile(rel) {
-  if (!rel) return;
+  if (!rel) { $("findings").replaceChildren(); $("split").replaceChildren(); return; }
   currentFile = rel;
   document.querySelectorAll("#file-list button").forEach(b => b.setAttribute("aria-current", b.dataset.file === rel ? "true" : "false"));
   const findings = allFindings().filter(f => f.path === rel);
@@ -594,6 +579,9 @@ function renderFindings(findings) {
   box.replaceChildren(...sorted.map(f => findingCard(f, findings)));
 }
 
+// Plain words lead (what unpick saw, what it means, what to do); severity, rule id and the checker's own wording
+// sit in "Technical details". The card's tag repeats the verdict word, so meaning never rides on colour alone.
+const TAG_WORD = { high: "Stop", medium: "Check", low: "Check", info: "Check" };
 function findingCard(f, findings) {
   const kind = f.source.split(":")[0];
   const decided = f.decision ? el("p", { class: "decided-line" }, el("b", { text: DECISION_DONE[f.decision] + " " }),
@@ -603,21 +591,30 @@ function findingCard(f, findings) {
     onclick: () => decide(f, choice, findings) }));
   const ctx = el("pre", {}, ...f.context.map(c => el("span", { class: c.line === f.line ? "hit" : null, text: `${String(c.line).padStart(4)}  ${c.text}${NL}` })));
   const status = f.decision ? el("span", { class: `pill ${{ accept: "", reject: "red", "ask-author": "lavender" }[f.decision]}`, text: DECISION_LABEL[f.decision] }) : null;
-  const card = el("details", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "aria-label": `${SEV_WORD[f.severity]}: ${f.message}`,
-    open: expanded.has(f.id) },
-    el("summary", {}, el("span", { class: `sev ${f.severity}`, text: SEV_WORD[f.severity] }),
-      el("h3", { class: "msg", text: sentence(f.message) }),
+  const para = (label, text) => el("p", { class: "why" }, el("b", { text: `${label} ` }), text);
+  const tech = el("details", { class: "tech" }, el("summary", { text: "Technical details" }),
+    el("dl", { class: "meta" },
+      el("dt", { text: "Severity" }), el("dd", { text: SEV_WORD[f.severity] }),
+      el("dt", { text: "Rule" }), el("dd", { class: "mono", text: f.rule_id }),
+      el("dt", { text: "Checked by" }), el("dd", { text: agreementText(f) })),
+    para("Why the checker flags it:", f.why),
+    para("When it is harmless:", f.false_positive));
+  const card = el("details", { class: `finding sev-${f.severity}${f.decision === "accept" ? " dismissed" : ""}`, "data-id": f.id,
+    "aria-label": `${TAG_WORD[f.severity]}: ${f.plain.title}`, open: expanded.has(f.id) },
+    el("summary", {}, el("span", { class: `sev ${f.severity === "high" ? "high" : "medium"}`, text: TAG_WORD[f.severity] }),
+      el("h3", { class: "msg", text: f.plain.title }),
       el("span", { class: "where" }, status, status ? " " : null, kind === "judge" ? el("span", { class: "badge judge", text: "AI opinion" }) : null,
         f.line ? ` line ${f.line}` : "")),
     el("div", { class: "body" },
-      el("p", { class: "why" }, el("b", { text: "Why it matters: " }), f.why),
-      el("p", { class: "why" }, el("b", { text: "When it is harmless: " }), f.false_positive),
+      para("What unpick saw:", sentence(f.message)),
       f.context.length ? ctx : null,
+      para("What this means:", f.plain.means),
+      para("What to do:", f.plain.todo),
       decided || el("div", { class: "decide-box" }, el("p", { class: "decide-q", text: "What do you make of it?" }),
         el("div", { class: "decide", role: "group", "aria-label": "Your decision" }, choices),
-        el("p", { class: "meta-line", text: "Not sure? Leave it open and do not install yet. A choice is saved on this computer only, for this exact line, and contacts nobody. If the line changes, the warning comes back." })),
-      el("p", { class: "meta-line" }, `${agreementText(f)} Rule ${f.rule_id}. `,
-        f.line ? el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the raw file`, onclick: () => showInFile(f.line) }) : null)));
+        el("p", { class: "meta-line", text: "Not sure? Leave it open and don't install yet. A choice is saved on this computer only, for this exact line, and contacts nobody. If the line changes, the warning comes back." })),
+      f.line ? el("p", { class: "meta-line" }, el("button", { type: "button", class: "link-btn", text: `Show line ${f.line} in the raw file`, onclick: () => showInFile(f.line) })) : null,
+      tech));
   card.addEventListener("toggle", () => { if (card.open) expanded.add(f.id); else expanded.delete(f.id); });
   return card;
 }
@@ -625,7 +622,7 @@ function findingCard(f, findings) {
 async function decide(f, choice, findings) {
   const { status, data } = await api("/api/decide", { id: f.id, choice });
   if (status !== 200) {
-    const card = [...document.querySelectorAll(".finding")].find(c => c.getAttribute("aria-label").endsWith(f.message));
+    const card = document.querySelector(`.finding[data-id="${CSS.escape(f.id)}"]`);
     if (card) card.append(el("p", { class: "field-err", text: data.error || "Your decision was not saved. Try again." }));
     return;
   }
@@ -647,7 +644,7 @@ async function decide(f, choice, findings) {
     const on = flagged.has(Number(row.id.slice(1)));
     row.classList.toggle("flag", on);
   });
-  const card = [...document.querySelectorAll(".finding")].find(c => c.getAttribute("aria-label").endsWith(f.message));
+  const card = document.querySelector(`.finding[data-id="${CSS.escape(f.id)}"]`);
   if (card) (card.querySelector(".decided-line button") || card.querySelector(".decide button") || card.querySelector("summary")).focus({ preventScroll: true });
 }
 
@@ -673,7 +670,7 @@ $("check-form").addEventListener("submit", async (e) => {
   const facts = Object.entries(data.provenance || {}).filter(([k, v]) => v !== null && v !== "" && k !== "project_urls" && !(Array.isArray(v) && !v.length));
   $("check-facts").replaceChildren(...facts.flatMap(([k, v]) => [el("dt", { text: k.replaceAll("_", " ") }), el("dd", { text: Array.isArray(v) ? v.join(", ") : String(v) })]));
   let qs = data.questions.map(q => el("li", { class: "bad", text: q }));
-  if (!qs.length) qs = [el("li", { text: facts.length ? "Nothing stood out about who made it. That is not the same as safe." : "No who-made-it lookup was made." })];
+  if (!qs.length) qs = [el("li", { text: facts.length ? "Nothing stood out about who made it. That is not the same as safe." : "unpick did not look up who made it: this was a folder on this computer, or you chose to stay offline." })];
   $("check-questions").replaceChildren(...qs);
   $("check-card").hidden = false;
   renderCheckSummary();
@@ -689,9 +686,11 @@ function renderCheckSummary() {
   if (!checked) return;
   const { open, serious } = checkOpen();
   const files = plural(checked.scan.files.length, "file", "files");
+  const top = sortFindings(checked.scan.findings.concat(checked.scan.accepted).filter(f => f.decision !== "accept"))[0];
   let text = `No open warnings in ${files}. That is not the same as safe.`;
-  if (serious) text = `Do not install yet: ${plural(serious, "serious warning", "serious warnings")}${open > serious ? ` and ${plural(open - serious, "other warning", "other warnings")}` : ""}. Review them first.`;
-  else if (open) text = `${plural(open, "warning", "warnings")} in ${files}. Read them and decide. A warning here is a reason not to install yet.`;
+  if (!checked.scan.files.length) text = "Nothing was checked: the download had no files unpick could read. Don't treat this as a pass.";
+  else if (serious) text = `Don't install this yet. ${top.plain.short}`;
+  else if (open) text = `Check this before you install it. ${top.plain.short}`;
   $("check-summary").textContent = text;
   $("check-summary").className = serious ? "big-text bad" : "big-text";
   $("check-open").className = open ? "j-btn" : "j-btn secondary";

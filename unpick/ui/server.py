@@ -21,7 +21,8 @@ from pathlib import Path
 
 from flask import Flask, Response, abort, current_app, jsonify, request, send_from_directory
 
-from unpick import TAGLINE, __version__, backends, consent, decisions, inventory, judges, render, report, scan
+from unpick import __version__, backends, consent, decisions, inventory, judges, render, report, scan
+from unpick.ui import plain
 
 STATIC = Path(__file__).resolve().parent / "static"
 CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "
@@ -59,7 +60,7 @@ def security_headers(resp: Response):
 
 def index():
     page = (STATIC / "index.html").read_text(encoding="utf-8")
-    page = page.replace("{{TOKEN}}", _ctx()["token"]).replace("{{VERSION}}", __version__).replace("{{TAGLINE}}", TAGLINE)
+    page = page.replace("{{TOKEN}}", _ctx()["token"]).replace("{{VERSION}}", __version__)
     return Response(page, mimetype="text/html")
 
 
@@ -68,7 +69,7 @@ def static_file(name):
 
 
 def api_meta():
-    return jsonify({"version": __version__, "project": str(_ctx()["project"]), "tagline": TAGLINE})
+    return jsonify({"version": __version__, "project": str(_ctx()["project"])})
 
 
 def api_inventory():
@@ -94,7 +95,7 @@ def api_scan():
     declined = next((r for r in res.runs if r.get("status") == "declined"), None)
     if declined:
         return jsonify({"need_consent": declined["provider"], "prompt": consent.prompt_text(declined["provider"])}), 409
-    ctx["last"] = res.to_dict()
+    ctx["last"] = plain.annotate(res.to_dict())
     _remember(ctx, ctx["last"])
     scan.save_last(res, ctx["project"])
     return jsonify(ctx["last"])
@@ -191,7 +192,7 @@ def api_check():
         res = check.run(str(body.get("ref", "")), offline=bool(body.get("offline")))
     except (quarantine.Refused, OSError) as e:
         return jsonify({"error": str(e)}), 400
-    _ctx()["last"] = res["scan"]
+    _ctx()["last"] = plain.annotate(res["scan"])
     _remember(_ctx(), res["scan"])  # so warnings reviewed from a web check can be decided like any scan's
     return jsonify(res)
 

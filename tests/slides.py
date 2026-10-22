@@ -63,18 +63,17 @@ def main() -> None:
         page = browser.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=2)
 
         def scan(path: str, with_backends: bool):
-            page.goto(url + "#scan")
+            page.goto(url)
             page.reload()
-            page.fill("#scan-path", path)
             if with_backends:
-                page.locator("details.options").evaluate("d => d.open = true")
+                page.click("#start-advanced summary")
                 if not page.is_disabled("#scan-backends"):
                     page.check("#scan-backends")
-            page.click("#scan-form button[type=submit]")
+            page.fill("#start-path", path)
+            page.click("#start-go")
             page.wait_for_selector(".finding", timeout=600_000)
 
         scan("sample-a", True)
-        page.locator("details.options").evaluate("d => d.open = false")
         page.screenshot(path=str(SHOTS / "slide-17.png"))  # verdict plus "Scan details": every source that ran, nothing sent
         page.locator("#L24").scroll_into_view_if_needed()
         page.screenshot(path=str(SHOTS / "slide-18.png"))
