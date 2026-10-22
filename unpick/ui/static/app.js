@@ -98,7 +98,7 @@ function confirmDialog({ title, text, yes, danger = true }) {
   });
 }
 
-// ---- navigation, theme, presenter mode -------------------------------------------------------------
+// ---- navigation and theme -------------------------------------------------------------------------
 const screens = ["start", "inventory", "check", "scan", "rehearse", "verify", "recover", "backends"];
 function show() {
   const wanted = location.hash.slice(1);
@@ -123,14 +123,6 @@ function setTheme(t) {
 }
 $("theme").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
 setTheme(localStorage.getItem("unpick-theme") || "light");
-
-function setPresent(on) {
-  document.body.classList.toggle("present", on);
-  $("present").setAttribute("aria-pressed", on ? "true" : "false");
-  localStorage.setItem("unpick-present", on ? "1" : "");
-}
-$("present").addEventListener("click", () => setPresent(!document.body.classList.contains("present")));
-setPresent(localStorage.getItem("unpick-present") === "1" || new URLSearchParams(location.search).has("present"));
 
 // Downloads go through fetch so the token header is sent; the browser then saves the file.
 document.addEventListener("click", async (e) => {

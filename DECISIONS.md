@@ -213,6 +213,17 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     saves "a copy to compare later". Both say they are not a safety verdict. Re-locking keeps the download
     records, and a lockfile holding only those counts as a first run.
 
+## Plain-language UI (2026-10-21)
+
+51. **The UI has no tagline and no presenter mode.** The header shows only the name, version, navigation,
+    theme and "Something got in?". The tagline read as noise to a first-time user, and presenter mode was a
+    talk aid that put an unexplained button in everyone's header. Supersedes 40.
+
+52. **Results lead with a verdict and its reason in plain words.** Three verdicts (STOP, CHECK FIRST,
+    NOTHING FOUND); the reason is the top open warning's plain sentence from `unpick/ui/plain.py`. Severity,
+    rule id and the checker's own wording sit in each card's technical details. A path with no readable
+    files shows NOT CHECKED, never NOTHING FOUND.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's

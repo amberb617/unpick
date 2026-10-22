@@ -27,7 +27,6 @@ code, .mono, pre { font-family: var(--font-mono); }
 .brand { display: flex; flex-wrap: wrap; column-gap: 8px; align-items: baseline; max-width: 280px; text-decoration: none; color: var(--fg-strong); }
 .wordmark { font: 700 24px var(--font-body); letter-spacing: -0.03em; }
 .version { font: 600 12px var(--font-mono); color: var(--fg-muted); }
-.tagline { flex-basis: 100%; font-size: 12px; color: var(--fg-muted); }
 nav { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
 nav a { color: var(--fg-strong); text-decoration: none; padding: 8px 14px; border-radius: var(--radius-md); font-weight: 600; font-size: 15px; border-bottom: 2px solid transparent; }
 nav a:hover { background: var(--bg-elevated); }
@@ -280,23 +279,12 @@ dialog { border: 1px solid var(--navy-900); border-radius: var(--radius-lg); pad
 dialog p { white-space: pre-line; }
 dialog::backdrop { background: rgba(4, 14, 39, 0.6); }
 
-/* ---- presenter: real sizes for a projector ---- */
-body.present main { font-size: 20px; }
-body.present h1 { font-size: 40px; } body.present .hero-title { font-size: 72px; } body.present .result-title { font-size: 44px; }
-body.present .path-help, body.present .entry-foot, body.present .verdict-action, body.present .source { font-size: 17px; }
-body.present .verdict-head { font-size: 28px; } body.present .verdict-word { font-size: 40px; }
-body.present .finding .msg { font-size: 22px; } body.present .finding .why, body.present .subcopy, body.present .summary { font-size: 20px; }
-body.present .split-body, body.present .finding pre, body.present .runstrip, body.present .timeline { font-size: 18px; }
-body.present .hidden-text { font-size: 20px; } body.present .j-btn { font-size: 18px; }
-body.present label, body.present .side-note, body.present .meta, body.present .link-btn, body.present .meta-line, body.present .try { font-size: 17px; }
-
 @media (max-width: 1200px) {
   .scan-bar { grid-template-columns: 1fr; }
   .result-grid { grid-template-columns: 1fr; }
   .result-aside { position: static; }
   .two-col { grid-template-columns: 1fr; }
   .topbar, main { padding-left: 20px; padding-right: 20px; }
-  .tagline { display: none; }
 }
 @media (max-width: 760px) {
   .finding > summary { grid-template-columns: 1fr; } .finding .body { padding-left: 6px; }
