@@ -38,11 +38,16 @@ or, from a clone, `pipx install .`.
 
 Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows PowerShell 5.1). Optional
 extras: `pipx install '.[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
-the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below).
+the watcher (phase 3), `'.[tui]'` for the home screen, `'.[fallback]'` for the fallback judge runtime (see below).
 
 Then run `unpick setup`. It finds Claude Code, Codex CLI and Cursor on this machine, asks which to protect,
 how strict to be and whether to run the watcher at login, then shows every file it will change before it
 changes anything. `--dry-run` stops after showing the changes; `unpick setup --undo` removes all of it.
+
+`unpick` on its own opens a home screen in the terminal (with the `tui` extra): which agents are protected,
+every add-on on this machine grouped by its worst finding, and recent watcher alerts. `s` runs setup, `c`
+checks something before you install it, `i` lists every add-on worst first. Without the extra it prints the
+command list.
 
 ## The five-minute triage, mapped to commands
 

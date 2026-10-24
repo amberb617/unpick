@@ -655,7 +655,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--json", action="store_true", help="machine-readable output")
     common.add_argument("--no-color", action="store_true", help="no ANSI colour")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd")
 
     s = sub.add_parser("inventory", parents=[common], help="list AI components on this machine and in this project")
     s.add_argument("--project", default=".", help="project root (default: current directory)")
@@ -818,13 +818,33 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _home(parser) -> int:
+    """`unpick` alone: the home screen in a terminal with the tui extra, otherwise the command list."""
+    import importlib.util
+    import os
+
+    if sys.stdin.isatty() and sys.stdout.isatty() and not os.environ.get("UNPICK_NONINTERACTIVE"):
+        if importlib.util.find_spec("textual"):
+            from unpick import tui
+            tui.run()
+            return 0
+        parser.print_help()
+        print("\nFor the home screen: pipx install 'unpick[tui]'")
+        return 0
+    parser.print_help()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     global console
     argv = list(sys.argv[1:] if argv is None else argv)
     # `decide accept` without an id: argparse would read "accept" as the id.
     if argv[:1] == ["decide"] and len(argv) > 1 and argv[1] in ("accept", "reject", "ask-author"):
         argv.insert(1, "")
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.cmd is None:
+        return _home(parser)
     console = Console(no_color=args.no_color, highlight=False, soft_wrap=False)
     try:
         return args.fn(args)
