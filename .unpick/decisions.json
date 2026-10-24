@@ -1243,6 +1243,61 @@
       "source": "builtin",
       "matched": "TEXT_NAMES = {\".cursorrules\", \".clinerules\", \".windsurfrules\", \".gitattributes\", \".gitmodules\", \".npmrc\", \".pypirc\",",
       "decided_at": "2026-10-18T00:00:00+00:00"
+    },
+    {
+      "rule_id": "RT-SECRECY",
+      "line_hash": "3b032ecd566881f6129061e33fc4f15408cceed9b0be9b6f8e3537e7e0d60f1f",
+      "decision": "accept",
+      "note": "the decision log describes the silent truncation that entry 47 removed",
+      "path": "DECISIONS.md",
+      "line": 210,
+      "source": "builtin",
+      "matched": "    silently truncated.",
+      "decided_at": "2026-10-24T23:57:35+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "d90937fc7e89892210cf3475dc0ed83e72daa54c0a5150118313f2f53d934c66",
+      "decision": "accept",
+      "note": "the decision log names the files an attacker would aim a link or ref at",
+      "path": "DECISIONS.md",
+      "line": 213,
+      "source": "builtin",
+      "matched": "    running git, so a component's own `.git` chooses the file. A HEAD of `ref: ../../.ssh/id_rsa` used to",
+      "decided_at": "2026-10-24T23:57:35+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "b12902e74ccf923368ed29156c411ad1169c59fb6303209d7b54efc1456335c5",
+      "decision": "accept",
+      "note": "the decision log names the files an attacker would aim a link or ref at",
+      "path": "DECISIONS.md",
+      "line": 218,
+      "source": "builtin",
+      "matched": "    made world-readable for the box's user, and `chmod` follows a symlink, so a link to `~/.ssh` would",
+      "decided_at": "2026-10-24T23:57:35+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "6047c567dee4db04726d8d30b089202bd40eecc2414889246236b4ed42e2526e",
+      "decision": "accept",
+      "note": "docstring names the HEAD ref the function now refuses to follow",
+      "path": "unpick/lock.py",
+      "line": 44,
+      "source": "builtin",
+      "matched": "    `ref: ../../.ssh/id_rsa` must not put that file's contents into the lockfile.\"\"\"",
+      "decided_at": "2026-10-24T23:57:35+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "d35a7c87e95ddb03ca46092b337aac37e34e83d6ec6ac25dd8a8c990d6a7d6be",
+      "decision": "accept",
+      "note": "comment names the link target the loop now refuses to chmod through",
+      "path": "unpick/rehearse.py",
+      "line": 98,
+      "source": "builtin",
+      "matched": "        if p.is_symlink():  # a link can point at the host (~/.ssh); the box gets none, and the chmod below never follows one",
+      "decided_at": "2026-10-24T23:57:35+00:00"
     }
   ]
 }

@@ -17,6 +17,7 @@ import difflib
 import hashlib
 import json
 import os
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -29,8 +30,25 @@ TEXT_SUFFIX = {".md", ".mdc", ".json", ".jsonc", ".toml", ".yaml", ".yml", ".txt
                ".mjs", ".ts"}
 
 
+SHA = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+
+
+def _sha(text: str) -> str | None:
+    return text.strip() if SHA.fullmatch(text.strip()) else None
+
+
 def git_head(start: Path) -> str | None:
-    """The checked-out commit, read from .git/HEAD and refs without running git."""
+    """The checked-out commit, read from .git/HEAD and refs without running git.
+
+    A component's own .git decides which file is read, so only a hex SHA is ever returned: a HEAD of
+    `ref: ../../.ssh/id_rsa` must not put that file's contents into the lockfile."""
+    try:
+        return _git_head(start)
+    except OSError:
+        return None
+
+
+def _git_head(start: Path) -> str | None:
     for d in [start, *start.parents]:
         git = d / ".git"
         if git.is_file():  # worktree or submodule: "gitdir: <path>"
@@ -40,17 +58,19 @@ def git_head(start: Path) -> str | None:
             continue
         head = (git / "HEAD").read_text(encoding="utf-8", errors="replace").strip()
         if not head.startswith("ref:"):
-            return head if len(head) == 40 else None
+            return _sha(head)
         ref = head.split(":", 1)[1].strip()
+        if not ref.startswith("refs/") or ".." in ref.split("/"):
+            return None
         loose = git / ref
         if loose.is_file():
-            return loose.read_text(encoding="utf-8").strip()
+            return _sha(loose.read_text(encoding="utf-8", errors="replace"))
         packed = git / "packed-refs"
         if packed.is_file():
             for line in packed.read_text(encoding="utf-8", errors="replace").splitlines():
                 sha, _, name = line.partition(" ")
                 if name == ref:
-                    return sha
+                    return _sha(sha)
         return None
     return None
 
