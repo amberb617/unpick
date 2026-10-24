@@ -15,7 +15,7 @@ from textual.screen import ModalScreen, Screen
 from textual.theme import Theme
 from textual.widgets import DataTable, Footer, Input, Label, Static
 
-from unpick import __version__, inventory, scan
+from unpick import __version__, backends, integrations, inventory, scan
 from unpick.tui import BUCKETS, COLOR, LOGO, LOGO_COLORS, alerts, bars, bucket, next_steps, places, protection, watcher
 
 THEME = Theme(name="unpick", primary="#ff97bf", secondary="#95adda", accent="#ff97bf", foreground="#e7eefa",
@@ -83,10 +83,11 @@ class AskRef(ModalScreen[str]):
         self.dismiss(event.value.strip())
 
 class AddOns(Screen):
-    BINDINGS = [Binding("escape,q", "app.pop_screen", "Back")]
+    BINDINGS = [Binding("escape,q", "app.pop_screen", "Back"), Binding("o", "scan_online", "Scan online")]
 
     def compose(self) -> ComposeResult:
-        yield Static("[b]Add-ons on this machine[/]  worst first. Enter shows the full scan.", id="bar")
+        yield Static("[b]Add-ons on this machine[/]  worst first. Enter scans offline; o also uses your integrations, "
+                     "which can upload the add-on's files.", id="bar")
         yield DataTable(cursor_type="row", zebra_stripes=True)
         yield Footer()
 
@@ -105,6 +106,47 @@ class AddOns(Screen):
     def scan_row(self, event: DataTable.RowSelected) -> None:
         hand_over(self.app, ["scan", self.paths[event.cursor_row]])
 
+    def action_scan_online(self) -> None:
+        ready = integrations.online_backends(self.app.integration_rows)
+        t = self.query_one(DataTable)
+        if not ready:
+            self.notify("No scanning integration is ready. Press n on the home screen to connect one.")
+        elif t.row_count:
+            hand_over(self.app, ["scan", self.paths[t.cursor_row], "--backends", ",".join(ready), "--online"])
+
+
+class Integrations(Screen):
+    BINDINGS = [Binding("escape,q", "app.pop_screen", "Back")]
+
+    def compose(self) -> ComposeResult:
+        yield Static("[b]Integrations[/]  all optional. Enter sets one up.", id="bar")
+        yield DataTable(cursor_type="row", zebra_stripes=True)
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one(DataTable).add_columns("name", "kind", "status", "what leaves your machine")
+        self.fill(self.app.integration_rows)
+
+    def fill(self, found: list[dict]) -> None:
+        self.found = found
+        t = self.query_one(DataTable)
+        t.clear()
+        for r in found:
+            t.add_row(r["name"], r["kind"], Text(r["status"], style="#5a935a" if r["ready"] else "#ffc000"), r["network"])
+
+    @on(DataTable.RowSelected)
+    def set_up(self, event: DataTable.RowSelected) -> None:
+        r = self.found[event.cursor_row]
+        if not r["action"]:
+            self.notify(r["status"][0].upper() + r["status"][1:] + ".")
+            return
+        hand_over(self.app, r["action"])
+        backends._DESCRIBED.clear()  # an install changes what describe() would say
+        found = integrations.rows()
+        self.app.show_integrations(found)
+        self.fill(found)
+
+
 class Home(App):
     TITLE = "unpick"
     CSS = """
@@ -118,6 +160,7 @@ class Home(App):
     .title { text-style: bold; color: #ffffff; padding-bottom: 1; }
     .muted { color: #95adda; }
     #alerts { padding: 0 5; height: auto; }
+    #integrations { min-height: 5; margin: 0 4 1 4; }
     Splash { align: center middle; background: #040e27; }
     #splash { width: auto; height: auto; }
     #logo, #seam { width: auto; }
@@ -127,7 +170,7 @@ class Home(App):
     DataTable { background: #040e27; }
     """
     BINDINGS = [Binding("s", "setup", "Set up"), Binding("c", "check", "Check"), Binding("i", "addons", "Add-ons"),
-                Binding("r", "rescan", "Rescan"), Binding("enter", "open", "Open", show=False), Binding("q", "quit", "Quit")]
+                Binding("n", "integrations", "Integrations"), Binding("r", "rescan", "Rescan"), Binding("enter", "open", "Open", show=False), Binding("q", "quit", "Quit")]
 
     MIN_SPLASH = 1.0  # seconds; a logo that flashes for a frame reads as a glitch
 
@@ -136,6 +179,7 @@ class Home(App):
         self.started = time.monotonic()
         self.items: list[dict] = []
         self.results: dict[str, str] = {}
+        self.integration_rows: list[dict] = []
         self.scanner = scanner or scan.scan
 
     def compose(self) -> ComposeResult:
@@ -148,6 +192,9 @@ class Home(App):
             with Card(id="addons"):
                 yield Static("Add-ons on this machine", classes="title")
                 yield Static(id="addons-body")
+        with Card(id="integrations"):
+            yield Static("Integrations", classes="title")
+            yield Static("checking...", id="integrations-body", classes="muted")
         yield Static(id="alerts")
         yield Footer()
 
@@ -158,6 +205,7 @@ class Home(App):
         self.query_one("#protect").focus()
         self.push_screen(Splash())
         self.action_rescan()
+        self.load_integrations()
 
     def refresh_status(self) -> None:
         rows = protection()
@@ -224,8 +272,27 @@ class Home(App):
                 self.results[str(p)] = "not read"
             self.call_from_thread(self.show_addons, n, len(todo))
 
+    @work(thread=True, group="integrations")
+    def load_integrations(self) -> None:
+        found = integrations.rows()  # asks each scanner for its version, which takes seconds
+        self.call_from_thread(self.show_integrations, found)
+
+    def show_integrations(self, found: list[dict]) -> None:
+        self.integration_rows = found
+        jiffy = next(r for r in found if r["id"] == "jiffy")
+        scanners = [r for r in found if r["kind"] == "scanner"]
+        keys = [r for r in found if r["id"].startswith("api:")]
+        body = Text()
+        body.append(" \u2713 " if jiffy["ready"] else " ! ", style="bold #5a935a" if jiffy["ready"] else "bold #ffc000")
+        body.append(f"Jiffy {jiffy['status']}")
+        body.append(f"   \u00b7   {sum(r['ready'] for r in scanners)} of {len(scanners)} scanners installed")
+        body.append(f"   \u00b7   {sum(r['ready'] for r in keys)} of {len(keys)} AI review keys set")
+        body.append("\nEnter or n: connect Jiffy, install scanners", style="#95adda")
+        self.query_one("#integrations-body", Static).update(body)
+
     def action_open(self) -> None:
-        {"protect": self.action_setup, "addons": self.action_addons}.get(getattr(self.focused, "id", ""), lambda: None)()
+        actions = {"protect": self.action_setup, "addons": self.action_addons, "integrations": self.action_integrations}
+        actions.get(getattr(self.focused, "id", ""), lambda: None)()
 
     def action_setup(self) -> None:
         hand_over(self, ["setup"])
@@ -236,6 +303,9 @@ class Home(App):
             if ref:
                 hand_over(self, ["check", ref])
         self.push_screen(AskRef(), go)
+
+    def action_integrations(self) -> None:
+        self.push_screen(Integrations())
 
     def action_addons(self) -> None:
         self.push_screen(AddOns())
