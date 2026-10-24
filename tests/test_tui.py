@@ -91,3 +91,56 @@ def test_home_screen_scans_every_place_once(tmp_path, monkeypatch):
 
 def test_bare_unpick_without_a_terminal_prints_help(capsys):
     assert cli.main([]) == 0 and "usage: unpick" in capsys.readouterr().out
+
+
+def _splash_app(tmp_path, monkeypatch, min_splash):
+    from unpick import tui_app
+
+    _fake_home(tmp_path, monkeypatch)
+    monkeypatch.setattr(tui_app.inventory, "discover", lambda project: [])
+    monkeypatch.setattr(tui_app.Home, "MIN_SPLASH", min_splash)
+    return tui_app, tui_app.Home(scanner=lambda p: _result(0))
+
+
+def test_logo_shows_while_loading_then_gets_out_of_the_way(tmp_path, monkeypatch):
+    tui_app, app = _splash_app(tmp_path, monkeypatch, 0.3)
+
+    async def go():
+        async with app.run_test(size=(110, 34)) as pilot:
+            await pilot.pause()
+            assert isinstance(app.screen, tui_app.Splash)
+            assert "██╗" in str(app.screen.query_one("#logo").render())
+            await app.workers.wait_for_complete()
+            await pilot.pause(0.5)
+            assert not isinstance(app.screen, tui_app.Splash)
+
+    asyncio.run(go())
+
+
+def test_any_key_skips_the_logo(tmp_path, monkeypatch):
+    tui_app, app = _splash_app(tmp_path, monkeypatch, 60)
+
+    async def go():
+        async with app.run_test(size=(110, 34)) as pilot:
+            await pilot.pause()
+            assert isinstance(app.screen, tui_app.Splash)
+            await pilot.press("x")
+            assert not isinstance(app.screen, tui_app.Splash)
+
+    asyncio.run(go())
+
+
+def test_home_has_no_tagline(tmp_path, monkeypatch):
+    from unpick import TAGLINE
+
+    tui_app, app = _splash_app(tmp_path, monkeypatch, 0)
+
+    async def go():
+        async with app.run_test(size=(110, 34)) as pilot:
+            await pilot.pause()
+            await app.workers.wait_for_complete()
+            await pilot.pause(0.2)
+            assert not isinstance(app.screen, tui_app.Splash)  # loading outlasted the minimum: closes at once
+            assert TAGLINE not in str(app.query_one("#hello").render())
+
+    asyncio.run(go())
