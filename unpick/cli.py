@@ -204,6 +204,48 @@ def cmd_backends(args) -> int:
     return 0
 
 
+def _connect_jiffy(args) -> int:
+    from unpick import integrations
+
+    key = None
+    if not args.browser:
+        if not sys.stdin.isatty():
+            print("unpick: connecting asks for your key; run it in a terminal, or set JIFFY_TOKEN", file=sys.stderr)
+            return 2
+        import getpass
+        console.print(f"Create a key at {integrations.JIFFY_KEYS_URL}\n"
+                      "It goes to the Jiffy CLI, which checks it and saves it for your user. unpick does not keep it.")
+        key = getpass.getpass("Jiffy API key (hidden; press Enter alone to sign in with your browser instead): ").strip() or None
+    code, msg = integrations.connect_jiffy(key)
+    if msg:
+        console.print(esc(msg))
+    if code == 0:
+        console.print("Jiffy connected. Use it with: unpick scan <path> --backends jiffy --online")
+    return code
+
+
+def cmd_integrations(args) -> int:
+    from unpick import integrations
+
+    if args.action == "connect":
+        return _connect_jiffy(args)
+    if args.action == "disconnect":
+        code, msg = integrations.disconnect_jiffy()
+        console.print(esc(msg) or "Jiffy disconnected.")
+        return code
+    def render(rows):
+        t = Table(title="Scanning integrations (all optional)")
+        for c in ("name", "kind", "status", "what leaves your machine", "set up with"):
+            t.add_column(c, overflow="fold")
+        for r in rows:
+            t.add_row(r["name"], r["kind"], ("[green]" if r["ready"] else "[yellow]") + esc(r["status"]) + "[/]",
+                      esc(r["network"]), esc("unpick " + " ".join(r["action"])) if r["action"] else "")
+        console.print(t)
+        console.print("[dim]Network scanners and hosted AI review only run when you pass --online or --judge.[/]")
+    _out(args, integrations.rows(), render)
+    return 0
+
+
 def _adv(a: dict | None) -> str:
     if not a:
         return "not recorded"
@@ -739,6 +781,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="block at this severity or above (default high, or $UNPICK_HOOK_MIN_SEVERITY)")
     s.add_argument("--fail-open", action="store_true", help="allow installs unpick cannot check, with a warning")
     s.set_defaults(fn=cmd_hook)
+
+    s = sub.add_parser("integrations", parents=[common], help="see and connect scanning integrations (Jiffy, scanners, AI review)")
+    s.add_argument("action", nargs="?", choices=["list", "connect", "disconnect"], default="list")
+    s.add_argument("name", nargs="?", choices=["jiffy"], help="the integration to connect or disconnect")
+    s.add_argument("--browser", action="store_true", help="sign in to Jiffy in your browser instead of pasting a key")
+    s.set_defaults(fn=cmd_integrations)
 
     s = sub.add_parser("setup", parents=[common], help="first run: pick which agents to protect, see every change, then apply")
     s.add_argument("--dry-run", action="store_true", help="ask the questions and show the changes without making them")

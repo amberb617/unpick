@@ -46,8 +46,14 @@ changes anything. `--dry-run` stops after showing the changes; `unpick setup --u
 
 `unpick` on its own opens a home screen in the terminal (with the `tui` extra): which agents are protected,
 every add-on on this machine grouped by its worst finding, and recent watcher alerts. `s` runs setup, `c`
-checks something before you install it, `i` lists every add-on worst first. Without the extra it prints the
-command list.
+checks something before you install it, `i` lists every add-on worst first, `n` shows integrations. Without
+the extra it prints the command list.
+
+**Integrations.** `unpick integrations` lists every optional scanner and AI review provider, whether it is
+ready, and what it sends off your machine. `unpick integrations connect jiffy` asks for a Jiffy API key
+(create one at app.jiffylabs.ai/settings/api-keys), hidden as you type, and hands it to the Jiffy CLI through
+the environment; the CLI checks it and saves it for your user. unpick stores no keys. Hosted AI review reads
+the provider's key from your shell; `unpick integrations` names the variable for each one.
 
 ## The five-minute triage, mapped to commands
 
@@ -158,6 +164,8 @@ is no telemetry, no auto-update and no version check.
 | `unpick judges install fallback --online` | PyPI and GitHub (runtime), huggingface.co (model) | download requests for llama-cpp-python and one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
 | `scan --backends jiffy --online` | Jiffy Labs API (commercial) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
+| `unpick integrations connect jiffy` | Jiffy Labs API, via the Jiffy CLI | the key you paste, so the CLI can check it before saving it. `--browser` opens Jiffy's sign-in page instead |
+| `o` in the home screen's add-on list | every ready scanner, as `scan --backends ... --online` | what each of those scanners sends, as listed above |
 | `unpick check <url or registry ref>` (network on by default for this command; `--offline` skips provenance) | the git host, registry.npmjs.org, pypi.org / files.pythonhosted.org, api.github.com | the repository or package name; downloads it into quarantine |
 | `unpick outdated --online` | registry.npmjs.org, pypi.org, api.github.com, the git host | the names of locked components; fetches new git versions into quarantine |
 | `unpick rehearse --build --online` | Docker Hub, Debian mirrors, PyPI and GitHub | image and package downloads, once |
