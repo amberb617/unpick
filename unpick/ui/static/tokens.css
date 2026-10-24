@@ -1,4 +1,4 @@
-/* Jiffy design tokens, mirrored from Jiffy-Labs-AI/platform src/app/styles/jiffy-base.css @4eb0f40.
+/* Design tokens.
    System fonts only: nothing is loaded from the network. */
 :root {
   --navy-900: #040e27; --navy-700: #09132d; --navy-500: #0e182b;

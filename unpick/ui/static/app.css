@@ -1,5 +1,5 @@
 [hidden] { display: none !important; }
-/* unpick UI. Jiffy visual system: navy and pale blue surfaces, white cards, pink kickers on navy, red for
+/* unpick UI. Visual system: navy and pale blue surfaces, white cards, pink kickers on navy, red for
    danger, the offset hover shadow. Meaning never rides on colour alone: severity and verdicts are words with
    distinct border styles, so the screen reads in black and white and on a projector. */
 * { box-sizing: border-box; }
