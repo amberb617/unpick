@@ -3,6 +3,7 @@ they show comes from unpick.tui, which needs nothing extra."""
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 from rich.text import Text
@@ -14,8 +15,8 @@ from textual.screen import ModalScreen, Screen
 from textual.theme import Theme
 from textual.widgets import DataTable, Footer, Input, Label, Static
 
-from unpick import TAGLINE, __version__, inventory, scan
-from unpick.tui import BUCKETS, COLOR, alerts, bars, bucket, next_steps, places, protection, watcher
+from unpick import __version__, inventory, scan
+from unpick.tui import BUCKETS, COLOR, LOGO, LOGO_COLORS, alerts, bars, bucket, next_steps, places, protection, watcher
 
 THEME = Theme(name="unpick", primary="#ff97bf", secondary="#95adda", accent="#ff97bf", foreground="#e7eefa",
               background="#040e27", surface="#09132d", panel="#0e182b", warning="#ffc000", error="#ff4e4e",
@@ -34,6 +35,36 @@ def hand_over(app, argv: list[str]) -> None:
             input("\nPress Enter to go back to unpick. ")
         except (EOFError, KeyboardInterrupt):
             pass
+
+class Splash(Screen):
+    """The logo while unpick reads your agents' folders. A row of stitches comes undone; any key skips it."""
+
+    SEAM = 46  # the logo's width
+
+    def compose(self) -> ComposeResult:
+        logo = Text()
+        for line, color in zip(LOGO.splitlines(), LOGO_COLORS, strict=True):
+            logo.append(line + "\n", style=f"bold {color}")
+        with Vertical(id="splash"):
+            yield Static(logo, id="logo")
+            yield Static(id="seam")
+            yield Static(f"{__version__}   reading your agents' folders", id="loading")
+
+    def on_mount(self) -> None:
+        self.step = 0
+        self.tick()
+        self.set_interval(0.04, self.tick)
+
+    def tick(self) -> None:
+        n = self.step % (self.SEAM + 12)  # a short pause on the bare seam before it is stitched up again
+        undone = min(n, self.SEAM)
+        self.query_one("#seam", Static).update(
+            Text("\u00b7" * undone, style="#142040").append("\u00d7" * (self.SEAM - undone), style="#ff97bf"))
+        self.step += 1
+
+    def on_key(self) -> None:
+        self.dismiss()
+
 
 class Card(Vertical, can_focus=True):
     pass
@@ -87,6 +118,10 @@ class Home(App):
     .title { text-style: bold; color: #ffffff; padding-bottom: 1; }
     .muted { color: #95adda; }
     #alerts { padding: 0 5; height: auto; }
+    Splash { align: center middle; background: #040e27; }
+    #splash { width: auto; height: auto; }
+    #logo, #seam { width: auto; }
+    #loading { color: #95adda; padding-top: 1; }
     #ask { width: 72; height: auto; padding: 1 2; background: #09132d; border: tall #ff97bf; }
     AskRef { align: center middle; background: #040e27 60%; }
     DataTable { background: #040e27; }
@@ -94,8 +129,11 @@ class Home(App):
     BINDINGS = [Binding("s", "setup", "Set up"), Binding("c", "check", "Check"), Binding("i", "addons", "Add-ons"),
                 Binding("r", "rescan", "Rescan"), Binding("enter", "open", "Open", show=False), Binding("q", "quit", "Quit")]
 
+    MIN_SPLASH = 1.0  # seconds; a logo that flashes for a frame reads as a glitch
+
     def __init__(self, scanner=None):
         super().__init__()
+        self.started = time.monotonic()
         self.items: list[dict] = []
         self.results: dict[str, str] = {}
         self.scanner = scanner or scan.scan
@@ -118,6 +156,7 @@ class Home(App):
         self.theme = THEME.name
         self.refresh_status()
         self.query_one("#protect").focus()
+        self.push_screen(Splash())
         self.action_rescan()
 
     def refresh_status(self) -> None:
@@ -126,7 +165,7 @@ class Home(App):
         state = {True: "[#5a935a]●[/] watcher on", False: "[#95adda]○[/] watcher off", None: "watcher: see Task Scheduler"}[w]
         self.query_one("#bar", Static).update(f"[b #ff97bf]unpick[/] {__version__}   {state}")
         steps = "\n".join(f"{n}. {s}" for n, s in enumerate(next_steps(rows), 1))
-        self.query_one("#hello", Static).update(f"[b]{TAGLINE}[/]\n\n{steps}")
+        self.query_one("#hello", Static).update(steps)
         body = Text()
         for r in rows:
             if not r["installed"]:
@@ -147,6 +186,17 @@ class Home(App):
             text.append(f", {e['open']} open  {Path(e['path']).name}\n")
         self.query_one("#alerts", Static).update(text)
 
+    def loaded(self) -> None:
+        wait = self.MIN_SPLASH - (time.monotonic() - self.started)
+        if wait > 0:
+            self.set_timer(wait, self.close_splash)
+        else:
+            self.close_splash()  # Textual's set_timer(0) divides by zero
+
+    def close_splash(self) -> None:
+        if isinstance(self.screen, Splash):
+            self.screen.dismiss()
+
     def show_addons(self, done: int, total: int) -> None:
         counts = {b: 0 for b in BUCKETS}
         for b in self.results.values():
@@ -163,6 +213,7 @@ class Home(App):
     @work(thread=True, exclusive=True)
     def action_rescan(self) -> None:
         self.items = inventory.discover(project=Path.cwd())
+        self.call_from_thread(self.loaded)
         todo = places(self.items)
         self.results = {}
         self.call_from_thread(self.show_addons, 0, len(todo))

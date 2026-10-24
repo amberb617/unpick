@@ -22,6 +22,15 @@ from unpick import hook, setup, watch
 BUCKETS = ("high", "medium", "low", "nothing found", "not read")
 COLOR = {"high": "#ff4e4e", "medium": "#ffc000", "low": "#c9d6f0", "nothing found": "#5a935a", "not read": "#aa9ff3"}
 SEVERITY_RX = re.compile(r"--min-severity\s+(\w+)")
+LOGO = """\
+██╗   ██╗███╗   ██╗██████╗ ██╗ ██████╗██╗  ██╗
+██║   ██║████╗  ██║██╔══██╗██║██╔════╝██║ ██╔╝
+██║   ██║██╔██╗ ██║██████╔╝██║██║     █████╔╝
+██║   ██║██║╚██╗██║██╔═══╝ ██║██║     ██╔═██╗
+╚██████╔╝██║ ╚████║██║     ██║╚██████╗██║  ██╗
+ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝
+"""
+LOGO_COLORS = ("#ff97bf", "#f99ac6", "#e99fd6", "#d3a1e6", "#bea0ef", "#aa9ff3")  # pink to lavender, top to bottom
 
 
 # ---------------------------------------------------------------- what the screen shows (no Textual needed)
