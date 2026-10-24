@@ -57,7 +57,7 @@ packages = ["unpick"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
-# Mirrors the Jiffy pre-PR gate: unused imports (Sonar S1128), complexity <= 15 (S3776),
+# Mirrors a Sonar-based pre-PR gate: unused imports (Sonar S1128), complexity <= 15 (S3776),
 # no empty except (S8657-style). Nested ternaries (S3358) are caught by tests/test_style.py.
 [tool.ruff]
 line-length = 130

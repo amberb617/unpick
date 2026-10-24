@@ -11,8 +11,8 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
    (a GitHub user named `unpick` exists, so `github.com/unpick` is not ours). Alternates that were also
    free everywhere: `seamrip`, `tailorcheck`. Repository: `amberb617/unpick`, private until you publish it.
 
-2. **Where the code lives locally.** Next to the talk material, not under `~/jiffy/` (that folder is
-   auto-synced from the Jiffy-Labs-AI org).
+2. **Where the code lives locally.** Outside any folder another tool auto-syncs, so a sync never
+   touches work in progress.
 
 3. **What `scan .` skips in this repo.** `.unpickignore` skips `tests/`, `data/`, `demo/` and
    `unpick/demo_kit/`, each with a reason. The remaining findings in source and docs (the tool's own
@@ -70,7 +70,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 15. **SkillSpector only runs with `--online` or `--boxed`.** It calls OSV.dev even with `--no-llm` and has
     no flag to stop it. Installed from GitHub at the pinned commit; it is not on PyPI.
 
-16. **Code style.** The Jiffy pre-PR gate, translated to Python: ruff for unused imports, cognitive
+16. **Code style.** A pre-PR gate, translated to Python: ruff for unused imports, cognitive
     complexity of 15 or less and no empty `except`; an AST test for nested conditional expressions.
     pnpm, not npm, wherever a Node tool is installed.
 
@@ -115,7 +115,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 28. **CHAINDROP file hashes and GitHub look-alike orgs** are still not shipped (no primary-source IOC list).
 
-29. **A hook must read the command, not the text around it.** On 2026-10-18 the Jiffy CLI hook on this
+29. **A hook must read the command, not the text around it.** On 2026-10-18 another install-gating hook on this
     machine blocked a shell script because a heredoc of documentation contained an MCP-add example.
     unpick's hook had the same weakness. Fixed 2026-10-18: `targets()` now splits the script into real shell
     commands first (quoted text stays one word, heredoc bodies are skipped, `sh -c` and `eval` are opened
@@ -190,8 +190,8 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 ## Phase 2 (looking ahead)
 
-17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's
-    own tokens (jiffy-base.css) fall back to the same system stack, and no font files are loaded.
+17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. No font files are
+    loaded.
 
 18. **UI scope in phase 2.** Inventory, Scan, and Backends and judges are built now. Check, Rehearse,
     Verify and Recover screens are added in phases 3 and 4 with the engines they drive, because nothing
@@ -201,6 +201,5 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     per-launch token in a custom header. A web page on another origin cannot send that header without a
     CORS preflight, which the server never answers, so it cannot drive the local API (CSRF).
 
-20. **Visual tokens** come from Jiffy-Labs-AI/platform `src/app/styles/jiffy-base.css` @4eb0f40: navy
-    #040E27, pale blue #E7EEFA, pink #FF97BF, red #FF4E4E, lavender, the pill palette, and the `.j-offset`
-    offset shadow (pink on dark, #FFC5C5 on light).
+20. **Visual tokens:** navy #040E27, pale blue #E7EEFA, pink #FF97BF, red #FF4E4E, lavender, the pill
+    palette, and an offset shadow (pink on dark, #FFC5C5 on light).
