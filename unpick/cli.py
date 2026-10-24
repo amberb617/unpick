@@ -371,11 +371,16 @@ def cmd_outdated(args) -> int:
 
 
 def cmd_hook(args) -> int:
+    import os
+
     from unpick import hook
 
     if args.action == "run":
+        if args.fail_open:
+            os.environ["UNPICK_HOOK_FAIL_OPEN"] = "1"
         return hook.run(args.agent, min_severity=args.min_severity)
-    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run)
+    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run,
+                   min_severity=args.min_severity, fail_open=args.fail_open)
     def render(d):
         verb = "would change" if d["dry_run"] else "changed"
         console.print(f"{verb} {esc(d['path'])}" if d["changed"] else f"no change needed in {esc(d['path'])}")
@@ -385,6 +390,74 @@ def cmd_hook(args) -> int:
             console.print("[dim]A timestamped backup of the previous file sits next to it.[/]")
     _out(args, r, render)
     return 0
+
+
+def _ask(question: str, choices: list[str], default: str) -> str:
+    shown = "/".join(c.upper() if c == default else c for c in choices)
+    while True:
+        try:
+            a = input(f"{question} [{shown}] ").strip().lower() or default
+        except EOFError:
+            raise KeyboardInterrupt from None  # Ctrl-D quits like Ctrl-C, before anything is written
+        if a in choices:
+            return a
+        match = [c for c in choices if c.startswith(a)]
+        if len(match) == 1:
+            return match[0]
+
+
+def _print_setup_plan(p: dict) -> None:
+    for h in p["hooks"]:
+        console.print(f"\n[bold]{'change' if h['changed'] else 'already set'}:[/] {esc(h['path'])}")
+        if h["diff"]:
+            console.print(esc(h["diff"].rstrip()), highlight=False)
+    if p["service"]:
+        s = p["service"]
+        if s["file"]:
+            console.print(f"\n[bold]write:[/] {esc(s['file'])}")
+        for cmd in s["commands"]:
+            console.print(f"[bold]run:[/] {esc(' '.join(cmd))}")
+
+
+def cmd_setup(args) -> int:
+    import os
+
+    from unpick import setup
+
+    if args.undo:
+        r = setup.undo()
+        _out(args, r, lambda d: console.print(
+            "\n".join([f"removed the hook from {esc(h['path'])}" for h in d["hooks"]]
+                      + (["stopped and removed the background watcher"] if d["service_removed"] else [])) or "nothing to remove"))
+        return 0
+    if not sys.stdin.isatty() or os.environ.get("UNPICK_NONINTERACTIVE"):
+        print("unpick: setup asks questions; run it in a terminal, or use `unpick hook install <agent>`", file=sys.stderr)
+        return 2
+    found = setup.detected()
+    console.print("Agents found: " + (", ".join(setup.AGENTS[a][0] for a in found) or
+                                      "none of Claude Code, Codex CLI or Cursor"))
+    if not setup.can_watch():
+        console.print("[dim]" + esc("The background watcher needs the watch extra: pipx install 'unpick[watch]'") + "[/]")
+    choices = setup.interview(_ask)
+    p = setup.plan(choices)
+    if not p["hooks"] and not p["service"]:
+        console.print("Nothing to set up.")
+        return 0
+    console.print("\n[bold]This is everything setup will change.[/] Settings files are backed up first.")
+    _print_setup_plan(p)
+    if args.dry_run or _ask("\nMake these changes?", ["y", "n"], "n") != "y":
+        console.print("Nothing changed.")
+        return 0
+    r = setup.apply(choices)
+    for h in r["hooks"]:
+        console.print(f"hooked {esc(h['path'])}")
+    if r["service"]:
+        for e in r["service"]["errors"]:
+            console.print(f"[red]watcher did not start:[/] {esc(e)}")
+        if not r["service"]["errors"]:
+            console.print("background watcher running, and it starts at login")
+    console.print("Undo all of it: unpick setup --undo")
+    return 1 if r["service"] and r["service"]["errors"] else 0
 
 
 def cmd_watch(args) -> int:
@@ -664,7 +737,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--dry-run", action="store_true", help="show the settings change without writing it")
     s.add_argument("--min-severity", choices=["low", "medium", "high"], default=None,
                    help="block at this severity or above (default high, or $UNPICK_HOOK_MIN_SEVERITY)")
+    s.add_argument("--fail-open", action="store_true", help="allow installs unpick cannot check, with a warning")
     s.set_defaults(fn=cmd_hook)
+
+    s = sub.add_parser("setup", parents=[common], help="first run: pick which agents to protect, see every change, then apply")
+    s.add_argument("--dry-run", action="store_true", help="ask the questions and show the changes without making them")
+    s.add_argument("--undo", action="store_true", help="remove every hook and the background watcher setup added")
+    s.set_defaults(fn=cmd_setup)
 
     s = sub.add_parser("watch", parents=[common], help="scan AI components as they land (a backstop to the hook)")
     s.add_argument("--project", default=".")

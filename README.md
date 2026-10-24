@@ -40,6 +40,10 @@ Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows Pow
 extras: `pipx install '.[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
 the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below).
 
+Then run `unpick setup`. It finds Claude Code, Codex CLI and Cursor on this machine, asks which to protect,
+how strict to be and whether to run the watcher at login, then shows every file it will change before it
+changes anything. `--dry-run` stops after showing the changes; `unpick setup --undo` removes all of it.
+
 ## The five-minute triage, mapped to commands
 
 | step | what you do | command | UI screen |
@@ -63,7 +67,7 @@ prints the install command (never runs it) and adds it to `unpick.lock.json`.
 `cursor`; `--dry-run` shows the settings change first, `uninstall` removes it) runs `check` before an agent
 installs a skill, plugin or MCP server, or edits an MCP config, and blocks on unaccepted findings at or
 above `--min-severity` (default high). It fails closed on installs it cannot check
-(`UNPICK_HOOK_FAIL_OPEN=1` to allow them). A plugin install you type yourself is not a tool call, so no hook
+(`--fail-open` at install, or `UNPICK_HOOK_FAIL_OPEN=1`, to allow them). Both choices are saved in the hook command. A plugin install you type yourself is not a tool call, so no hook
 sees it. `unpick watch` scans what lands in the agents' folders and notifies you; `--print-service
 launchd|systemd|windows` prints a run-at-login recipe.
 

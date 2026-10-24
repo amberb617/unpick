@@ -193,9 +193,17 @@ def run(project: Path, once: bool = False, quarantine_at: str | None = None) -> 
         obs.join()
 
 
-def service(kind: str) -> str:
+def command(quarantine_at: str | None = None) -> list[str]:
     exe = shutil.which("unpick") or f"{sys.executable} -m unpick"
-    argv = shlex.split(exe) + ["watch"]
+    return shlex.split(exe) + ["watch"] + (["--quarantine", quarantine_at] if quarantine_at else [])
+
+
+def windows_command(argv: list[str]) -> str:
+    return " ".join(f'"{a}"' if " " in a else a for a in argv)
+
+
+def service(kind: str, quarantine_at: str | None = None) -> str:
+    argv = command(quarantine_at)
     if kind == "launchd":
         args = "".join(f"\n    <string>{a}</string>" for a in argv)
         return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -228,7 +236,7 @@ Restart=on-failure
 WantedBy=default.target
 """
     if kind == "windows":
-        cmd = " ".join(f'"{a}"' if " " in a else a for a in argv)
+        cmd = windows_command(argv)
         return f"""# PowerShell (5.1 or 7). Runs at logon for the current user. /TR is limited to 262 characters.
 schtasks /Create /SC ONLOGON /TN "unpick watch" /TR '{cmd}' /F
 # Remove with: schtasks /Delete /TN "unpick watch" /F
