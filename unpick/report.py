@@ -45,11 +45,11 @@ def _scan_section(d: dict) -> str:
     )
     rows = []
     for f in d.get("findings", []) + d.get("accepted", []):
-        ctx = "".join(f"<div class=\"ctx{' hit' if c['line'] == f['line'] else ''}\"><span>{c['line']}</span>{_e(c['text'])}</div>"
+        ctx = "".join(f"<div class=\"ctx{' hit' if c['line'] == f['line'] else ''}\"><span>{_e(c['line'])}</span>{_e(c['text'])}</div>"
                       for c in f.get("context", []))
         rows.append(
             f"<article class=\"finding\"><p>{_sev(f['severity'])} <b>{_e(f['rule_id'])}</b> "
-            f"<span class=\"badge\">{_e(f['source'])}</span> {_e(f['path'])}:{f['line']} "
+            f"<span class=\"badge\">{_e(f['source'])}</span> {_e(f['path'])}:{_e(f['line'])} "
             f"&middot; agreed by {len(f.get('agreed_by', []))} of {len(d.get('sources', []))}"
             f"{' &middot; decision: ' + _e(f['decision']) if f.get('decision') else ''}</p>"
             f"<p>{_e(f['message'])}</p><pre>{ctx}</pre>"

@@ -117,7 +117,8 @@ def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     from unpick.finding import SEVERITIES
     if not target.exists():
         return {"path": str(target), "status": "removed"}
-    before = _fingerprint(target)
+    owner = owning_component(target) if quarantine_at else None
+    before = _fingerprint(owner or target)  # what gets moved is the owner, so that is what must not change meanwhile
     res = scan.scan(target)
     high = [f for f in res.findings if f.severity == "high"]
     entry = {"path": str(target), "open": len(res.findings), "high": len(high),
@@ -125,7 +126,6 @@ def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     if quarantine_at:
         floor = SEVERITIES.index(quarantine_at)
         if any(SEVERITIES.index(f.severity) >= floor for f in res.findings):
-            owner = owning_component(target)
             if owner is None:
                 entry["quarantine_skipped"] = "not a whole add-on folder (a config file or a shared cache); review it with unpick recover"
             elif _changed_since(owner, before):
@@ -193,9 +193,18 @@ def run(project: Path, once: bool = False, quarantine_at: str | None = None) -> 
         obs.join()
 
 
-def service(kind: str) -> str:
-    exe = shutil.which("unpick") or f"{sys.executable} -m unpick"
-    argv = shlex.split(exe) + ["watch"]
+def command(quarantine_at: str | None = None) -> list[str]:
+    exe = shutil.which("unpick")
+    argv = [exe] if exe else [sys.executable, "-m", "unpick"]  # never split: a home folder can have a space in it
+    return argv + ["watch"] + (["--quarantine", quarantine_at] if quarantine_at else [])
+
+
+def windows_command(argv: list[str]) -> str:
+    return " ".join(f'"{a}"' if " " in a else a for a in argv)
+
+
+def service(kind: str, quarantine_at: str | None = None) -> str:
+    argv = command(quarantine_at)
     if kind == "launchd":
         args = "".join(f"\n    <string>{a}</string>" for a in argv)
         return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -228,7 +237,7 @@ Restart=on-failure
 WantedBy=default.target
 """
     if kind == "windows":
-        cmd = " ".join(f'"{a}"' if " " in a else a for a in argv)
+        cmd = windows_command(argv)
         return f"""# PowerShell (5.1 or 7). Runs at logon for the current user. /TR is limited to 262 characters.
 schtasks /Create /SC ONLOGON /TN "unpick watch" /TR '{cmd}' /F
 # Remove with: schtasks /Delete /TN "unpick watch" /F

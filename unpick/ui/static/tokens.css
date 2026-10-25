@@ -1,19 +1,16 @@
-/* Jiffy design tokens, mirrored from Jiffy-Labs-AI/platform src/app/styles/jiffy-base.css @73f1d66.
+/* Design tokens.
    System fonts only: nothing is loaded from the network. */
 :root {
   --navy-900: #040e27; --navy-700: #09132d; --navy-500: #0e182b;
   --blue-500: #95adda; --blue-300: #d7e1f4; --blue-200: #e7eefa;
   --pink-500: #ff97bf; --pink-100: #ffeaf2; --red-200: #ffc5c5; --red-500: #ff4e4e;
-  --lavender-500: #aa9ff3; --yellow-500: #ffc000; --green-500: #5a935a; --orange-500: #f5bb53;
+  --lavender-500: #aa9ff3; --yellow-500: #ffc000; --green-500: #5a935a;
 
   --bg: #e7eefa; --bg-elevated: #ffffff; --bg-subtle: #f7f7fa; --bg-tint: #d7e1f4;
-  --fg: #0e182b; --fg-strong: #040e27; --fg-muted: #4b5b7a; --fg-dim: #6b7280;
+  --fg: #0e182b; --fg-strong: #040e27; --fg-muted: #4b5b7a;
   --border: rgba(14, 24, 43, 0.12); --border-strong: rgba(14, 24, 43, 0.22);
   --pill-fg-red: #a31616; --pill-bg-red: #ffe3e3; --pill-fg-orange: #8a5a00; --pill-bg-orange: #fff4de;
   --pill-fg-lavender: #5b4bc9; --pill-bg-lavender: #f0edff;
-  --pill-fg-green: #2f6a2f; --pill-bg-green: #e9f3e9; --pill-fg-pink: #b5285f; --pill-bg-pink: #ffeaf2;
-  --pill-fg-muted: #4b5b7a; --pill-bg-muted: #f4f4f4;
-  --shadow-card: 0 1px 2px rgba(14, 24, 43, 0.04);
   --sev-low-fg: #2e4273;
 
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -27,12 +24,10 @@
 }
 [data-theme="dark"] {
   --bg: #040e27; --bg-elevated: #09132d; --bg-subtle: #0e182b; --bg-tint: #142040;
-  --fg: #e7eefa; --fg-strong: #ffffff; --fg-muted: #95adda; --fg-dim: #6e7fa3;
+  --fg: #e7eefa; --fg-strong: #ffffff; --fg-muted: #95adda;
   --border: rgba(231, 238, 250, 0.1); --border-strong: rgba(231, 238, 250, 0.22);
   --pill-fg-red: #ffc5c5; --pill-bg-red: #3a0d14; --pill-fg-orange: #ffd98a; --pill-bg-orange: #2e2410;
-  --pill-fg-lavender: #d5cfff; --pill-bg-lavender: #221d45;
-  --pill-fg-green: #6bcf8a; --pill-bg-green: #0e2a14; --pill-fg-pink: #ff97bf; --pill-bg-pink: #3a1528;
-  --pill-fg-muted: #95adda; --pill-bg-muted: #0e182b; --sev-low-fg: #c9d6f0;
+  --pill-fg-lavender: #d5cfff; --pill-bg-lavender: #221d45; --sev-low-fg: #c9d6f0;
   --shadow-offset-rest: 4px 4px 0 var(--pink-500);
   --shadow-offset-hover: 6px 6px 0 var(--pink-500);
   --shadow-offset-active: 2px 2px 0 var(--pink-500);

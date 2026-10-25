@@ -73,7 +73,7 @@ def _print_scan(d: dict) -> None:
     s = d["summary"]
     console.print(f"\n[bold]{s['open']} open finding(s), {s['accepted']} accepted.[/] By source: {s['by_source']}")
     if d.get("skipped"):
-        console.print(f"[dim]{len(d['skipped'])} file(s) not read (binary, too large or not text); see --json \"skipped\".[/]")
+        console.print(f"[dim]{len(d['skipped'])} file(s) not read (ignored, binary, too large or not text); see --json \"skipped\".[/]")
     if len(d["sources"]) > 1:
         console.print(f"Agreement (Jaccard on file+line): {s['agreement']}")
     if s["open"]:
@@ -201,6 +201,48 @@ def cmd_backends(args) -> int:
                       esc(r["maintainer"]), r["license"], esc(r["network"]) + (" [UNVERIFIED]" if r["unverified"] else ""))
         console.print(t)
     _out(args, rows, render)
+    return 0
+
+
+def _connect_jiffy(args) -> int:
+    from unpick import integrations
+
+    key = None
+    if not args.browser:
+        if not sys.stdin.isatty():
+            print("unpick: connecting asks for your key; run it in a terminal, or set JIFFY_TOKEN", file=sys.stderr)
+            return 2
+        import getpass
+        console.print(f"Create a key at {integrations.JIFFY_KEYS_URL}\n"
+                      "It goes to the Jiffy CLI, which checks it and saves it for your user. unpick does not keep it.")
+        key = getpass.getpass("Jiffy API key (hidden; press Enter alone to sign in with your browser instead): ").strip() or None
+    code, msg = integrations.connect_jiffy(key)
+    if msg:
+        console.print(esc(msg))
+    if code == 0:
+        console.print("Jiffy connected. Use it with: unpick scan <path> --backends jiffy --online")
+    return code
+
+
+def cmd_integrations(args) -> int:
+    from unpick import integrations
+
+    if args.action == "connect":
+        return _connect_jiffy(args)
+    if args.action == "disconnect":
+        code, msg = integrations.disconnect_jiffy()
+        console.print(esc(msg) or "Jiffy disconnected.")
+        return code
+    def render(rows):
+        t = Table(title="Scanning integrations (all optional)")
+        for c in ("name", "kind", "status", "what leaves your machine", "set up with"):
+            t.add_column(c, overflow="fold")
+        for r in rows:
+            t.add_row(r["name"], r["kind"], ("[green]" if r["ready"] else "[yellow]") + esc(r["status"]) + "[/]",
+                      esc(r["network"]), esc("unpick " + " ".join(r["action"])) if r["action"] else "")
+        console.print(t)
+        console.print("[dim]Network scanners and hosted AI review only run when you pass --online or --judge.[/]")
+    _out(args, integrations.rows(), render)
     return 0
 
 
@@ -334,6 +376,9 @@ def cmd_check(args) -> int:
     except quarantine.Refused as e:
         print(f"unpick: refused: {e}", file=sys.stderr)
         return 2
+    except OSError as e:
+        print(f"unpick: could not fetch it: {e}", file=sys.stderr)
+        return 2
     _out(args, m, _print_check)
     return 1 if m["scan"]["summary"]["open"] or m["questions"] else 0
 
@@ -371,11 +416,16 @@ def cmd_outdated(args) -> int:
 
 
 def cmd_hook(args) -> int:
+    import os
+
     from unpick import hook
 
     if args.action == "run":
+        if args.fail_open:
+            os.environ["UNPICK_HOOK_FAIL_OPEN"] = "1"
         return hook.run(args.agent, min_severity=args.min_severity)
-    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run)
+    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run,
+                   min_severity=args.min_severity, fail_open=args.fail_open)
     def render(d):
         verb = "would change" if d["dry_run"] else "changed"
         console.print(f"{verb} {esc(d['path'])}" if d["changed"] else f"no change needed in {esc(d['path'])}")
@@ -385,6 +435,74 @@ def cmd_hook(args) -> int:
             console.print("[dim]A timestamped backup of the previous file sits next to it.[/]")
     _out(args, r, render)
     return 0
+
+
+def _ask(question: str, choices: list[str], default: str) -> str:
+    shown = "/".join(c.upper() if c == default else c for c in choices)
+    while True:
+        try:
+            a = input(f"{question} [{shown}] ").strip().lower() or default
+        except EOFError:
+            raise KeyboardInterrupt from None  # Ctrl-D quits like Ctrl-C, before anything is written
+        if a in choices:
+            return a
+        match = [c for c in choices if c.startswith(a)]
+        if len(match) == 1:
+            return match[0]
+
+
+def _print_setup_plan(p: dict) -> None:
+    for h in p["hooks"]:
+        console.print(f"\n[bold]{'change' if h['changed'] else 'already set'}:[/] {esc(h['path'])}")
+        if h["diff"]:
+            console.print(esc(h["diff"].rstrip()), highlight=False)
+    if p["service"]:
+        s = p["service"]
+        if s["file"]:
+            console.print(f"\n[bold]write:[/] {esc(s['file'])}")
+        for cmd in s["commands"]:
+            console.print(f"[bold]run:[/] {esc(' '.join(cmd))}")
+
+
+def cmd_setup(args) -> int:
+    import os
+
+    from unpick import setup
+
+    if args.undo:
+        r = setup.undo()
+        _out(args, r, lambda d: console.print(
+            "\n".join([f"removed the hook from {esc(h['path'])}" for h in d["hooks"]]
+                      + (["stopped and removed the background watcher"] if d["service_removed"] else [])) or "nothing to remove"))
+        return 0
+    if not sys.stdin.isatty() or os.environ.get("UNPICK_NONINTERACTIVE"):
+        print("unpick: setup asks questions; run it in a terminal, or use `unpick hook install <agent>`", file=sys.stderr)
+        return 2
+    found = setup.detected()
+    console.print("Agents found: " + (", ".join(setup.AGENTS[a][0] for a in found) or
+                                      "none of Claude Code, Codex CLI or Cursor"))
+    if not setup.can_watch():
+        console.print("[dim]" + esc("The background watcher needs the watch extra: pipx install 'unpick[watch]'") + "[/]")
+    choices = setup.interview(_ask)
+    p = setup.plan(choices)
+    if not p["hooks"] and not p["service"]:
+        console.print("Nothing to set up.")
+        return 0
+    console.print("\n[bold]This is everything setup will change.[/] Settings files are backed up first.")
+    _print_setup_plan(p)
+    if args.dry_run or _ask("\nMake these changes?", ["y", "n"], "n") != "y":
+        console.print("Nothing changed.")
+        return 0
+    r = setup.apply(choices)
+    for h in r["hooks"]:
+        console.print(f"hooked {esc(h['path'])}")
+    if r["service"]:
+        for e in r["service"]["errors"]:
+            console.print(f"[red]watcher did not start:[/] {esc(e)}")
+        if not r["service"]["errors"]:
+            console.print("background watcher running, and it starts at login")
+    console.print("Undo all of it: unpick setup --undo")
+    return 1 if r["service"] and r["service"]["errors"] else 0
 
 
 def cmd_watch(args) -> int:
@@ -582,7 +700,7 @@ def build_parser() -> argparse.ArgumentParser:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--json", action="store_true", help="machine-readable output")
     common.add_argument("--no-color", action="store_true", help="no ANSI colour")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd")
 
     s = sub.add_parser("inventory", parents=[common], help="list AI components on this machine and in this project")
     s.add_argument("--project", default=".", help="project root (default: current directory)")
@@ -664,7 +782,19 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--dry-run", action="store_true", help="show the settings change without writing it")
     s.add_argument("--min-severity", choices=["low", "medium", "high"], default=None,
                    help="block at this severity or above (default high, or $UNPICK_HOOK_MIN_SEVERITY)")
+    s.add_argument("--fail-open", action="store_true", help="allow installs unpick cannot check, with a warning")
     s.set_defaults(fn=cmd_hook)
+
+    s = sub.add_parser("integrations", parents=[common], help="see and connect scanning integrations (Jiffy, scanners, AI review)")
+    s.add_argument("action", nargs="?", choices=["list", "connect", "disconnect"], default="list")
+    s.add_argument("name", nargs="?", choices=["jiffy"], help="the integration to connect or disconnect")
+    s.add_argument("--browser", action="store_true", help="sign in to Jiffy in your browser instead of pasting a key")
+    s.set_defaults(fn=cmd_integrations)
+
+    s = sub.add_parser("setup", parents=[common], help="first run: pick which agents to protect, see every change, then apply")
+    s.add_argument("--dry-run", action="store_true", help="ask the questions and show the changes without making them")
+    s.add_argument("--undo", action="store_true", help="remove every hook and the background watcher setup added")
+    s.set_defaults(fn=cmd_setup)
 
     s = sub.add_parser("watch", parents=[common], help="scan AI components as they land (a backstop to the hook)")
     s.add_argument("--project", default=".")
@@ -739,13 +869,33 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _home(parser) -> int:
+    """`unpick` alone: the home screen in a terminal with the tui extra, otherwise the command list."""
+    import importlib.util
+    import os
+
+    if sys.stdin.isatty() and sys.stdout.isatty() and not os.environ.get("UNPICK_NONINTERACTIVE"):
+        if importlib.util.find_spec("textual"):
+            from unpick import tui
+            tui.run()
+            return 0
+        parser.print_help()
+        print("\nFor the home screen: pipx install 'unpick[tui]'")
+        return 0
+    parser.print_help()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     global console
     argv = list(sys.argv[1:] if argv is None else argv)
     # `decide accept` without an id: argparse would read "accept" as the id.
     if argv[:1] == ["decide"] and len(argv) > 1 and argv[1] in ("accept", "reject", "ask-author"):
         argv.insert(1, "")
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.cmd is None:
+        return _home(parser)
     console = Console(no_color=args.no_color, highlight=False, soft_wrap=False)
     try:
         return args.fn(args)

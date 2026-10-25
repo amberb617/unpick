@@ -12,6 +12,8 @@ import json
 import os
 import urllib.request
 
+from unpick import net
+
 NAME = "api"
 KIND = "hosted"
 PROVIDER = "a model provider API"
@@ -42,7 +44,7 @@ def detect() -> list[dict]:
 
 def _post(url: str, headers: dict, body: dict) -> dict:
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", **headers})
-    with urllib.request.urlopen(req, timeout=600) as r:  # noqa: S310 - fixed provider URLs, consent required
+    with net.urlopen(req, timeout=600) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
