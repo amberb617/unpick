@@ -16,7 +16,7 @@ from textual.theme import Theme
 from textual.widgets import DataTable, Footer, Input, Label, Static
 
 from unpick import __version__, backends, integrations, inventory, scan
-from unpick.tui import BUCKETS, COLOR, LOGO, LOGO_COLORS, alerts, bars, bucket, next_steps, places, protection, watcher
+from unpick.tui import BUCKETS, COLOR, alerts, bars, bucket, logo_text, next_steps, places, protection, watcher
 
 THEME = Theme(name="unpick", primary="#ff97bf", secondary="#95adda", accent="#ff97bf", foreground="#e7eefa",
               background="#040e27", surface="#09132d", panel="#0e182b", warning="#ffc000", error="#ff4e4e",
@@ -42,11 +42,8 @@ class Splash(Screen):
     SEAM = 46  # the logo's width
 
     def compose(self) -> ComposeResult:
-        logo = Text()
-        for line, color in zip(LOGO.splitlines(), LOGO_COLORS, strict=True):
-            logo.append(line + "\n", style=f"bold {color}")
         with Vertical(id="splash"):
-            yield Static(logo, id="logo")
+            yield Static(logo_text(), id="logo")
             yield Static(id="seam")
             yield Static(f"{__version__}   reading your agents' folders", id="loading")
 
@@ -152,7 +149,8 @@ class Home(App):
     CSS = """
     Screen { background: #040e27; color: #e7eefa; }
     #bar { dock: top; height: 1; background: #09132d; color: #95adda; padding: 0 1; }
-    #hello { padding: 1 4 0 4; height: auto; }
+    #home-logo { padding: 1 4 0 4; height: auto; }
+    #hello { padding: 0 4; height: auto; }
     #cards { height: auto; padding: 1 3; }
     Card { width: 1fr; height: auto; min-height: 12; margin: 0 1; padding: 1 2;
            background: #09132d; border: tall #142040; }
@@ -184,6 +182,7 @@ class Home(App):
 
     def compose(self) -> ComposeResult:
         yield Static(id="bar")
+        yield Static(logo_text(), id="home-logo")
         yield Static(id="hello")
         with Horizontal(id="cards"):
             with Card(id="protect"):
