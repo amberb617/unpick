@@ -110,6 +110,7 @@ What each layer misses is in docs/research/ux-and-integration.md.
 
 1. Hook. `--dry-run` prints the settings change and writes nothing. Then run the same command
    without it. Use `codex` or `cursor` in place of `claude-code` for those agents.
+   `unpick setup` does the same for every agent it finds, and shows each change first.
 
 ```
 unpick hook install claude-code --dry-run
