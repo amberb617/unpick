@@ -33,6 +33,14 @@ LOGO = """\
 LOGO_COLORS = ("#ff97bf", "#f99ac6", "#e99fd6", "#d3a1e6", "#bea0ef", "#aa9ff3")  # pink to lavender, top to bottom
 
 
+def logo_text() -> Text:
+    """The logo, shaded pink to lavender. Shown on the loading screen and at the top of home."""
+    t = Text()
+    for line, color in zip(LOGO.splitlines(), LOGO_COLORS, strict=True):
+        t.append(line + "\n", style=f"bold {color}")
+    return t
+
+
 # ---------------------------------------------------------------- what the screen shows (no Textual needed)
 def protection() -> list[dict]:
     rows = []
@@ -88,7 +96,7 @@ def bucket(result) -> str:
     return "nothing found"
 
 
-def bars(counts: dict, width: int = 24) -> Text:
+def bars(counts: dict, width: int = 18) -> Text:
     top = max(counts.values(), default=0) or 1
     t = Text()
     for b in BUCKETS:
