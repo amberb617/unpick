@@ -189,7 +189,7 @@ def _check_refs(refs, min_severity, runner):
 
 
 def _check_edit(ti, min_severity):
-    from unpick import scan
+    from unpick import decisions, scan
 
     path = Path(str(ti.get("file_path")))
     if "content" in ti:
@@ -203,7 +203,7 @@ def _check_edit(ti, min_severity):
         mirror = Path(d) / Path(*path.parts[-2:]) if len(path.parts) >= 2 else Path(d) / path.name
         mirror.parent.mkdir(parents=True, exist_ok=True)
         mirror.write_text(new, encoding="utf-8")
-        res = scan.scan(Path(d), decision_files=None)
+        res = scan.scan(Path(d), decision_files=[decisions.user_file()])  # never the working tree's: a cloned repo can ship one
     bad = _too_severe([f.to_dict() for f in res.findings], min_severity)
     if bad:
         return False, f"unpick blocked this edit to {path.name}: {_summary(bad)}"
@@ -226,7 +226,10 @@ def run(agent: str, stdin=None, stdout=None, stderr=None, min_severity: str | No
     sev = min_severity or os.environ.get("UNPICK_HOOK_MIN_SEVERITY", "high")
     if agent == "cursor" and "command" in event and "tool_name" not in event:
         event = {"tool_name": "beforeShellExecution", "tool_input": {"command": event["command"]}}
-    allowed, msg = decide(event, sev)
+    try:
+        allowed, msg = decide(event, sev)
+    except Exception as e:  # any other exit code is a non-blocking error to the agent, which would let the call run
+        allowed, msg = _unverifiable(f"unpick hit an error while checking this call ({type(e).__name__}: {str(e)[:200]})")
     if agent == "cursor":
         stdout.write(json.dumps({"permission": "allow" if allowed else "deny", "user_message": msg, "agent_message": msg}))
         return 0
@@ -272,14 +275,19 @@ def _exe() -> str:
     return _quote(found) if found else f"{_quote(sys.executable)} -m unpick"
 
 
-def _entry(agent: str) -> dict:
+def _entry(agent: str, min_severity: str | None = None, fail_open: bool = False) -> dict:
+    """The hook command, with the install-time choices baked in so they hold whatever shell the agent runs."""
     cmd = COMMAND.format(agent=agent).replace("unpick", _exe(), 1)
+    if min_severity:
+        cmd += f" --min-severity {min_severity}"
+    if fail_open:
+        cmd += " --fail-open"
     if agent == "cursor":
         return {"command": cmd}
     return {"matcher": "Bash|PowerShell|Edit|Write|MultiEdit", "hooks": [{"type": "command", "command": cmd, "timeout": 300}]}
 
 
-def planned(agent: str, install: bool) -> tuple[Path, dict, dict]:
+def planned(agent: str, install: bool, min_severity: str | None = None, fail_open: bool = False) -> tuple[Path, dict, dict]:
     path = settings_path(agent)
     before = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
     after = json.loads(json.dumps(before))
@@ -291,7 +299,7 @@ def planned(agent: str, install: bool) -> tuple[Path, dict, dict]:
         hooks = after.setdefault("hooks", {}).setdefault("PreToolUse", [])
         hooks[:] = [h for h in hooks if not _ours(h)]
     if install:
-        hooks.append(_entry(agent))
+        hooks.append(_entry(agent, min_severity, fail_open))
     if not hooks:
         key = "beforeShellExecution" if agent == "cursor" else "PreToolUse"
         after["hooks"].pop(key, None)
@@ -302,11 +310,11 @@ def planned(agent: str, install: bool) -> tuple[Path, dict, dict]:
     return path, before, after
 
 
-def apply(agent: str, install: bool, dry_run: bool) -> dict:
+def apply(agent: str, install: bool, dry_run: bool, min_severity: str | None = None, fail_open: bool = False) -> dict:
     import difflib
     from datetime import UTC, datetime
 
-    path, before, after = planned(agent, install)
+    path, before, after = planned(agent, install, min_severity, fail_open)
     diff = "".join(difflib.unified_diff(json.dumps(before, indent=2).splitlines(True), json.dumps(after, indent=2).splitlines(True),
                                         str(path), str(path) + " (after)"))
     if dry_run or before == after:

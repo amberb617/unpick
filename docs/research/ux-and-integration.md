@@ -30,7 +30,7 @@ does not ask for them again.
 - The Changes screen says a match against the saved copy is not a safety verdict, and a new
   version with no warnings is not the same as safe.
 
-One mismatch with a decision already written down: DECISIONS.md item 46 and `docs/UI-NOTES.md` name
+One mismatch with a decision already written down: DECISIONS.md item 52 and `docs/UI-NOTES.md` name
 the neutral word "NO WARNINGS". This branch's screen says "NOTHING FOUND", and "YOUR CALL" when
 every warning was marked a false alarm. The action line under the word is the one that keeps the
 result from reading as a pass. The word itself is the UI worker's file.
@@ -87,7 +87,7 @@ script, or remove the package" is an action. The person never has to translate a
 the first question is "What do you make of it?" (false alarm, real problem, or ask the author).
 Lead the summary with what the add-on would do and one install verb (leave it, move it to
 quarantine, or read this line and then decide). Keep the judgment buttons after that, where
-DECISIONS.md item 47 already puts them. Sources: https://docs.socket.dev/docs/what-to-do-with-socket-alerts
+DECISIONS.md item 53 already puts them. Sources: https://docs.socket.dev/docs/what-to-do-with-socket-alerts
 and https://docs.socket.dev/docs/alert-types and https://docs.socket.dev/docs/socket-for-github.
 
 ### 4. 1Password Watchtower
