@@ -46,61 +46,16 @@ def cmd_inventory(args) -> int:
 
 
 # ---------------------------------------------------------------- scan
-def _print_finding(f: dict, sources: list[str]) -> None:
-    from unpick.render import escape as raw_escape
+def _print_scan(d: dict, *, args=None, saved: bool = False, headline: str | None = None, lead: bool = True) -> None:
+    """The collapsed view of a scan (unpick.scan_output), with the on-device summary when it is wanted."""
+    from unpick import scan_output, summary
 
-    console.print(f"  [{SEV_STYLE[f['severity']]}]{f['severity']}[/] {esc(f['rule_id'])}  "
-                  f"{esc(raw_escape(f['path']))}:{f['line']}")
-    console.print(f"    {esc(raw_escape(f['message']))}")
-    console.print(f"    [dim]{esc(f['source'])}; agreed by {len(f['agreed_by'])} of {len(sources)}; id {f['id']}[/]")
-    if f["matched"]:
-        console.print(f"    [dim]> {esc(raw_escape(f['matched'])[:160])}[/]")
-    console.print(f"    [dim]Why it was flagged: {esc(raw_escape(f['why']))}[/]")
-    console.print(f"    [dim]May be legitimate when: {esc(raw_escape(f['false_positive']))}[/]")
-
-
-def _print_skipped(skipped: list[dict], shown: int = 3) -> None:
-    """One line per reason: a project scan can skip hundreds of files its own .unpickignore excludes."""
-    reasons: dict[str, list[str]] = {}
-    for s in skipped:
-        reasons.setdefault(s["reason"], []).append(s["path"])
-    for reason, paths in sorted(reasons.items(), key=lambda kv: -len(kv[1])):
-        more = f" and {len(paths) - shown} more" if len(paths) > shown else ""
-        console.print(esc(f"Not read ({reason}): {', '.join(paths[:shown])}{more}"))
-    if len(skipped) > shown:
-        console.print('[dim]Every file not read: --json, under "skipped".[/]')
-
-
-def _print_scan(d: dict, *, verdict: bool = True) -> None:
-    from unpick.render import finding_groups, scan_verdict
-
-    if verdict:
-        console.print(scan_verdict(d), markup=False, soft_wrap=True)
-    for title, group in finding_groups(d["findings"]):
-        console.print(f"\n[bold]{esc(title)}[/]")
-        # Several external scanners can share a title but explain different evidence.
-        for entry in dict.fromkeys(entry for entry, _ in group):
-            console.print(esc(entry.what_it_means))
-            console.print("Next step: " + esc(entry.what_to_do))
-        for _, finding in group:
-            _print_finding(finding, d["sources"])
-    console.print("\n[bold]Checks and coverage[/]")
-    console.print(f"Files read: {len(d['files'])}; findings to review: {d['summary']['open']}; "
-                  f"previously accepted: {d['summary']['accepted']} (not proof of safety)")
-    console.print("Built-in checks: " + ("ran" if d["files"] else "no files read"))
-    for run in d["runs"]:
-        console.print(esc(f"{run['source']}: {run.get('status')} ({run.get('version') or 'version not recorded'}; "
-                          f"exit code {run.get('exit_code', 'not recorded')})"))
-    for error in d["errors"]:
-        console.print("[red]Check incomplete:[/] " + esc(error))
-    for source in d.get("unavailable", []):
-        console.print("[yellow]Not available:[/] " + esc(source))
-    _print_skipped(d.get("skipped", []))
-    net = d["summary"]["network_calls"]
-    console.print("Network: " + ("none" if not net else esc("; ".join(
-        f"{r['source']}: {r.get('network_detail')}" for r in net))))
-    if len(d["sources"]) > 1:
-        console.print(f"Scanner agreement on file locations: {d['summary']['agreement']}")
+    lines, note = summary.pick(d) if args is not None and summary.wanted(args) and d.get("findings") else ([], "")
+    scan_output.render(console, d, details=getattr(args, "details", False), rule=getattr(args, "rule", None),
+                       severity=getattr(args, "severity", None), where=getattr(args, "place", None),
+                       summary=lines, summary_label=summary.LABEL, saved=saved, headline=headline, lead=lead)
+    if note:
+        console.print(f"[dim]{esc(note)}[/]")
 
 
 def cmd_explain(args) -> int:
@@ -168,9 +123,59 @@ def cmd_scan(args) -> int:
         from unpick import report
         report.write(Path(args.html), report.scan_html(_scan_display_data(res.to_dict(), args.judge, judge)))
     def show(data):
-        _print_scan(_scan_display_data(data, args.judge, judge))
+        _print_scan(_scan_display_data(data, args.judge, judge), args=args)
     _out(args, res.to_dict(), show)
     return res.exit_code
+
+
+def _last_scan() -> dict | None:
+    last = Path.cwd() / ".unpick" / "last-scan.json"
+    return json.loads(last.read_text(encoding="utf-8")) if last.is_file() else None
+
+
+def cmd_results(args) -> int:
+    d = _last_scan()
+    if d is None:
+        print("unpick: no saved scan here yet; run `unpick scan <path>` in this folder first", file=sys.stderr)
+        return 2
+    _out(args, d, lambda data: _print_scan(data, args=args, saved=True))
+    return 0
+
+
+def cmd_show(args) -> int:
+    import textwrap
+
+    from unpick import digest
+    from unpick.render import escape as raw_escape
+
+    d = _last_scan()
+    f = next((x for x in (d or {}).get("findings", []) + (d or {}).get("accepted", []) if x["id"] == args.finding_id), None)
+    if f is None:
+        print(f"unpick: no finding {args.finding_id!r} in the last scan here; run `unpick results` to list them", file=sys.stderr)
+        return 2
+
+    def render(f):
+        e = digest._explanation(f["rule_id"])
+        console.print(f"[bold]{esc(e.title.rstrip('.'))}[/]")
+        console.print(f"[dim]Scan of {esc(d.get('target', ''))}, saved {esc(d.get('started_at', '')[:16])}[/]")
+        console.print(f"{f['severity']}  {f['rule_id']}  {esc(raw_escape(f['path']))}:{f.get('line') or '-'}  id {f['id']}")
+        console.print(esc(raw_escape(f["message"])))
+        width = max(40, console.width)
+        for c in f.get("context", []):
+            mark = ">" if c["line"] == f.get("line") else " "
+            head = f"  {mark} {c['line']:>5} | "
+            text = raw_escape(c["text"]) or " "
+            console.print(esc(textwrap.fill(text, width, initial_indent=head, subsequent_indent=" " * (len(head) - 2) + "| ",
+                                            drop_whitespace=False, replace_whitespace=False)))
+        console.print(f"\nWhat it means: {esc(e.what_it_means)}")
+        console.print(f"Why it was flagged: {esc(f.get('why', ''))}")
+        console.print(f"May be legitimate when: {esc(f.get('false_positive', ''))}")
+        console.print(f"Next: {esc(e.what_to_do)}")
+        console.print("\nRecord a decision, one of:")
+        for choice in ("accept", "reject", "ask-author"):
+            console.print(f"  unpick decide {f['id']} {choice}")
+    _out(args, f, render)
+    return 0
 
 
 # ---------------------------------------------------------------- raw
@@ -403,8 +408,9 @@ def cmd_verify(args) -> int:
 def _print_check(m: dict) -> None:
     from unpick.render import scan_verdict
 
-    console.print(scan_verdict(m["scan"], questions=bool(m["questions"]),
-                               provenance_error=bool(m.get("provenance_error"))), markup=False, soft_wrap=True)
+    # questions about the source and provenance errors are the check's to report; the scan cannot see them
+    console.print(scan_verdict(m["scan"], questions=bool(m["questions"]), provenance_error=bool(m.get("provenance_error"))),
+                  style="bold", markup=False, soft_wrap=True)
     console.print(f"[bold]checked {esc(m['ref'])}[/] -> quarantine id [bold]{esc(m['id'])}[/]")
     console.print("Scanned copy: " + esc(m["root"]))
     card = m["provenance"]
@@ -417,7 +423,8 @@ def _print_check(m: dict) -> None:
         console.print("[bold]network:[/] " + esc("; ".join(m["network"])))
     for q in m["questions"]:
         console.print(f"[yellow]?[/] {esc(q)}")
-    _print_scan(m["scan"], verdict=False)
+    console.print()
+    _print_scan(m["scan"], lead=False)
 
 
 def cmd_check(args) -> int:
@@ -436,6 +443,9 @@ def cmd_check(args) -> int:
             return 2
         judge = judges.default_judge() if args.judge == "auto" else args.judge
         m = check.run(args.ref, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed, offline=args.offline)
+        last = Path.cwd() / ".unpick" / "last-scan.json"
+        last.parent.mkdir(parents=True, exist_ok=True)
+        last.write_text(json.dumps(m["scan"], indent=2, ensure_ascii=False), encoding="utf-8")
     except quarantine.Refused as e:
         message = f"unpick: refused: {e}"
         if not args.json:
@@ -762,6 +772,14 @@ def cmd_ui(args) -> int:
 
 
 # ---------------------------------------------------------------- main
+def _view_flags(s) -> None:
+    s.add_argument("--details", action="store_true", help="list every finding under its group")
+    s.add_argument("--rule", help="only this rule, e.g. RT-SENSITIVE-PATH")
+    s.add_argument("--severity", choices=["high", "medium", "low"], help="only this severity")
+    s.add_argument("--place", choices=["code", "docs/config", "other"], help="only findings in this kind of file")
+    s.add_argument("--no-summary", action="store_true", help="skip the on-device summary at the top")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="unpick", usage="unpick [-h] [--version] COMMAND ...",
@@ -800,7 +818,16 @@ Use unpick COMMAND --help for options.""")
     s.add_argument("--decisions", help="use only this decisions file")
     s.add_argument("--no-decisions", action="store_true", help="ignore recorded decisions")
     s.add_argument("--html", help="also write a self-contained HTML report to this file")
+    _view_flags(s)
     s.set_defaults(fn=cmd_scan)
+
+    s = sub.add_parser("results", parents=[common], help="show the last scan saved in this folder again, without rescanning")
+    _view_flags(s)
+    s.set_defaults(fn=cmd_results)
+
+    s = sub.add_parser("show", parents=[common], help="one finding from the last scan, with the lines around it")
+    s.add_argument("finding_id")
+    s.set_defaults(fn=cmd_show)
 
     s = sub.add_parser("raw", parents=[common], help="show a Markdown file rendered vs raw, line by line")
     s.add_argument("file")

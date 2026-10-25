@@ -52,18 +52,19 @@ def test_verdict_and_grouping(kit, monkeypatch, capsys):
     monkeypatch.chdir(kit)
     assert cli.main(["scan", "sample-a", "--no-decisions"]) == 1
     out = capsys.readouterr().out
-    assert out.splitlines()[0] == (
-        "Don't install this yet: 4 serious findings; run `unpick explain RT-PREREQ` for the next step.")
-    assert out.count("Setup asks you to run extra code") == 1
-    assert out.index("SKILL.md:14") < out.index("SKILL.md:17") < out.index("Runs code you cannot read first")
-    assert "  high RT-UNICODE  SKILL.md:24" in out
+    headline = " ".join(out.split("\nScan: ")[0].split())  # the first line may wrap under its indent
+    assert headline == "Don't install this yet: 4 serious findings; run `unpick explain RT-PREREQ` for the next step."
+    prereq = get_explanation("RT-PREREQ")
+    assert " ".join(out.split()).count(prereq.what_it_means) == 1  # once per group, never once per finding (wrap-proof)
+    assert out.index("TL;DR") < out.index("Findings:") < out.index("SKILL.md:14,17") < out.index("Coverage")
+    assert "RT-UNICODE, docs/config" in out and "SKILL.md:24" in out
 
 
 def test_low_finding_and_accepted_are_not_passes(kit, monkeypatch, capsys):
     monkeypatch.chdir(kit)
     assert cli.main(["scan", "sample-b", "--no-decisions"]) == 1
     out = capsys.readouterr().out
-    assert out.startswith("Don't install this yet: 1 finding to review;")
+    assert out.startswith("Review before you install: 1 finding, no high ones (not the same as safe);")  # not a pass
     assert "Private files or keys are mentioned" in out
     assert cli.main(["scan", "sample-b", "--decisions", "accepted.decisions.json"]) == 0
     out = capsys.readouterr().out
@@ -223,16 +224,16 @@ def test_missing_path_is_not_a_pass(command, tmp_path, capsys):
     assert f"unpick {command} --help" in output
 
 
-def test_files_not_read_are_grouped_by_reason(capsys, monkeypatch):
+def test_files_not_read_are_grouped_by_reason(capsys):
     from rich.console import Console
 
-    from unpick import cli
+    from unpick import scan_output
 
-    monkeypatch.setattr(cli, "console", Console(width=200))  # Windows runners have a narrow console that wraps
+    console = Console(width=200)  # Windows runners have a narrow console that wraps
     skipped = [{"path": f"docs/{i}.md", "reason": "ignored by .unpickignore"} for i in range(40)]
     skipped.append({"path": "logo.png", "reason": "not a text format"})
-    cli._print_skipped(skipped)
+    scan_output.render(console, {**result().to_dict(), "skipped": skipped})
     out = capsys.readouterr().out
     assert out.count("Not read") == 2
     assert "Not read (ignored by .unpickignore): docs/0.md, docs/1.md, docs/2.md and 37 more" in out
-    assert "Not read (not a text format): logo.png\n" in out and '"skipped"' in out
+    assert "Not read (not a text format): logo.png.\n" in out and '"skipped"' in out

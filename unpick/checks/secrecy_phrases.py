@@ -17,7 +17,7 @@ from unpick.resources import load_json
 RULE_ID = "RT-SECRECY"
 TITLE = "Secrecy or override phrase"
 SEVERITY = "medium"
-WHY = "The text tries to keep something from you or to override the assistant's normal rules, which only makes sense if the component wants to act behind your back."
+WHY = "The text uses wording about secrecy or about setting an AI's rules aside, which is worth reading in context to see whether it is an instruction or a description."
 FALSE_POSITIVE = "Security write-ups, test fixtures and prompt-injection training material quote these phrases as examples."
 
 SCORE_TO_SEV = {1: "low", 2: "medium", 3: "high"}
