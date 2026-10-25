@@ -203,6 +203,7 @@ is no telemetry, no auto-update and no version check.
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
 | `scan --backends jiffy --online` | Jiffy Labs API (commercial) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
 | `unpick integrations connect jiffy` | Jiffy Labs API, via the Jiffy CLI | the key you paste, so the CLI can check it before saving it. `--browser` opens Jiffy's sign-in page instead |
+| `unpick integrations check jiffy` | Jiffy Labs API, via the Jiffy CLI (`jiffy whoami`) | your saved key, to see whether Jiffy still accepts it |
 | `o` in the home screen's add-on list | every ready scanner, as `scan --backends ... --online` | what each of those scanners sends, as listed above |
 | `unpick check <url or registry ref>` (network on by default for this command; `--offline` skips provenance) | the git host, registry.npmjs.org, pypi.org / files.pythonhosted.org, api.github.com | the repository or package name; downloads it into quarantine |
 | `unpick outdated --online` | registry.npmjs.org, pypi.org, api.github.com, the git host | the names of locked components; fetches new git versions into quarantine |

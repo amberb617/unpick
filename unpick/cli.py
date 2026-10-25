@@ -274,7 +274,7 @@ def _connect_jiffy(args) -> int:
     if msg:
         console.print(esc(msg))
     if code == 0:
-        console.print("Jiffy connected. Use it with: unpick scan <path> --backends jiffy --online")
+        console.print("Jiffy accepted the key. Use it with: unpick scan <path> --backends jiffy --online")
     return code
 
 
@@ -283,6 +283,13 @@ def cmd_integrations(args) -> int:
 
     if args.action == "connect":
         return _connect_jiffy(args)
+    if args.action == "check":
+        code, msg = integrations.check_jiffy()
+        if msg:
+            console.print(esc(msg))
+        console.print("Jiffy accepted the saved key." if code == 0 else
+                      "Jiffy did not accept it. Run: unpick integrations connect jiffy")
+        return 0 if code == 0 else 1
     if args.action == "disconnect":
         code, msg = integrations.disconnect_jiffy()
         console.print(esc(msg) or "Jiffy disconnected.")
@@ -860,8 +867,8 @@ Use unpick COMMAND --help for options.""")
     s.set_defaults(fn=cmd_hook)
 
     s = sub.add_parser("integrations", parents=[common], help="see and connect scanning integrations (Jiffy, scanners, AI review)")
-    s.add_argument("action", nargs="?", choices=["list", "connect", "disconnect"], default="list")
-    s.add_argument("name", nargs="?", choices=["jiffy"], help="the integration to connect or disconnect")
+    s.add_argument("action", nargs="?", choices=["list", "connect", "check", "disconnect"], default="list")
+    s.add_argument("name", nargs="?", choices=["jiffy"], help="the integration to connect, check or disconnect")
     s.add_argument("--browser", action="store_true", help="sign in to Jiffy in your browser instead of pasting a key")
     s.set_defaults(fn=cmd_integrations)
 

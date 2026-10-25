@@ -100,10 +100,39 @@ def test_home_screen_integrations_and_online_scan(env, monkeypatch):
             await app.workers.wait_for_complete()
             await pilot.pause(0.2)
             body = str(app.query_one("#integrations-body").render())
-            assert "Jiffy connected (saved login)" in body and "1 of 2 scanners installed" in body
+            assert "Jiffy: key saved in the Jiffy CLI, not checked" in body and "1 of 2 scanners installed" in body
+            assert "\u2713 Jiffy" not in body  # no tick for a key nobody has checked
             await pilot.press("i", "o")
             assert handed[-1] == ["scan", str(skill), "--backends", "jiffy,yara-x", "--online"]
             await pilot.press("escape", "n", "enter")  # first row is Jiffy
             assert handed[-1] == ["integrations", "connect", "jiffy"]
 
     asyncio.run(go())
+
+
+def test_status_says_saved_not_working_and_names_a_non_default_server(env, monkeypatch):
+    _save_jiffy_login(env, {"token": "jfy_saved", "apiUrl": "http://localhost:3000"})
+    jiffy = integrations.rows()[0]
+    assert jiffy["status"] == "key saved in the Jiffy CLI, not checked; server http://localhost:3000"
+    _save_jiffy_login(env, {"token": "jfy_saved"})
+    assert integrations.rows()[0]["status"] == "key saved in the Jiffy CLI, not checked"
+    monkeypatch.setenv("JIFFY_API_URL", "https://staging.example/")
+    assert integrations.rows()[0]["status"].endswith("; server https://staging.example")
+
+
+def test_check_runs_whoami(env):
+    calls = []
+    def runner(argv, **kw):
+        calls.append(argv)
+        return SimpleNamespace(returncode=1, stdout="", stderr="Token is invalid or revoked. Run `jiffy login`.")
+    assert integrations.check_jiffy(runner) == (1, "Token is invalid or revoked. Run `jiffy login`.")
+    assert calls == [["jiffy", "whoami"]]
+
+
+def test_check_command_reports_a_rejected_key(env, monkeypatch, capsys):
+    monkeypatch.setattr(integrations, "check_jiffy", lambda: (1, "Token is invalid or revoked."))
+    assert cli.main(["integrations", "check", "jiffy"]) == 1
+    out = capsys.readouterr().out
+    assert "Token is invalid or revoked." in out and "unpick integrations connect jiffy" in out
+    monkeypatch.setattr(integrations, "check_jiffy", lambda: (0, "Logged in as amber (jiffy)"))
+    assert cli.main(["integrations", "check", "jiffy"]) == 0 and "accepted the saved key" in capsys.readouterr().out

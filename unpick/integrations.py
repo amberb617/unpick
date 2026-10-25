@@ -1,9 +1,10 @@
-"""Scanning integrations: what is connected, and how to connect the rest. unpick stores no secret for any of them.
+"""Scanning integrations: what is set up, and how to set up the rest. unpick stores no secret for any of them.
 
 * Jiffy (commercial, network; see backends/jiffy.py). The `jiffy` CLI keeps its own login: a token in a
   per-user config file (0600 on POSIX) or $JIFFY_TOKEN. `connect_jiffy` hands a pasted key to `jiffy login`
   through the environment, so it never shows in a process listing or shell history, and the CLI validates it
-  before saving. Reporting whether you are connected reads that file and makes no network call.
+  before saving. The status reads that file and makes no network call, so it can only say a key is saved,
+  not that it still works; `check_jiffy` asks Jiffy, and only when you run it.
 * Scanner backends: installed or not (backends.describe), installed with `unpick backends install`.
 * AI review over a provider API (judges/api.py): reads a key from your environment. unpick only reports whether
   it is set; storing it is your shell's job.
@@ -22,6 +23,7 @@ from unpick.judges.api import PROVIDERS
 
 JIFFY_PACKAGE = "@jiffylabs/jiffy-cli"
 JIFFY_KEYS_URL = "https://app.jiffylabs.ai/settings/api-keys"
+JIFFY_DEFAULT_SERVER = "https://app.jiffylabs.ai"  # jiffy-cli DEFAULT_API_URL
 
 
 def jiffy_config() -> Path:
@@ -35,15 +37,25 @@ def jiffy_config() -> Path:
 
 
 def jiffy_status() -> dict:
+    try:
+        cfg = json.loads(jiffy_config().read_text(encoding="utf-8"))
+        cfg = cfg if isinstance(cfg, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        cfg = {}
     if os.environ.get("JIFFY_TOKEN"):
         how = "$JIFFY_TOKEN"
     else:
-        try:
-            saved = json.loads(jiffy_config().read_text(encoding="utf-8")).get("token")
-        except (OSError, json.JSONDecodeError, AttributeError):
-            saved = None
-        how = "saved login" if saved else None
-    return {"cli": backends.which("jiffy") is not None, "connected": how is not None, "how": how}
+        how = "saved login" if cfg.get("token") else None
+    server = (os.environ.get("JIFFY_API_URL") or cfg.get("apiUrl") or JIFFY_DEFAULT_SERVER).rstrip("/")
+    return {"cli": backends.which("jiffy") is not None, "connected": how is not None, "how": how, "server": server}
+
+
+def check_jiffy(runner=subprocess.run) -> tuple[int, str]:
+    """Ask Jiffy whether the saved key works (network: `jiffy whoami`)."""
+    if backends.which("jiffy") is None:
+        return 2, f"The Jiffy CLI is not installed. Install it with: npm install -g {JIFFY_PACKAGE}"
+    p = runner(["jiffy", "whoami"], capture_output=True, text=True)
+    return p.returncode, (p.stdout + p.stderr).strip()
 
 
 def connect_jiffy(key: str | None, runner=subprocess.run) -> tuple[int, str]:
@@ -67,10 +79,14 @@ def rows() -> list[dict]:
     """One row per integration: what it is, whether it is ready, and the unpick command that sets it up."""
     out = []
     j = jiffy_status()
-    if j["connected"]:
-        status = f"connected ({j['how']})"
+    if not j["cli"]:
+        status = "Jiffy CLI not installed"
+    elif j["connected"]:
+        status = ("key from $JIFFY_TOKEN" if j["how"] == "$JIFFY_TOKEN" else "key saved in the Jiffy CLI") + ", not checked"
     else:
-        status = "not connected" if j["cli"] else "Jiffy CLI not installed"
+        status = "no key saved"
+    if j["server"] != JIFFY_DEFAULT_SERVER:
+        status += f"; server {j['server']}"
     out.append({"id": "jiffy", "name": "Jiffy", "kind": "scanner, account", "ready": j["connected"] and j["cli"],
                 "status": status, "network": backends.adapters()["jiffy"].NETWORK,
                 "action": ["integrations", "connect", "jiffy"]})  # also how you replace a key
