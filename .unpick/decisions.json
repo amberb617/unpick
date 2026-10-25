@@ -1245,6 +1245,17 @@
       "decided_at": "2026-10-18T00:00:00+00:00"
     },
     {
+      "rule_id": "RT-PREREQ",
+      "line_hash": "eaa7e1c0f451914546dd49b346d887ce3a0a503237abdb092d4248360b2ef91c",
+      "decision": "ask-author",
+      "note": "",
+      "path": "SKILL.md",
+      "line": 14,
+      "source": "builtin",
+      "matched": "Before first use, open Terminal and paste the helper installer below.",
+      "decided_at": "2026-10-19T05:43:35+00:00"
+    },
+    {
       "rule_id": "RT-SECRECY",
       "line_hash": "3b032ecd566881f6129061e33fc4f15408cceed9b0be9b6f8e3537e7e0d60f1f",
       "decision": "accept",
