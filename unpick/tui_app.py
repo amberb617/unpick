@@ -283,11 +283,12 @@ class Home(App):
         scanners = [r for r in found if r["kind"] == "scanner"]
         keys = [r for r in found if r["id"].startswith("api:")]
         body = Text()
-        body.append(" \u2713 " if jiffy["ready"] else " ! ", style="bold #5a935a" if jiffy["ready"] else "bold #ffc000")
-        body.append(f"Jiffy {jiffy['status']}")
+        body.append("   " if jiffy["ready"] else " ! ", style="bold #ffc000")  # a saved key is not a checked one: no tick
+        body.append(f"Jiffy: {jiffy['status']}")
         body.append(f"   \u00b7   {sum(r['ready'] for r in scanners)} of {len(scanners)} scanners installed")
         body.append(f"   \u00b7   {sum(r['ready'] for r in keys)} of {len(keys)} AI review keys set")
-        body.append("\nEnter or n: connect Jiffy, install scanners", style="#95adda")
+        body.append("\nEnter or n: connect Jiffy, install scanners. Test a saved key: unpick integrations check jiffy",
+                    style="#95adda")
         self.query_one("#integrations-body", Static).update(body)
 
     def action_open(self) -> None:
