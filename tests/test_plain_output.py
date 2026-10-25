@@ -223,9 +223,12 @@ def test_missing_path_is_not_a_pass(command, tmp_path, capsys):
     assert f"unpick {command} --help" in output
 
 
-def test_files_not_read_are_grouped_by_reason(capsys):
+def test_files_not_read_are_grouped_by_reason(capsys, monkeypatch):
+    from rich.console import Console
+
     from unpick import cli
 
+    monkeypatch.setattr(cli, "console", Console(width=200))  # Windows runners have a narrow console that wraps
     skipped = [{"path": f"docs/{i}.md", "reason": "ignored by .unpickignore"} for i in range(40)]
     skipped.append({"path": "logo.png", "reason": "not a text format"})
     cli._print_skipped(skipped)

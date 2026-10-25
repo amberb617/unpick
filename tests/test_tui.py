@@ -103,15 +103,20 @@ def _splash_app(tmp_path, monkeypatch, min_splash):
 
 
 def test_logo_shows_while_loading_then_gets_out_of_the_way(tmp_path, monkeypatch):
-    tui_app, app = _splash_app(tmp_path, monkeypatch, 0.3)
+    import threading
+
+    tui_app, app = _splash_app(tmp_path, monkeypatch, 0)
+    loading = threading.Event()  # discovery waits for the test, so a slow runner cannot close the logo early
+    monkeypatch.setattr(tui_app.inventory, "discover", lambda project: loading.wait(10) and [])
 
     async def go():
         async with app.run_test(size=(110, 34)) as pilot:
             await pilot.pause()
             assert isinstance(app.screen, tui_app.Splash)
             assert "██╗" in str(app.screen.query_one("#logo").render())
+            loading.set()
             await app.workers.wait_for_complete()
-            await pilot.pause(0.5)
+            await pilot.pause(0.2)
             assert not isinstance(app.screen, tui_app.Splash)
 
     asyncio.run(go())
