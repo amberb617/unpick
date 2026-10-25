@@ -145,5 +145,6 @@ def test_home_has_no_tagline(tmp_path, monkeypatch):
             await pilot.pause(0.2)
             assert not isinstance(app.screen, tui_app.Splash)  # loading outlasted the minimum: closes at once
             assert "Gird your loins" not in str(app.query_one("#hello").render())
+            assert str(app.query_one("#home-logo").render()) == str(tui_app.logo_text())  # the loading screen's logo
 
     asyncio.run(go())
