@@ -120,6 +120,18 @@
       "score": 3,
       "category": "override",
       "source": "auto-approval coercion seen in rules-file backdoor research (Pillar Security, 2025)"
+    },
+    {
+      "pattern": "\\bsystem instructions?\\s*:",
+      "score": 2,
+      "category": "override",
+      "source": "fake authority marker in ASI04 workshop payloads (output injection, poisoned tool descriptors), https://github.com/syedDS/ASI04_workshop"
+    },
+    {
+      "pattern": "\\[agent[_ ]command\\]",
+      "score": 3,
+      "category": "override",
+      "source": "fake authority marker in ASI04 workshop payloads (output injection, poisoned tool descriptors), https://github.com/syedDS/ASI04_workshop"
     }
   ]
 }
