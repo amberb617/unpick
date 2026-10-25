@@ -2,7 +2,7 @@
 # A component that mentions these may be asking an agent to read them.
 ~/\.ssh\b|\.ssh/                          # SSH keys and config
 \bid_(rsa|ed25519|ecdsa|dsa)\b            # private SSH key file names
-(?<![\w.])\.env(\.[\w-]+)?\b              # dotenv files with API keys
+(?<![\w.$])\.env(\.[\w-]+)?\b              # dotenv files with API keys
 \.aws/(credentials|config)\b              # AWS CLI credentials
 \.azure/                                  # Azure CLI credentials
 application_default_credentials\.json     # Google Cloud ADC

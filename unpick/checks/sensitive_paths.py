@@ -35,6 +35,8 @@ def _patterns():
 
 
 def run(doc):
+    if doc.name.endswith("ignore"):
+        return  # .gitignore and friends list secret files to keep them out; no agent follows them
     for n, line in enumerate(doc.lines, 1):
         hits = [(rx.search(line), why) for rx, why in _patterns()]
         hits = [(m, why) for m, why in hits if m]
