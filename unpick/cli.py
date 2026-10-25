@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.markup import escape as esc
 from rich.table import Table
 
-from unpick import TAGLINE, __version__
+from unpick import __version__
 
 SEV_STYLE = {"high": "bold red", "medium": "yellow", "low": "cyan", "info": "dim"}
 console = Console()
@@ -46,38 +46,81 @@ def cmd_inventory(args) -> int:
 
 
 # ---------------------------------------------------------------- scan
-def _print_scan(d: dict) -> None:
-    runs = d["runs"]
-    strip = ["builtin checks"] + [
-        f"{r['source']} {r.get('version') or ''} [{'on-device' if r.get('on_device', True) else 'hosted'}]"
-        f"{' NETWORK' if r.get('network') else ''} ({r.get('status')})" for r in runs]
-    console.print("[bold]ran:[/] " + esc(" | ".join(strip)))
+def _print_finding(f: dict, sources: list[str]) -> None:
+    from unpick.render import escape as raw_escape
+
+    console.print(f"  [{SEV_STYLE[f['severity']]}]{f['severity']}[/] {esc(f['rule_id'])}  "
+                  f"{esc(raw_escape(f['path']))}:{f['line']}")
+    console.print(f"    {esc(raw_escape(f['message']))}")
+    console.print(f"    [dim]{esc(f['source'])}; agreed by {len(f['agreed_by'])} of {len(sources)}; id {f['id']}[/]")
+    if f["matched"]:
+        console.print(f"    [dim]> {esc(raw_escape(f['matched'])[:160])}[/]")
+    console.print(f"    [dim]Why it was flagged: {esc(raw_escape(f['why']))}[/]")
+    console.print(f"    [dim]May be legitimate when: {esc(raw_escape(f['false_positive']))}[/]")
+
+
+def _print_skipped(skipped: list[dict], shown: int = 3) -> None:
+    """One line per reason: a project scan can skip hundreds of files its own .unpickignore excludes."""
+    reasons: dict[str, list[str]] = {}
+    for s in skipped:
+        reasons.setdefault(s["reason"], []).append(s["path"])
+    for reason, paths in sorted(reasons.items(), key=lambda kv: -len(kv[1])):
+        more = f" and {len(paths) - shown} more" if len(paths) > shown else ""
+        console.print(esc(f"Not read ({reason}): {', '.join(paths[:shown])}{more}"))
+    if len(skipped) > shown:
+        console.print('[dim]Every file not read: --json, under "skipped".[/]')
+
+
+def _print_scan(d: dict, *, verdict: bool = True) -> None:
+    from unpick.render import finding_groups, scan_verdict
+
+    if verdict:
+        console.print(scan_verdict(d), markup=False, soft_wrap=True)
+    for title, group in finding_groups(d["findings"]):
+        console.print(f"\n[bold]{esc(title)}[/]")
+        # Several external scanners can share a title but explain different evidence.
+        for entry in dict.fromkeys(entry for entry, _ in group):
+            console.print(esc(entry.what_it_means))
+            console.print("Next step: " + esc(entry.what_to_do))
+        for _, finding in group:
+            _print_finding(finding, d["sources"])
+    console.print("\n[bold]Checks and coverage[/]")
+    console.print(f"Files read: {len(d['files'])}; findings to review: {d['summary']['open']}; "
+                  f"previously accepted: {d['summary']['accepted']} (not proof of safety)")
+    console.print("Built-in checks: " + ("ran" if d["files"] else "no files read"))
+    for run in d["runs"]:
+        console.print(esc(f"{run['source']}: {run.get('status')} ({run.get('version') or 'version not recorded'}; "
+                          f"exit code {run.get('exit_code', 'not recorded')})"))
+    for error in d["errors"]:
+        console.print("[red]Check incomplete:[/] " + esc(error))
+    for source in d.get("unavailable", []):
+        console.print("[yellow]Not available:[/] " + esc(source))
+    _print_skipped(d.get("skipped", []))
     net = d["summary"]["network_calls"]
-    console.print("[bold]network:[/] " + ("none" if not net else esc("; ".join(f"{r['source']}: {r.get('network_detail')}" for r in net))))
-    for e in d["errors"]:
-        console.print(f"[red]error:[/] {esc(e)}")
-    current = None
-    for f in d["findings"]:
-        if f["path"] != current:
-            current = f["path"]
-            console.print(f"\n[bold underline]{esc(current)}[/]")
-        badge = f["source"].split(":")[0]
-        agreed = f"agreed by {len(f['agreed_by'])} of {len(d['sources'])}"
-        console.print(f"  [{SEV_STYLE[f['severity']]}]{f['severity']:>6}[/] {f['rule_id']} [dim]({badge}; {agreed}; id {f['id']})[/]")
-        console.print(f"         line {f['line']}: {esc(f['message'])}")
-        if f["matched"]:
-            from unpick.render import escape as raw_escape
-            console.print(f"         [dim]> {esc(raw_escape(f['matched'])[:160])}[/]")
-        console.print(f"         [dim]why: {esc(f['why'])}[/]")
-        console.print(f"         [dim]false positive when: {esc(f['false_positive'])}[/]")
-    s = d["summary"]
-    console.print(f"\n[bold]{s['open']} open finding(s), {s['accepted']} accepted.[/] By source: {s['by_source']}")
-    if d.get("skipped"):
-        console.print(f"[dim]{len(d['skipped'])} file(s) not read (binary, too large or not text); see --json \"skipped\".[/]")
+    console.print("Network: " + ("none" if not net else esc("; ".join(
+        f"{r['source']}: {r.get('network_detail')}" for r in net))))
     if len(d["sources"]) > 1:
-        console.print(f"Agreement (Jaccard on file+line): {s['agreement']}")
-    if s["open"]:
-        console.print("[dim]Record a decision: unpick decide <id> accept|reject|ask-author --note \"...\"[/]")
+        console.print(f"Scanner agreement on file locations: {d['summary']['agreement']}")
+
+
+def cmd_explain(args) -> int:
+    from dataclasses import asdict
+
+    from unpick.explain import get_explanation
+
+    try:
+        entry = get_explanation(args.rule_id)
+    except KeyError:
+        print(f"unpick: unknown rule {args.rule_id!r}; use a rule ID from your scan", file=sys.stderr)
+        return 2
+
+    def show(data):
+        console.print(data["title"], markup=False)
+        console.print(data["what_it_means"], markup=False)
+        console.print("Next step: " + data["what_to_do"], markup=False)
+
+    _out(args, asdict(entry), show)
+    return 0
 
 
 def _backend_list(arg: str | None) -> list[str]:
@@ -90,6 +133,13 @@ def _backend_list(arg: str | None) -> list[str]:
     return [b.strip() for b in arg.split(",") if b.strip()]
 
 
+
+def _scan_display_data(data: dict, requested_judge: str | None, selected_judge: str | None) -> dict:
+    """Keep JSON and exit codes stable while showing missing auto reviews in human exports."""
+    if requested_judge == "auto" and not selected_judge:
+        return {**data, "unavailable": [*data["unavailable"], "on-device AI reviewer (--judge auto)"]}
+    return data
+
 def cmd_scan(args) -> int:
     from unpick import consent, decisions, judges, scan
 
@@ -97,8 +147,6 @@ def cmd_scan(args) -> int:
     judge = args.judge
     if judge == "auto":
         judge = judges.default_judge()
-        if not judge:
-            console.print("[yellow]no on-device judge found; continuing without one[/]", highlight=False) if not args.json else None
     if args.no_decisions:
         files = []
     elif args.decisions:
@@ -107,15 +155,21 @@ def cmd_scan(args) -> int:
         files = [decisions.project_file(), decisions.user_file()]
     target = Path(args.path)
     if not target.exists():
-        print(f"unpick: {target} does not exist", file=sys.stderr)
+        message = f"unpick: {target} does not exist"
+        if not args.json:
+            message = (f"Cannot assess this: {str(target)!r} does not exist; "
+                       "run `unpick scan --help` to choose a file or folder.")
+        print(message, file=sys.stderr)
         return 2
     res = scan.scan(target, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed,
                     online=args.online, decision_files=files)
     scan.save_last(res)
     if args.html:
         from unpick import report
-        report.write(Path(args.html), report.scan_html(res.to_dict()))
-    _out(args, res.to_dict(), _print_scan)
+        report.write(Path(args.html), report.scan_html(_scan_display_data(res.to_dict(), args.judge, judge)))
+    def show(data):
+        _print_scan(_scan_display_data(data, args.judge, judge))
+    _out(args, res.to_dict(), show)
     return res.exit_code
 
 
@@ -201,6 +255,48 @@ def cmd_backends(args) -> int:
                       esc(r["maintainer"]), r["license"], esc(r["network"]) + (" [UNVERIFIED]" if r["unverified"] else ""))
         console.print(t)
     _out(args, rows, render)
+    return 0
+
+
+def _connect_jiffy(args) -> int:
+    from unpick import integrations
+
+    key = None
+    if not args.browser:
+        if not sys.stdin.isatty():
+            print("unpick: connecting asks for your key; run it in a terminal, or set JIFFY_TOKEN", file=sys.stderr)
+            return 2
+        import getpass
+        console.print(f"Create a key at {integrations.JIFFY_KEYS_URL}\n"
+                      "It goes to the Jiffy CLI, which checks it and saves it for your user. unpick does not keep it.")
+        key = getpass.getpass("Jiffy API key (hidden; press Enter alone to sign in with your browser instead): ").strip() or None
+    code, msg = integrations.connect_jiffy(key)
+    if msg:
+        console.print(esc(msg))
+    if code == 0:
+        console.print("Jiffy connected. Use it with: unpick scan <path> --backends jiffy --online")
+    return code
+
+
+def cmd_integrations(args) -> int:
+    from unpick import integrations
+
+    if args.action == "connect":
+        return _connect_jiffy(args)
+    if args.action == "disconnect":
+        code, msg = integrations.disconnect_jiffy()
+        console.print(esc(msg) or "Jiffy disconnected.")
+        return code
+    def render(rows):
+        t = Table(title="Scanning integrations (all optional)")
+        for c in ("name", "kind", "status", "what leaves your machine", "set up with"):
+            t.add_column(c, overflow="fold")
+        for r in rows:
+            t.add_row(r["name"], r["kind"], ("[green]" if r["ready"] else "[yellow]") + esc(r["status"]) + "[/]",
+                      esc(r["network"]), esc("unpick " + " ".join(r["action"])) if r["action"] else "")
+        console.print(t)
+        console.print("[dim]Network scanners and hosted AI review only run when you pass --online or --judge.[/]")
+    _out(args, integrations.rows(), render)
     return 0
 
 
@@ -298,7 +394,12 @@ def cmd_verify(args) -> int:
 
 
 def _print_check(m: dict) -> None:
+    from unpick.render import scan_verdict
+
+    console.print(scan_verdict(m["scan"], questions=bool(m["questions"]),
+                               provenance_error=bool(m.get("provenance_error"))), markup=False, soft_wrap=True)
     console.print(f"[bold]checked {esc(m['ref'])}[/] -> quarantine id [bold]{esc(m['id'])}[/]")
+    console.print("Scanned copy: " + esc(m["root"]))
     card = m["provenance"]
     if card:
         shown = {k: v for k, v in card.items() if k not in ("project_urls",) and v not in (None, "", [])}
@@ -309,10 +410,7 @@ def _print_check(m: dict) -> None:
         console.print("[bold]network:[/] " + esc("; ".join(m["network"])))
     for q in m["questions"]:
         console.print(f"[yellow]?[/] {esc(q)}")
-    if not m["questions"] and card:
-        console.print("[dim]Nothing stood out on the provenance card. That is not the same as safe.[/]")
-    _print_scan(m["scan"])
-    console.print(f"\nRead it raw: unpick raw \"{esc(m['root'])}/<file>\"   Approve: unpick check --approve {esc(m['id'])}")
+    _print_scan(m["scan"], verdict=False)
 
 
 def cmd_check(args) -> int:
@@ -332,9 +430,17 @@ def cmd_check(args) -> int:
         judge = judges.default_judge() if args.judge == "auto" else args.judge
         m = check.run(args.ref, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed, offline=args.offline)
     except quarantine.Refused as e:
-        print(f"unpick: refused: {e}", file=sys.stderr)
+        message = f"unpick: refused: {e}"
+        if not args.json:
+            message = f"Cannot assess this: the check was refused; run `unpick check --help` before retrying.\nReason: {e}"
+        print(message, file=sys.stderr)
         return 2
-    _out(args, m, _print_check)
+    except OSError as e:
+        print(f"unpick: could not fetch it: {e}", file=sys.stderr)
+        return 2
+    def show(data):
+        _print_check({**data, "scan": _scan_display_data(data["scan"], args.judge, judge)})
+    _out(args, m, show)
     return 1 if m["scan"]["summary"]["open"] or m["questions"] else 0
 
 
@@ -371,11 +477,16 @@ def cmd_outdated(args) -> int:
 
 
 def cmd_hook(args) -> int:
+    import os
+
     from unpick import hook
 
     if args.action == "run":
+        if args.fail_open:
+            os.environ["UNPICK_HOOK_FAIL_OPEN"] = "1"
         return hook.run(args.agent, min_severity=args.min_severity)
-    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run)
+    r = hook.apply(args.agent, install=args.action == "install", dry_run=args.dry_run,
+                   min_severity=args.min_severity, fail_open=args.fail_open)
     def render(d):
         verb = "would change" if d["dry_run"] else "changed"
         console.print(f"{verb} {esc(d['path'])}" if d["changed"] else f"no change needed in {esc(d['path'])}")
@@ -385,6 +496,74 @@ def cmd_hook(args) -> int:
             console.print("[dim]A timestamped backup of the previous file sits next to it.[/]")
     _out(args, r, render)
     return 0
+
+
+def _ask(question: str, choices: list[str], default: str) -> str:
+    shown = "/".join(c.upper() if c == default else c for c in choices)
+    while True:
+        try:
+            a = input(f"{question} [{shown}] ").strip().lower() or default
+        except EOFError:
+            raise KeyboardInterrupt from None  # Ctrl-D quits like Ctrl-C, before anything is written
+        if a in choices:
+            return a
+        match = [c for c in choices if c.startswith(a)]
+        if len(match) == 1:
+            return match[0]
+
+
+def _print_setup_plan(p: dict) -> None:
+    for h in p["hooks"]:
+        console.print(f"\n[bold]{'change' if h['changed'] else 'already set'}:[/] {esc(h['path'])}")
+        if h["diff"]:
+            console.print(esc(h["diff"].rstrip()), highlight=False)
+    if p["service"]:
+        s = p["service"]
+        if s["file"]:
+            console.print(f"\n[bold]write:[/] {esc(s['file'])}")
+        for cmd in s["commands"]:
+            console.print(f"[bold]run:[/] {esc(' '.join(cmd))}")
+
+
+def cmd_setup(args) -> int:
+    import os
+
+    from unpick import setup
+
+    if args.undo:
+        r = setup.undo()
+        _out(args, r, lambda d: console.print(
+            "\n".join([f"removed the hook from {esc(h['path'])}" for h in d["hooks"]]
+                      + (["stopped and removed the background watcher"] if d["service_removed"] else [])) or "nothing to remove"))
+        return 0
+    if not sys.stdin.isatty() or os.environ.get("UNPICK_NONINTERACTIVE"):
+        print("unpick: setup asks questions; run it in a terminal, or use `unpick hook install <agent>`", file=sys.stderr)
+        return 2
+    found = setup.detected()
+    console.print("Agents found: " + (", ".join(setup.AGENTS[a][0] for a in found) or
+                                      "none of Claude Code, Codex CLI or Cursor"))
+    if not setup.can_watch():
+        console.print("[dim]" + esc("The background watcher needs the watch extra: pipx install 'unpick[watch]'") + "[/]")
+    choices = setup.interview(_ask)
+    p = setup.plan(choices)
+    if not p["hooks"] and not p["service"]:
+        console.print("Nothing to set up.")
+        return 0
+    console.print("\n[bold]This is everything setup will change.[/] Settings files are backed up first.")
+    _print_setup_plan(p)
+    if args.dry_run or _ask("\nMake these changes?", ["y", "n"], "n") != "y":
+        console.print("Nothing changed.")
+        return 0
+    r = setup.apply(choices)
+    for h in r["hooks"]:
+        console.print(f"hooked {esc(h['path'])}")
+    if r["service"]:
+        for e in r["service"]["errors"]:
+            console.print(f"[red]watcher did not start:[/] {esc(e)}")
+        if not r["service"]["errors"]:
+            console.print("background watcher running, and it starts at login")
+    console.print("Undo all of it: unpick setup --undo")
+    return 1 if r["service"] and r["service"]["errors"] else 0
 
 
 def cmd_watch(args) -> int:
@@ -577,12 +756,25 @@ def cmd_ui(args) -> int:
 
 # ---------------------------------------------------------------- main
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="unpick", description=f"Vet AI components on your own laptop. {TAGLINE}")
+    p = argparse.ArgumentParser(
+        prog="unpick", usage="unpick [-h] [--version] COMMAND ...",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="""Check AI add-ons before trusting them.
+
+Start here:
+  check         Inspect a copy before installing; nothing is installed.
+                Example: unpick check ./downloaded-skill
+  scan          Review a file or folder already on your computer.
+                Example: unpick scan ./my-project
+  hook install  Add checks before your agent installs add-ons.
+                Example: unpick hook install claude-code
+
+Use unpick COMMAND --help for options.""")
     p.add_argument("--version", action="version", version=f"unpick {__version__}")
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--json", action="store_true", help="machine-readable output")
     common.add_argument("--no-color", action="store_true", help="no ANSI colour")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd", title="More commands", metavar="COMMAND")
 
     s = sub.add_parser("inventory", parents=[common], help="list AI components on this machine and in this project")
     s.add_argument("--project", default=".", help="project root (default: current directory)")
@@ -664,7 +856,19 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--dry-run", action="store_true", help="show the settings change without writing it")
     s.add_argument("--min-severity", choices=["low", "medium", "high"], default=None,
                    help="block at this severity or above (default high, or $UNPICK_HOOK_MIN_SEVERITY)")
+    s.add_argument("--fail-open", action="store_true", help="allow installs unpick cannot check, with a warning")
     s.set_defaults(fn=cmd_hook)
+
+    s = sub.add_parser("integrations", parents=[common], help="see and connect scanning integrations (Jiffy, scanners, AI review)")
+    s.add_argument("action", nargs="?", choices=["list", "connect", "disconnect"], default="list")
+    s.add_argument("name", nargs="?", choices=["jiffy"], help="the integration to connect or disconnect")
+    s.add_argument("--browser", action="store_true", help="sign in to Jiffy in your browser instead of pasting a key")
+    s.set_defaults(fn=cmd_integrations)
+
+    s = sub.add_parser("setup", parents=[common], help="first run: pick which agents to protect, see every change, then apply")
+    s.add_argument("--dry-run", action="store_true", help="ask the questions and show the changes without making them")
+    s.add_argument("--undo", action="store_true", help="remove every hook and the background watcher setup added")
+    s.set_defaults(fn=cmd_setup)
 
     s = sub.add_parser("watch", parents=[common], help="scan AI components as they land (a backstop to the hook)")
     s.add_argument("--project", default=".")
@@ -736,7 +940,30 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("name", nargs="?")
     s.add_argument("--online", action="store_true", help="allow the model download that install needs")
     s.set_defaults(fn=cmd_judges)
+    s = sub.add_parser("explain", parents=[common], help="explain a finding and what to do next")
+    s.add_argument("rule_id", help="rule ID shown under a finding, for example RT-UNICODE")
+    s.set_defaults(fn=cmd_explain)
+    # Keep all parsers available while showing the three entry points only once.
+    sub._choices_actions = [a for a in sub._choices_actions
+                            if a.dest not in {"check", "scan", "hook"} and a.help != argparse.SUPPRESS]
     return p
+
+
+def _home(parser) -> int:
+    """`unpick` alone: the home screen in a terminal with the tui extra, otherwise the command list."""
+    import importlib.util
+    import os
+
+    if sys.stdin.isatty() and sys.stdout.isatty() and not os.environ.get("UNPICK_NONINTERACTIVE"):
+        if importlib.util.find_spec("textual"):
+            from unpick import tui
+            tui.run()
+            return 0
+        parser.print_help()
+        print("\nFor the home screen: pipx install 'unpick[tui]'")
+        return 0
+    parser.print_help()
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -745,7 +972,10 @@ def main(argv: list[str] | None = None) -> int:
     # `decide accept` without an id: argparse would read "accept" as the id.
     if argv[:1] == ["decide"] and len(argv) > 1 and argv[1] in ("accept", "reject", "ask-author"):
         argv.insert(1, "")
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.cmd is None:
+        return _home(parser)
     console = Console(no_color=args.no_color, highlight=False, soft_wrap=False)
     try:
         return args.fn(args)

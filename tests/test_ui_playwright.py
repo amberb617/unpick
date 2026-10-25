@@ -315,7 +315,7 @@ def test_neutral_verdict_is_no_warnings_on_grey(ui, page, tmp_path):
     page.click("#scan-go")
     page.locator("#verdict.ok").wait_for()
     assert page.inner_text("#verdict .verdict-word") == "NO WARNINGS"
-    assert "This does not prove it is safe" in page.inner_text("#verdict .verdict-action")  # DECISIONS 46
+    assert "This does not prove it is safe" in page.inner_text("#verdict .verdict-action")  # DECISIONS 52
     block, grey = page.evaluate("""() => {
       const probe = document.createElement("div");
       probe.style.background = "var(--bg-subtle)";

@@ -11,6 +11,8 @@ from __future__ import annotations
 import secrets
 from pathlib import Path
 
+from unpick import net
+
 
 def marker() -> str:
     return "UNPICK-CANARY-" + secrets.token_hex(8).upper()
@@ -60,7 +62,7 @@ def dns_token(notify: str) -> dict:
     body = {"token_type": "dns", "memo": "unpick rehearse canary (fake secret was used)"}
     body["webhook_url" if notify.startswith("https://") else "email"] = notify
     req = urllib.request.Request(CANARYTOKENS, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=20) as r:  # noqa: S310 - fixed https endpoint, opt-in only
+    with net.urlopen(req, timeout=20) as r:
         data = json.loads(r.read().decode("utf-8"))
     if data.get("error"):
         raise RuntimeError(data.get("error_message") or "canarytokens.org refused the request")

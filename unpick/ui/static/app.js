@@ -342,7 +342,7 @@ function allFindings() { return last.findings.concat(last.accepted); }
 function openFindings() { return allFindings().filter(f => f.decision !== "accept"); }
 
 // Three verdicts, worded for someone with no security background. The neutral one is never called clear or safe, and
-// is grey, not green (DECISIONS 46). YOUR CALL is that neutral state when every warning was marked a false alarm. The reason given is the most serious open
+// is grey, not green (DECISIONS 52). YOUR CALL is that neutral state when every warning was marked a false alarm. The reason given is the most serious open
 // warning in plain words (unpick/ui/plain.py); severities, counts and rule ids sit in each card's technical details.
 const VERDICT = {
   bad: { word: "STOP", action: "Do not install it", head: "Don't install this yet." },

@@ -6,7 +6,7 @@ and hooks. It is for people with no security team, no budget and no vendor accou
 default, and it is fully useful with nothing else installed.
 
 To unpick a seam is to take it apart stitch by stitch and see what was sewn in. unpick does that to a
-Markdown file. It backs the BSides Cambridge talk "The Devil Wears Markdown".
+Markdown file.
 
 ## Threat model
 
@@ -36,7 +36,22 @@ or, from a clone, `pipx install .`.
 
 Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows PowerShell 5.1). Optional
 extras: `pipx install '.[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
-the watcher (phase 3), `'.[fallback]'` for the fallback judge runtime (see below).
+the watcher (phase 3), `'.[tui]'` for the home screen, `'.[fallback]'` for the fallback judge runtime (see below).
+
+Then run `unpick setup`. It finds Claude Code, Codex CLI and Cursor on this machine, asks which to protect,
+how strict to be and whether to run the watcher at login, then shows every file it will change before it
+changes anything. `--dry-run` stops after showing the changes; `unpick setup --undo` removes all of it.
+
+`unpick` on its own opens a home screen in the terminal (with the `tui` extra): which agents are protected,
+every add-on on this machine grouped by its worst finding, and recent watcher alerts. `s` runs setup, `c`
+checks something before you install it, `i` lists every add-on worst first, `n` shows integrations. Without
+the extra it prints the command list.
+
+**Integrations.** `unpick integrations` lists every optional scanner and AI review provider, whether it is
+ready, and what it sends off your machine. `unpick integrations connect jiffy` asks for a Jiffy API key
+(create one at app.jiffylabs.ai/settings/api-keys), hidden as you type, and hands it to the Jiffy CLI through
+the environment; the CLI checks it and saves it for your user. unpick stores no keys. Hosted AI review reads
+the provider's key from your shell; `unpick integrations` names the variable for each one.
 
 ## The five-minute triage, mapped to commands
 
@@ -61,7 +76,7 @@ prints the install command (never runs it) and adds it to `unpick.lock.json`.
 `cursor`; `--dry-run` shows the settings change first, `uninstall` removes it) runs `check` before an agent
 installs a skill, plugin or MCP server, or edits an MCP config, and blocks on unaccepted findings at or
 above `--min-severity` (default high). It fails closed on installs it cannot check
-(`UNPICK_HOOK_FAIL_OPEN=1` to allow them). A plugin install you type yourself is not a tool call, so no hook
+(`--fail-open` at install, or `UNPICK_HOOK_FAIL_OPEN=1`, to allow them). Both choices are saved in the hook command. A plugin install you type yourself is not a tool call, so no hook
 sees it. `unpick watch` scans what lands in the agents' folders and notifies you; `--print-service
 launchd|systemd|windows` prints a run-at-login recipe.
 
@@ -85,6 +100,46 @@ in docs/screenshots/ui/.
 
 Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothing was scanned"),
 3 a requested backend or judge was unavailable.
+
+## Use it inside your AI agent
+
+Three layers. Only the hook can stop an install. The skill and the rules snippet remind the agent.
+What each layer misses is in docs/research/ux-and-integration.md.
+
+1. Hook. `--dry-run` prints the settings change and writes nothing. Then run the same command
+   without it. Use `codex` or `cursor` in place of `claude-code` for those agents.
+   `unpick setup` does the same for every agent it finds, and shows each change first.
+
+```
+unpick hook install claude-code --dry-run
+unpick hook install claude-code
+```
+
+After the Codex install, open `/hooks` in Codex and trust the new hook. That trust follows the
+command text, so a changed command has to be trusted again.
+
+2. Skill, so the agent runs `unpick check` and explains the result before it tries an install.
+   Copy the folder once. Claude Code and Cursor both read the first path. Codex reads the second.
+   An older Codex page still names `~/.codex/skills`. Use one Codex folder, or two skills with the
+   same name can both load. Leave `~/.cursor/skills` alone; Cursor already reads the Claude folder.
+
+```
+mkdir -p ~/.claude/skills && cp -R integrations/claude-code/skills/unpick ~/.claude/skills/unpick
+mkdir -p ~/.agents/skills && cp -R integrations/claude-code/skills/unpick ~/.agents/skills/unpick
+```
+
+3. Rules snippet, once. Codex reads a repo `AGENTS.md` and `~/.codex/AGENTS.md` on its own. Cursor
+   treats `AGENTS.md` as rules. Claude Code, from version 2.1.277, reads `./AGENTS.md` only when
+   the working directory and its parents have no `CLAUDE.md` and no `CLAUDE.local.md`. If
+   `CLAUDE.md` exists, put a line containing only `@AGENTS.md` at the top of it. A file that
+   already has that line does not need a second one.
+
+```
+cat integrations/AGENTS.md.snippet >> AGENTS.md
+```
+
+A Claude cloud or Cowork session does not read `~/.claude/skills` on this machine. A Cursor cloud
+agent does not load `~/.cursor/hooks.json`, which is where `unpick hook install cursor` writes.
 
 ## After a flag: quarantine and clean
 
@@ -146,7 +201,9 @@ is no telemetry, no auto-update and no version check.
 | `unpick backends install <name> --docker --online` | Docker Hub and PyPI | image and package download requests |
 | `unpick judges install fallback --online` | PyPI and GitHub (runtime), huggingface.co (model) | download requests for llama-cpp-python and one pinned model file (2.1 GB) |
 | `scan --backends skillspector --online` | api.osv.dev (Google's OSV) | names and versions of the skill's dependencies, when it has a manifest. Without `--online` SkillSpector does not run; with `--boxed` the box blocks the call |
-| `scan --backends jiffy --online` | Jiffy Labs API (commercial; the author's company) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
+| `scan --backends jiffy --online` | Jiffy Labs API (commercial) | file hashes, then the component's files if Jiffy has not seen those bytes. Needs a Jiffy account |
+| `unpick integrations connect jiffy` | Jiffy Labs API, via the Jiffy CLI | the key you paste, so the CLI can check it before saving it. `--browser` opens Jiffy's sign-in page instead |
+| `o` in the home screen's add-on list | every ready scanner, as `scan --backends ... --online` | what each of those scanners sends, as listed above |
 | `unpick check <url or registry ref>` (network on by default for this command; `--offline` skips provenance) | the git host, registry.npmjs.org, pypi.org / files.pythonhosted.org, api.github.com | the repository or package name; downloads it into quarantine |
 | `unpick outdated --online` | registry.npmjs.org, pypi.org, api.github.com, the git host | the names of locked components; fetches new git versions into quarantine |
 | `unpick rehearse --build --online` | Docker Hub, Debian mirrors, PyPI and GitHub | image and package downloads, once |

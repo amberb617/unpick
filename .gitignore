@@ -9,3 +9,4 @@ build/
 .unpick/*
 !.unpick/decisions.json
 demo/.unpick/
+.DS_Store

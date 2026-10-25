@@ -11,8 +11,8 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
    (a GitHub user named `unpick` exists, so `github.com/unpick` is not ours). Alternates that were also
    free everywhere: `seamrip`, `tailorcheck`. Repository: `amberb617/unpick`, private until you publish it.
 
-2. **Where the code lives locally.** `~/Desktop/bsides-cambridge/unpick`, next to the talk material,
-   not under `~/jiffy/` (that folder is auto-synced from the Jiffy-Labs-AI org).
+2. **Where the code lives locally.** Outside any folder another tool auto-syncs, so a sync never
+   touches work in progress.
 
 3. **What `scan .` skips in this repo.** `.unpickignore` skips `tests/`, `data/`, `demo/` and
    `unpick/demo_kit/`, each with a reason. The remaining findings in source and docs (the tool's own
@@ -70,7 +70,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 15. **SkillSpector only runs with `--online` or `--boxed`.** It calls OSV.dev even with `--no-llm` and has
     no flag to stop it. Installed from GitHub at the pinned commit; it is not on PyPI.
 
-16. **Code style.** The Jiffy pre-PR gate, translated to Python: ruff for unused imports, cognitive
+16. **Code style.** A pre-PR gate, translated to Python: ruff for unused imports, cognitive
     complexity of 15 or less and no empty `except`; an AST test for nested conditional expressions.
     pnpm, not npm, wherever a Node tool is installed.
 
@@ -115,7 +115,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
 
 28. **CHAINDROP file hashes and GitHub look-alike orgs** are still not shipped (no primary-source IOC list).
 
-29. **A hook must read the command, not the text around it.** On 2026-10-18 the Jiffy CLI hook on this
+29. **A hook must read the command, not the text around it.** On 2026-10-18 another install-gating hook on this
     machine blocked a shell script because a heredoc of documentation contained an MCP-add example.
     unpick's hook had the same weakness. Fixed 2026-10-18: `targets()` now splits the script into real shell
     commands first (quoted text stays one word, heredoc bodies are skipped, `sh -c` and `eval` are opened
@@ -166,8 +166,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     code blocks, and one-step decode-or-download-and-run lines. It does not rewrite instructions or tool
     descriptions, because a rewrite that looks right is worse than an honest flag.
 
-40. **The tagline stays** at the top of the UI (the spec asked for it); the start screen carries a
-    plain-language line for newcomers. The third review (Grok) asked again to replace it; it still stays.
+40. **Lead with plain-language product copy.** The start screen explains the product for newcomers.
 
 ## After the third review (Grok)
 
@@ -188,46 +187,81 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     command needs, so the path box stays. The next steps (test run, recovery) now always follow the
     latest scan instead.
 
+## After the security review (2026-10-24)
+
+45. **A component cannot hide its own files.** `.unpickignore` is a project setting, like `.gitignore`: it
+    counts only when the current directory is what is scanned, so a skill fetched by `check`, seen by
+    `watch` or named on the command line is read whole even if it ships one. Ignored files are listed under
+    `skipped` so a scan never says "clean" about something it did not read. A symlinked `.git/config` is
+    not read either. Project decisions (`./.unpick/decisions.json`) still apply to `scan .`, because a
+    project's own accepted findings are the point of them; the hook's config-edit check reads only your
+    user-wide decisions, since a cloned repository can ship a project file accepting the exact line it wants.
+
+46. **The hook fails closed on its own errors.** To Claude Code and Codex, any exit code other than 2 is a
+    non-blocking error, so a crash inside the check (a clone timing out, a parser hitting a limit) would
+    have let the install run. Every exception now ends as a refusal, overridable only by
+    `UNPICK_HOOK_FAIL_OPEN=1` like any other unverifiable install. Git clones stop at 120 s so the hook
+    answers before its own 300 s timeout.
+
+47. **https only, redirects included.** urllib follows a redirect from https to http or ftp on its own.
+    Every request that leaves the machine now goes through `unpick.net`, which refuses any non-https URL
+    before and after a redirect. A download larger than the quarantine cap is refused rather than
+    silently truncated.
+
+48. **The lockfile only ever holds a SHA.** `git_head` reads `.git/HEAD` and the ref it names without
+    running git, so a component's own `.git` chooses the file. A HEAD of `ref: ../../.ssh/id_rsa` used to
+    copy that file into `unpick.lock.json`; now anything that is not a 40- or 64-digit hex string is
+    recorded as no commit.
+
+49. **`rehearse` drops a component's links before the box starts.** The copy in the throwaway home is
+    made world-readable for the box's user, and `chmod` follows a symlink, so a link to `~/.ssh` would
+    have made that folder world-writable on the host. Links are removed from the copy, listed in the
+    result as `links_dropped`, and a check id must match the folder name pattern `check` creates, like
+    `restore` already required.
+
+50. **Actions are pinned to commits**, with Dependabot to move the pins, and the package version has one
+    source (`unpick/__init__.py`), which the release workflow still checks against the tag.
+
 ## Redesign after the UX cycles (2026-10-19)
 
-45. **The UI follows the Jiffy quickstart, not the signed-in admin app.** unpick is a free offline scanner,
+51. **The UI follows a public quickstart flow, not a signed-in admin app.** unpick is a free offline scanner,
     which is what the quickstart is. Start is one input card; a scan is a result page with a verdict block,
     one warning list and an aside. The talk's five steps stay in the README and the talk, not in the
     navigation. Sources and what was left out: docs/UI-NOTES.md.
 
-46. **No result is ever called "clear".** The neutral verdict reads "NO WARNINGS / This does not prove it
-    is safe", on a grey block rather than green (Codex review, and the Jiffy rule that absence must not
-    render as health).
+52. **No result is ever called "clear".** The neutral verdict reads "NO WARNINGS / This does not prove it
+    is safe", on a grey block rather than green (Codex review, and the rule that absence must not render
+    as health).
 
-47. **The decision comes after the explanation,** with "Not sure: ask the author" and a line saying that
+53. **The decision comes after the explanation,** with "Not sure: ask the author" and a line saying that
     leaving it open is a valid answer. A newcomer should not be asked to judge before reading why.
 
-48. **Warnings are ordered for a newcomer:** undecided, then severity, then how many checkers agree, then
+54. **Warnings are ordered for a newcomer:** undecided, then severity, then how many checkers agree, then
     unpick's own plain-language checks before another scanner's terse rule names.
 
-49. **Quarantine from the UI acts on one add-on, decided by the server.** An entry in a shared settings file
+55. **Quarantine from the UI acts on one add-on, decided by the server.** An entry in a shared settings file
     is removed alone; a file holding other add-ons' entries, or a folder holding several add-ons, is never
     moved whole, whatever the page sends; links are moved, never followed.
 
-50. **Nothing the UI saves is called an approval.** A web check saves "a record of this download"; Changes
+56. **Nothing the UI saves is called an approval.** A web check saves "a record of this download"; Changes
     saves "a copy to compare later". Both say they are not a safety verdict. Re-locking keeps the download
     records, and a lockfile holding only those counts as a first run.
 
 ## Plain-language UI (2026-10-21)
 
-51. **The UI has no tagline and no presenter mode.** The header shows only the name, version, navigation,
+57. **The UI has no tagline and no presenter mode.** The header shows only the name, version, navigation,
     theme and "Something got in?". The tagline read as noise to a first-time user, and presenter mode was a
     talk aid that put an unexplained button in everyone's header. Supersedes 40.
 
-52. **Results lead with a verdict and its reason in plain words.** Three verdicts (STOP, CHECK FIRST,
+58. **Results lead with a verdict and its reason in plain words.** Three verdicts (STOP, CHECK FIRST,
     NOTHING FOUND); the reason is the top open warning's plain sentence from `unpick/ui/plain.py`. Severity,
     rule id and the checker's own wording sit in each card's technical details. A path with no readable
     files shows NOT CHECKED, never NOTHING FOUND.
 
 ## Phase 2 (looking ahead)
 
-17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. The Jiffy platform's
-    own tokens (jiffy-base.css) fall back to the same system stack, and no font files are loaded.
+17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. No font files are
+    loaded.
 
 18. **UI scope in phase 2.** Inventory, Scan, and Backends and judges are built now. Check, Rehearse,
     Verify and Recover screens are added in phases 3 and 4 with the engines they drive, because nothing
@@ -237,6 +271,5 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     per-launch token in a custom header. A web page on another origin cannot send that header without a
     CORS preflight, which the server never answers, so it cannot drive the local API (CSRF).
 
-20. **Visual tokens** come from Jiffy-Labs-AI/platform `src/app/styles/jiffy-base.css` @4eb0f40: navy
-    #040E27, pale blue #E7EEFA, pink #FF97BF, red #FF4E4E, lavender, the pill palette, and the `.j-offset`
-    offset shadow (pink on dark, #FFC5C5 on light).
+20. **Visual tokens:** navy #040E27, pale blue #E7EEFA, pink #FF97BF, red #FF4E4E, lavender, the pill
+    palette, and an offset shadow (pink on dark, #FFC5C5 on light).
