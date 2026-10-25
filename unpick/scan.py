@@ -20,6 +20,12 @@ TEXT_EXT = {".md", ".mdc", ".markdown", ".txt", ".json", ".jsonc", ".toml", ".ya
             ".zsh", ".ps1", ".psm1", ".bat", ".cmd", ".py", ".js", ".mjs", ".cjs", ".ts", ".rb", ".swift", ".yar"}
 TEXT_NAMES = {".cursorrules", ".clinerules", ".windsurfrules", ".gitattributes", ".gitmodules", ".npmrc", ".pypirc",
               "pip.conf", "pip.ini", "dockerfile", "makefile"}
+# Skipped by name: formats whose bytes are not text even when they happen to decode.
+BINARY_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".ico", ".icns", ".tif", ".tiff", ".heic", ".pdf",
+              ".zip", ".gz", ".tgz", ".bz2", ".xz", ".zst", ".7z", ".rar", ".tar", ".jar", ".war", ".whl", ".wasm",
+              ".so", ".dylib", ".dll", ".exe", ".bin", ".o", ".a", ".lib", ".pyc", ".class", ".woff", ".woff2", ".ttf",
+              ".otf", ".eot", ".mp3", ".mp4", ".m4a", ".mov", ".wav", ".ogg", ".webm", ".db", ".sqlite", ".gguf",
+              ".onnx", ".pt", ".safetensors", ".npy", ".npz", ".parquet", ".pkl"}
 MAX_BYTES = 2_000_000
 IGNORE_FILE = ".unpickignore"
 IGNORED = f"ignored by {IGNORE_FILE}"
@@ -44,16 +50,32 @@ def _ignored(root: Path) -> list[str]:
 
 
 def _skip_reason(p: Path) -> str | None:
+    """Read every file that is text, whatever its name. A list of text extensions skipped .go, .tsx, .html,
+    .svg, LICENSE, .gitignore and example dotenv files: 1,239 files on one machine's add-ons, any of which can
+    carry an instruction. Only known binary formats are skipped by name; the rest are judged by their bytes."""
     if p.name == "decisions.json" or p.name.endswith(".decisions.json"):
         return "state"  # unpick's own state, not a component
-    if p.suffix.lower() not in TEXT_EXT and p.name.lower() not in TEXT_NAMES:
+    if p.suffix.lower() in BINARY_EXT:
         return "not a text format"
     if p.stat().st_size > MAX_BYTES:
         return f"larger than {MAX_BYTES // 1_000_000} MB"
     with p.open("rb") as fh:
-        if b"\x00" in fh.read(8192):
-            return "binary"
+        head = fh.read(8192)
+    if b"\x00" in head:
+        return "binary"
+    known = p.suffix.lower() in TEXT_EXT or p.name.lower() in TEXT_NAMES
+    if not known and not _decodes(head):
+        return "not a text format"
     return None
+
+
+def _decodes(head: bytes) -> bool:
+    """UTF-8, allowing a character cut off at the end of the sample."""
+    try:
+        head.decode("utf-8")
+        return True
+    except UnicodeDecodeError as e:
+        return e.start >= len(head) - 3
 
 
 def walk(target: Path) -> tuple[Path, list[Path], list[tuple[str, str]]]:

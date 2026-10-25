@@ -41,6 +41,8 @@ PIPES = [
     (re.compile(r"\bdownloadstring\s*\(", re.I), "PowerShell DownloadString"),
 ]
 B64 = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/=])")
+# An image or font inlined as a data URI is media, not a command; an SVG always names http://www.w3.org.
+MEDIA_URI = re.compile(r"data:(?:image|font|audio|video)/[\w.+-]+;base64,$", re.I)
 HEX = re.compile(r"(?<![0-9A-Fa-f])(?:[0-9A-Fa-f]{2}){20,}(?![0-9A-Fa-f])")
 DANGER = re.compile(
     r"\b(curl|wget|bash|sh -c|zsh|chmod \+x|nohup|osascript|powershell|iex|invoke-|/dev/tcp|nc -e|"
@@ -108,6 +110,8 @@ def run(doc):
             continue
         for rx, kind in ((B64, "base64"), (HEX, "hex")):
             for m in rx.finditer(line):
+                if MEDIA_URI.search(line[:m.start()]):
+                    continue
                 decoded = decode_blob(m.group(), kind)
                 if decoded and DANGER.search(decoded):
                     yield Hit(n, f"{kind} blob decodes to something that looks like a command: {decoded[:120]!r}",

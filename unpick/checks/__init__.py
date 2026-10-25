@@ -36,7 +36,7 @@ class Doc:
 
     @property
     def is_markdown(self) -> bool:
-        return self.name.endswith((".md", ".mdc", ".markdown")) or self.is_rules
+        return self.name.endswith((".md", ".mdc", ".markdown", ".mdx", ".md.tmpl", ".md.j2", ".md.jinja", ".md.hbs")) or self.is_rules
 
     @property
     def is_rules(self) -> bool:

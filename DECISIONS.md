@@ -277,6 +277,22 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     36), and every planted line in demo/sample-a is still high. Recall on the Cisco fixtures is its own
     open problem. Tests: tests/test_rule_precision.py.
 
+## Coverage (2026-10-25)
+
+62. **Read every text file, whatever its name.** A list of text extensions decided what was scanned, so .go,
+    .java, .tsx, .html, .svg, Markdown templates, LICENSE, .gitignore, git hooks and example dotenv files were
+    skipped as "not a text format": 1,239 files across 357 add-on locations on one machine. An instruction
+    could sit in any of them. Now only known binary formats are skipped by name; any other file is read when
+    it has no NUL byte in its first 8 KB and decodes as UTF-8. After: 7,318 files read instead of 6,171, and
+    the 90 still skipped are images, a font, a PDF and an archive. 160 new findings (38 medium), none lost.
+    Two false positives that the wider reading exposed were fixed: `$.env.get(...)` in code no longer
+    reads as a dotenv file, and an image or font inlined as a data URI is not decoded as a hidden command.
+    Ignore files (.gitignore and friends) are not checked for secret-file names, since they list secrets to
+    keep them out. Markdown templates (.md.tmpl, .md.j2, .mdx) count as Markdown. The repo also stops
+    shipping shims/apple-fm/apple-fm, a prebuilt Mac executable that had been in the package since phase 1
+    and that nothing ran: the judge builds its own from main.swift into ~/.unpick/bin. Tests:
+    tests/test_read_every_text_file.py.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. No font files are

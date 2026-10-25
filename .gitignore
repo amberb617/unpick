@@ -10,3 +10,4 @@ build/
 !.unpick/decisions.json
 demo/.unpick/
 .DS_Store
+shims/apple-fm/apple-fm  # built per user into ~/.unpick/bin; never ship a binary
