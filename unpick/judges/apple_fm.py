@@ -57,9 +57,9 @@ def detect() -> list[dict]:
     return [row]
 
 
-def complete(model: str, prompt: str, schema: dict) -> str:
+def complete(model: str, prompt: str, schema: dict, timeout: float = 600) -> str:
     p = subprocess.run([str(BIN)], input=json.dumps({"prompt": prompt, "schema": schema}),
-                       capture_output=True, text=True, timeout=600)
+                       capture_output=True, text=True, timeout=timeout)
     if p.returncode == 2:
         raise RuntimeError(f"Apple Intelligence unavailable: {p.stderr.strip()}")
     if p.returncode != 0:

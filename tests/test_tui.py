@@ -76,6 +76,7 @@ def test_home_screen_scans_every_place_once(tmp_path, monkeypatch):
             body = str(app.query_one("#addons-body").render())
             assert "3 add-ons in 2 places" in body and "Nothing found is not the same as safe." in body
             assert app.results == {str(cfg): "not read", str(skill): "high"}
+            await pilot.press("x")  # skips the logo, and only that
             await pilot.press("i")
             assert app.screen.query_one("DataTable").row_count == 3
             await pilot.press("enter")  # worst first: the skill with a high finding
@@ -129,8 +130,9 @@ def test_any_key_skips_the_logo(tmp_path, monkeypatch):
         async with app.run_test(size=(110, 34)) as pilot:
             await pilot.pause()
             assert isinstance(app.screen, tui_app.Splash)
-            await pilot.press("x")
-            assert not isinstance(app.screen, tui_app.Splash)
+            await pilot.press("i")  # an action key: skips the logo without also opening the add-on list
+            await pilot.pause()
+            assert not isinstance(app.screen, (tui_app.Splash, tui_app.AddOns))
 
     asyncio.run(go())
 

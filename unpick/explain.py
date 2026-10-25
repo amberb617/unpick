@@ -77,9 +77,9 @@ EXPLANATIONS = {
         "These instructions load automatically and bring in outside content or weaken your agent's protections.",
         "Read the flagged instruction and its linked content before allowing your agent to use it."),
     "RT-SECRECY": Explanation(
-        "Instructions may hide actions from you",
-        "The text asks an AI to conceal actions, ignore its rules or influence its reviewer. "
-        "It may also be quoting an example of harmful instructions.",
+        "Wording about hiding or overriding",
+        "The text talks about keeping something out of sight or about replacing an AI's earlier rules. "
+        "Aimed at an AI, that can hide actions from you; in code and docs it can also describe ordinary behaviour.",
         "Read the flagged passage in context to check whether it is an instruction or an example."),
     "RT-SENSITIVE-PATH": Explanation(
         "Private files or keys are mentioned",
