@@ -28,9 +28,13 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 
+from unpick import net
+
 ROOT = Path.home() / ".unpick" / "quarantine"
 MAX_TOTAL = 200_000_000
 MAX_FILES = 20_000
+GIT_TIMEOUT = 120  # under the hook's own 300 s, so a slow clone ends as a refusal rather than a timed-out hook
+CHECK_ID = re.compile(r"\d{8}T\d{6}Z-[\w.-]+")  # what _dest produces; anything else is not a folder of ours
 UA = {"User-Agent": "unpick (https://github.com/amberb617/unpick)"}
 META = ".unpick-check.json"
 
@@ -61,8 +65,11 @@ def parse(ref: str) -> Source:
         return Source("pypi", ref, name, ver or None)
     if m := GITHUB.match(ref):
         owner, repo, branch, sub = m.groups()
+        subdir = (sub or "").strip("/")
+        if subdir:
+            _member_ok(subdir)  # /tree/main/../../.. would make `root` a folder outside the clone
         return Source("git", f"https://github.com/{owner}/{repo}.git", repo, branch,
-                      {"owner": owner, "repo": repo, "subdir": (sub or "").strip("/")})
+                      {"owner": owner, "repo": repo, "subdir": subdir})
     if ref.startswith(("https://", "git@")) and (ref.endswith(".git") or "gitlab" in ref or "codeberg" in ref):
         return Source("git", ref, Path(ref.rstrip("/")).stem)
     if ref.startswith("https://") and re.search(r"\.(zip|tar\.gz|tgz|tar)$", ref):
@@ -83,7 +90,7 @@ def _dest(name: str) -> Path:
 
 def _member_ok(name: str) -> PurePosixPath:
     p = PurePosixPath(name.replace("\\", "/"))
-    if p.is_absolute() or ".." in p.parts or re.match(r"^[A-Za-z]:", name):
+    if p.is_absolute() or ".." in p.parts or re.match(r"^[A-Za-z]:", name) or "\x00" in name:
         raise Refused(f"archive member escapes the folder: {name}")
     return p
 
@@ -127,11 +134,11 @@ def safe_extract(data: bytes, dest: Path, strip_top: bool = False) -> int:
 
 
 def _get(url: str, timeout: int = 60) -> bytes:
-    if not url.startswith("https://"):
-        raise Refused(f"refusing non-https download: {url}")
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 - https only, checked above
-        return r.read(MAX_TOTAL + 1)
+    with net.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
+        data = r.read(MAX_TOTAL + 1)
+    if len(data) > MAX_TOTAL:
+        raise Refused(f"download is larger than {MAX_TOTAL // 1_000_000} MB")
+    return data
 
 
 def _get_json(url: str):
@@ -155,7 +162,10 @@ def fetch_git(src: Source, dest: Path) -> dict:
     if src.version:
         argv += ["--branch", src.version]
     argv += ["--", src.ref, str(dest / "repo")]
-    p = subprocess.run(argv, capture_output=True, text=True, env=git_env(), timeout=300)
+    try:
+        p = subprocess.run(argv, capture_output=True, text=True, env=git_env(), timeout=GIT_TIMEOUT)
+    except subprocess.TimeoutExpired as e:
+        raise Refused(f"git clone took longer than {GIT_TIMEOUT} s") from e
     if p.returncode != 0:
         raise Refused(f"git clone failed: {p.stderr.strip()[-300:]}")
     from unpick.lock import git_head
@@ -238,6 +248,8 @@ def save_meta(dest: Path, meta: dict) -> None:
 
 
 def load_meta(check_id: str) -> tuple[Path, dict]:
+    if not CHECK_ID.fullmatch(check_id or ""):
+        raise Refused(f"{check_id!r} is not a check id")
     d = ROOT / check_id
     if not (d / META).is_file():
         raise Refused(f"no check with id {check_id!r} in {ROOT}")

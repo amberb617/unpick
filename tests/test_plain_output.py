@@ -221,3 +221,15 @@ def test_missing_path_is_not_a_pass(command, tmp_path, capsys):
     output = capsys.readouterr().err
     assert output.startswith("Cannot assess this:")
     assert f"unpick {command} --help" in output
+
+
+def test_files_not_read_are_grouped_by_reason(capsys):
+    from unpick import cli
+
+    skipped = [{"path": f"docs/{i}.md", "reason": "ignored by .unpickignore"} for i in range(40)]
+    skipped.append({"path": "logo.png", "reason": "not a text format"})
+    cli._print_skipped(skipped)
+    out = capsys.readouterr().out
+    assert out.count("Not read") == 2
+    assert "Not read (ignored by .unpickignore): docs/0.md, docs/1.md, docs/2.md and 37 more" in out
+    assert "Not read (not a text format): logo.png\n" in out and '"skipped"' in out

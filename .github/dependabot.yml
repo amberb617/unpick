@@ -1,0 +1,7 @@
+# Keeps the commit-pinned actions in .github/workflows current. Nothing else here has a lockfile to bump.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

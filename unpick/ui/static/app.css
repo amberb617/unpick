@@ -1,7 +1,7 @@
 [hidden] { display: none !important; }
-/* unpick UI. Follows the Jiffy quickstart and result pages (see docs/UI-NOTES.md): pale blue page, white
-   cards with quiet 1px borders, the pink-on-red offset shadow only on primary buttons and the one card a
-   screen is about. Meaning never rides on colour alone: every verdict and severity is also a word. */
+/* unpick UI. A quickstart-style layout (see docs/UI-NOTES.md): pale blue page, white cards with quiet 1px
+   borders, the pink-on-red offset shadow only on primary buttons and the one card a screen is about. Meaning
+   never rides on colour alone: every verdict and severity is also a word. */
 * { box-sizing: border-box; }
 html { font-size: 16px; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.5; }
@@ -62,7 +62,7 @@ details.options summary { cursor: pointer; font-weight: 600; font-size: 14px; co
 .option-grid { display: grid; grid-template-columns: max-content minmax(260px, 520px); gap: 10px 14px; align-items: center; padding: 8px 0 0 4px; }
 .option-grid .check { grid-column: 1 / -1; }
 
-/* ---- buttons (jiffy-base .j-btn) ---- */
+/* ---- buttons ---- */
 .j-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 15px var(--font-body); line-height: 1; padding: 12px 20px; min-height: 44px; border-radius: var(--radius-md);
   background: var(--navy-900); color: #fff; border: 1px solid var(--navy-900); text-decoration: none; cursor: pointer;
   box-shadow: var(--shadow-offset-rest); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
