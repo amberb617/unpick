@@ -64,6 +64,13 @@ the provider's key from your shell; `unpick integrations` names the variable for
 | 5. Pin and re-check | lockfile, diff on update | `unpick lock`, `unpick verify`, `unpick outdated --online` | Changes |
 | When it got through | contain, rotate, find out what happened | `unpick recover <component>` | Something got in? |
 
+**Reading a scan.** `unpick scan <path>` leads with what to do, then a short summary, a TL;DR, findings
+collapsed into groups (by rule, and by code versus docs), coverage and the next commands. In a terminal on a
+Mac with Apple Intelligence, the summary is picked on the device from statements unpick writes; nothing
+leaves the machine, and `--no-summary` turns it off. `unpick results` shows the last scan again
+without rescanning (`--details` for every finding; `--rule`, `--severity` and `--place` to filter), and
+`unpick show <id>` prints one finding with the lines around it.
+
 `unpick report <path> --html out.html` puts the scan, judge opinions, a saved rehearsal, your decisions
 and (with `--inventory`) the inventory in one self-contained file that prints in black and white.
 

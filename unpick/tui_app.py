@@ -59,7 +59,8 @@ class Splash(Screen):
             Text("\u00b7" * undone, style="#142040").append("\u00d7" * (self.SEAM - undone), style="#ff97bf"))
         self.step += 1
 
-    def on_key(self) -> None:
+    def on_key(self, event) -> None:
+        event.stop()  # a key skips the logo and nothing else; letting it through raced the screen stack
         self.dismiss()
 
 

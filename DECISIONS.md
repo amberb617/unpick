@@ -277,6 +277,30 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     36), and every planted line in demo/sample-a is still high. Recall on the Cisco fixtures is its own
     open problem. Tests: tests/test_rule_precision.py.
 
+## Scan output (2026-10-25)
+
+60. **A scan reads in a minute: headline, summary, TL;DR, collapsed groups, coverage, next steps.** A popular
+    plugin printed 500 lines, repeating the same two explanation sentences under every finding. The design
+    went through three rounds with Codex and Grok: two on a written spec, one on real output. Findings are
+    grouped by rule and by file type (code, docs/config, other: a format, not a trust level). Each group
+    prints its explanation once, at most four file:line lines, and one example line, preferring a line
+    that acts over a comment that describes. `--details`, `--rule`, `--severity` and `--place` expand or
+    filter and say "Showing X of N". `unpick results` reprints the saved scan without rescanning, and
+    `unpick show <id>` prints one finding with its context. Every printed command runs as printed, on its
+    own line. The headline is still render.scan_verdict, the one place that decides when a scan may not look
+    clean. With no high finding it says "no high ones (not the same as safe)", not "none serious". The secrecy
+    explanation describes the wording instead of asserting intent. JSON output and exit codes are unchanged.
+    Shared by the CLI now and the home screen and web UI next: unpick/digest.py.
+
+61. **The on-device summary picks; unpick writes.** On by default in an interactive terminal (owner decision,
+    2026-10-25), off in pipes, with --json and with --no-summary. unpick builds a handful of cross-cutting
+    statements from the records, and Apple Intelligence chooses up to three under guided generation, so
+    its answer can only be statement ids. Both reviewers rejected free text, because a sentence can pass
+    every id and number check and still be false. The severity fact ("No finding is high...", or where the
+    high findings are) is always shown, never left to the model. The model sees counts, rule ids and file
+    paths, never file text or finding messages. About 1.5 s on this Mac. With no model, or on any error,
+    the TL;DR stands alone.
+
 ## Coverage (2026-10-25)
 
 62. **Read every text file, whatever its name.** A list of text extensions decided what was scanned, so .go,

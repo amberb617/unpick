@@ -251,10 +251,14 @@ def scan_verdict(d: dict, *, questions: bool = False, provenance_error: bool = F
         return ("Don't install this yet: checks are incomplete; run `unpick scan --help` "
                 "and resolve the missing checks listed below before retrying.")
     if findings:
-        first = finding_groups(findings)[0][1][0][1]
+        from unpick.digest import groups
+
+        top = groups(findings)[0].rule_id  # most serious group, code before docs: never just the first file name
         serious = sum(f["severity"] == "high" for f in findings)
-        count = _count(serious, "serious finding") if serious else _count(len(findings), "finding") + " to review"
-        return f"Don't install this yet: {count}; run `unpick explain {shlex.quote(escape(first['rule_id']))}` for the next step."
+        nxt = f"run `unpick explain {shlex.quote(escape(top))}` for the next step."
+        if serious:
+            return f"Don't install this yet: {_count(serious, 'serious finding')}; {nxt}"
+        return f"Review before you install: {_count(len(findings), 'finding')}, no high ones (not the same as safe); {nxt}"
     if questions:
         return ("Don't install this yet: questions about the source need review; "
                 "run `unpick check --help` and resolve the questions below before approving.")
