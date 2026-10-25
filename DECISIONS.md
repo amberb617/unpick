@@ -258,6 +258,25 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     rule id and the checker's own wording sit in each card's technical details. A path with no readable
     files shows NOT CHECKED, never NOTHING FOUND.
 
+## Rule precision (2026-10-25)
+
+59. **Severity follows what a line can do, measured on real add-ons.** Built-in checks were run over the 297
+    add-on locations on one working machine (Claude Code, Codex, Cursor, Gemini CLI and others; the files
+    stay on that machine). Before: 1,471 distinct high findings, 80 locations with a high. Nearly all were
+    padded grid tables read as text pushed off-screen, the zero-width space changelog bots put after "#" so
+    GitHub does not link an issue, ordinary words ("always", "run", any URL) inside collapsed <details>,
+    file names in link labels read as domains (".md" is a country domain), invisible characters reported
+    twice, and dotenv files named in setup prose. After: 69 high, 55 locations. Changes: grid table rows are
+    exempt from the off-screen test; RT-RENDER-DIVERGE leaves invisible characters to RT-UNICODE, raises a
+    line to high only for text aimed at the agent or a link that lies about its host (now a host test, so
+    github.com.evil.test no longer passes as github.com), and puts collapsed <details> prose at low;
+    RT-UNICODE treats one stray character as low, one inside a word as medium and a run of three or more
+    as high; RT-SENSITIVE-PATH puts a dotenv file named in prose at low unless the line reads, sends or
+    redirects from it. A random sample of 30 lowered findings was read by hand: all were documentation.
+    Detection on the vendored corpora is unchanged (Cisco malicious fixtures 4 of 16, benign corpus 5 of
+    36), and every planted line in demo/sample-a is still high. Recall on the Cisco fixtures is its own
+    open problem. Tests: tests/test_rule_precision.py.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. No font files are

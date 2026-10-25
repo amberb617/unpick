@@ -51,8 +51,10 @@ def _benign(text: str, i: int, kind: str, line_text: str) -> bool:
     cp = ord(text[i])
     if cp == 0xFEFF and i == 0:
         return True  # byte-order mark
-    if kind == "variation-selector" and cp in (0xFE0E, 0xFE0F) and _is_pictograph(prev):
-        return True  # emoji presentation selector
+    if kind == "variation-selector" and cp in (0xFE0E, 0xFE0F) and prev.strip() and not classify(ord(prev)):
+        return True  # one presentation selector after a visible symbol: emoji or text style, as in "\u2139\ufe0f"
+    if cp in (0x200B, 0x2060) and prev in "#@" and prev:
+        return True  # changelog bots put one after "#" or "@" so GitHub does not link an issue or mention a user
     if cp == 0x200D and _is_pictograph(prev) and _is_pictograph(nxt):
         return True  # emoji zero-width joiner sequence
     if kind == "bidi" and cp in (0x200E, 0x200F) and re.search(r"[\u0590-\u08FF]", line_text):
@@ -64,6 +66,26 @@ def hidden_positions(line: str) -> list[int]:
     """Indexes of characters in `line` that are hidden and not part of a benign sequence. Shared with render.py."""
     return [i for i, ch in enumerate(line)
             if (kind := classify(ord(ch))) and ch != "\t" and not _benign(line, i, kind, line)]
+
+
+def _severity(chars: list[dict], kinds: list[str], line: str) -> str:
+    """Tag and bidi characters, or a run of three or more hidden characters (enough to encode data), are high.
+    One hidden character inside a word can split a keyword past a filter: medium. Anything else is a stray
+    character: low. Measured 2026-10-25: 546 of 552 zero-width findings on installed add-ons were single strays."""
+    if {"tag", "bidi"} & set(kinds):
+        return "high"
+    cols = sorted(c["column"] for c in chars)
+    run = best = 1
+    for a, b in zip(cols, cols[1:], strict=False):
+        run = run + 1 if b == a + 1 else 1
+        best = max(best, run)
+    if best >= 3:
+        return "high"
+    for c in cols:
+        before, after = line[c - 2:c - 1], line[c:c + 1]
+        if before.isalpha() and after.isalpha():
+            return SEVERITY
+    return "low"
 
 
 LATIN = re.compile(r"[A-Za-z]")
@@ -99,8 +121,7 @@ def run(doc):
             decoded = "".join(t for t in tags if t.isprintable())
             extra["decoded_tags"] = decoded
             msg += f"; tag characters spell: {decoded!r}"
-        sev = "high" if {"tag", "bidi"} & set(kinds) else SEVERITY
-        yield Hit(ln, msg, sev, extra)
+        yield Hit(ln, msg, _severity(chars, kinds, lines[ln - 1] if ln <= len(lines) else ""), extra)
 
     for n, line in enumerate(lines, 1):
         for m in WORD.finditer(line):

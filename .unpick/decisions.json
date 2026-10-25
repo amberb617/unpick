@@ -1320,6 +1320,17 @@
       "source": "builtin",
       "matched": "          GH_TOKEN: ${{ github.token }}",
       "decided_at": "2026-10-25T04:25:09+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "f8ecc6c6d03993c8918dde09798d187f80df3e28a5473f8ba102f401d461dbd8",
+      "decision": "accept",
+      "note": "the pattern that spots a shell redirect from a dotenv file has to name the file it looks for",
+      "path": "unpick/checks/sensitive_paths.py",
+      "line": 28,
+      "source": "builtin",
+      "matched": "REDIRECT_IN = re.compile(r\"<\\s*[\\\"']?[~$\\w./{}-]*\\.env\")  # a shell redirect from a dotenv file reads it as surely as cat does",
+      "decided_at": "2026-10-25T15:49:05+00:00"
     }
   ]
 }
