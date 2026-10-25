@@ -7,8 +7,10 @@ reads without colour, on Windows consoles and in a pipe.
 
 from __future__ import annotations
 
+import os
 import re
 import shlex
+import subprocess
 import textwrap
 from pathlib import Path
 
@@ -52,6 +54,14 @@ def _para(console, text: str, prefix: str = "") -> None:
         console.print(f"{INDENT}  {esc(cmd)}", soft_wrap=True)
 
 
+def shell_quote(arg: str) -> str:
+    """Quote one argument for the shell a reader pastes into: POSIX quoting, or Windows double quotes
+    (cmd.exe does not treat single quotes as quoting)."""
+    if os.name == "nt":
+        return subprocess.list2cmdline([arg])
+    return shlex.quote(arg)
+
+
 def _runnable(text: str, d: dict, path: str) -> str:
     """Catalog advice names `<file>`; give the reader the real file so the command runs as printed."""
     target = Path(d.get("target", ""))
@@ -60,7 +70,7 @@ def _runnable(text: str, d: dict, path: str) -> str:
         shown = full.resolve().relative_to(Path.cwd().resolve())  # shorter when you are inside the scanned folder
     except ValueError:
         shown = full
-    return text.replace("<file>", shlex.quote(str(shown)))
+    return text.replace("<file>", shell_quote(str(shown)))
 
 
 def _lines(lines: list[int]) -> str:

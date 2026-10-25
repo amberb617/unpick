@@ -65,8 +65,10 @@ def test_details_and_filters_say_what_they_show():
 
 def test_a_command_in_advice_gets_its_own_unwrapped_line():
     d = scan_dict([f("RT-RENDER-DIVERGE", "low", "deep/" * 12 + "README.md", 5)])
+    from pathlib import Path
     line = next(x for x in render(d).splitlines() if "unpick raw" in x)
-    assert line.strip().startswith("unpick raw /tmp/addon/deep/") and line.rstrip().endswith("README.md")
+    expected = scan_output.shell_quote(str(Path("/tmp/addon") / ("deep/" * 12 + "README.md")))
+    assert line.strip() == f"unpick raw {expected}"  # one line, quoted for this platform's shell
 
 
 def test_summary_statements_come_from_records_only():
