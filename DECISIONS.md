@@ -166,8 +166,7 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     code blocks, and one-step decode-or-download-and-run lines. It does not rewrite instructions or tool
     descriptions, because a rewrite that looks right is worse than an honest flag.
 
-40. **The tagline stays** at the top of the UI (the spec asked for it); the start screen carries a
-    plain-language line for newcomers. The third review (Grok) asked again to replace it; it still stays.
+40. **Lead with plain-language product copy.** The start screen explains the product for newcomers.
 
 ## After the third review (Grok)
 

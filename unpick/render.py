@@ -12,6 +12,7 @@ The same rows drive the terminal view, the --json output and the UI's split view
 from __future__ import annotations
 
 import re
+import shlex
 import unicodedata
 from dataclasses import asdict, dataclass, field
 
@@ -188,3 +189,71 @@ def to_json(text: str) -> list[dict]:
 
 def non_ascii_names(s: str) -> list[str]:
     return [f"U+{ord(c):04X} {unicodedata.name(c, '?')}" for c in s if ord(c) > 0x7F]
+
+
+def finding_groups(findings: list[dict]) -> list[tuple]:
+    """Group findings by plain title, with the most serious group first."""
+    from unpick.explain import UNKNOWN_EXPLANATION, get_explanation
+
+    order = {"high": 0, "medium": 1, "low": 2, "info": 3}
+    groups = {}
+    for finding in sorted(findings, key=lambda f: order[f["severity"]]):
+        try:
+            entry = get_explanation(finding["rule_id"])
+        except KeyError:
+            entry = UNKNOWN_EXPLANATION
+        groups.setdefault(entry.title, []).append((entry, finding))
+    return list(groups.items())
+
+
+
+def _count(number: int, noun: str) -> str:
+    return f"{number} {noun}" + ("" if number == 1 else "s")
+
+
+def _run_incomplete(run: dict, findings: list[dict]) -> bool:
+    if run.get("status") != "ran":
+        return True
+    code = run.get("exit_code")
+    # Jiffy documents 2 as block and 1 as unverified. Other adapters commonly
+    # use 1 for findings; without any evidence from that source it is inconclusive.
+    if run.get("source") == "backend:jiffy":
+        return code not in (None, 0, 2)
+    if code not in (None, 0, 1):
+        return True
+    return code == 1 and not any(f["source"] == run.get("source") for f in findings)
+
+def scan_verdict(d: dict, *, questions: bool = False, provenance_error: bool = False) -> str:
+    """Describe evidence, never equate missing work or accepted findings with safety.
+
+    Counts are findings, not independent attacks: two rules can flag the same line.
+    Commands are read-only and contain no untrusted file paths to paste into a shell.
+    """
+    findings = d.get("findings", [])
+    all_findings = findings + d.get("accepted", [])
+    if not d.get("files"):
+        return "Cannot assess this: no files were scanned; run `unpick scan --help` to choose a readable file or folder."
+    failed = (d.get("errors") or d.get("unavailable") or provenance_error
+              or any(f["rule_id"] == "RT-JUDGE-FAILED" for f in all_findings)
+              or any(_run_incomplete(r, all_findings) for r in d.get("runs", [])))
+    if failed:
+        return ("Don't install this yet: checks are incomplete; run `unpick scan --help` "
+                "and resolve the missing checks listed below before retrying.")
+    if findings:
+        first = finding_groups(findings)[0][1][0][1]
+        serious = sum(f["severity"] == "high" for f in findings)
+        count = _count(serious, "serious finding") if serious else _count(len(findings), "finding") + " to review"
+        return f"Don't install this yet: {count}; run `unpick explain {shlex.quote(escape(first['rule_id']))}` for the next step."
+    if questions:
+        return ("Don't install this yet: questions about the source need review; "
+                "run `unpick check --help` and resolve the questions below before approving.")
+    if d.get("accepted"):
+        accepted = len(d["accepted"])
+        verb = "was" if accepted == 1 else "were"
+        return (f"Review your decisions: {_count(accepted, 'finding')} {verb} previously accepted, not cleared; "
+                "run `unpick scan --no-decisions <path>` to see them again.")
+    if d.get("skipped"):
+        return ("Cannot assess the whole component: some files were not read; "
+                "run `unpick scan --json <path>` to see which files need review.")
+    return (f"No problems found in {_count(len(d['files']), 'scanned file')}, but safety is not guaranteed; "
+            "run `unpick hook install claude-code --dry-run` to preview checks before future installs.")
