@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/amberb617/unpick/discussions
+    about: Ask how to use unpick, or share what you would like it to check.
+  - name: Report a vulnerability privately
+    url: https://github.com/amberb617/unpick/security/advisories/new
+    about: For a way past unpick's checks or hook. See SECURITY.md.

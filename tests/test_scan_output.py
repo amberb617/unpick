@@ -101,7 +101,12 @@ def test_summary_failure_leaves_the_view_intact():
     d = scan_dict([f("RT-SECRECY", "low", "a.md", 1), f("RT-UNICODE", "high", "b.md", 2)])
     def slow(p, s):
         raise subprocess.TimeoutExpired("apple-fm", 20)
-    assert summary.pick(d, slow) == ([], "On-device summary skipped: TimeoutExpired.")
+    assert summary.pick(d, slow) == ([], "On-device summary skipped: Apple Intelligence took longer than 20 s.")
+
+    def refuse(p, s):
+        raise RuntimeError("generation failed: refusal(...May contain sensitive content)")
+    lines, note = summary.pick(d, refuse)
+    assert lines == [] and "declined to answer" in note
 
 
 @pytest.mark.parametrize("args,tty,expected", [

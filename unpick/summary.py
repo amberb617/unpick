@@ -73,15 +73,21 @@ def pick(d: dict, complete=None) -> tuple[list[str], str]:
         def complete(prompt, schema):
             return apple_fm.complete("system", prompt, schema, timeout=TIMEOUT)
     ids = list(st)
-    prompt = ("Someone is deciding whether to install an AI add-on. These statements describe a scan of it. "
-              "Pick the three that matter most for that decision, most important first.\n\n"
-              + "\n".join(f"[{k}] {v}" for k, v in st.items()))
+    # Neutral on purpose: Apple's guardrails refused "deciding whether to install an AI add-on" when the notes
+    # mentioned running extra code, which is exactly the scan a summary matters most for (2026-10-25).
+    prompt = ("Order these notes by how much a reader needs to see them first. Return the three most important "
+              "note ids.\n\n" + "\n".join(f"[{k}] {v}" for k, v in st.items()))
     schema = {"type": "object", "properties": {"picks": {"type": "array", "items": {"type": "string", "enum": ids},
                                                           "minItems": 1, "maxItems": 3}}, "required": ["picks"]}
     try:
         picks = json.loads(complete(prompt, schema)).get("picks", [])
-    except (subprocess.TimeoutExpired, RuntimeError, OSError, ValueError, AttributeError) as e:
-        return [], f"On-device summary skipped: {type(e).__name__}."
+    except subprocess.TimeoutExpired:
+        return [], f"On-device summary skipped: Apple Intelligence took longer than {TIMEOUT} s."
+    except RuntimeError as e:
+        why = "declined to answer" if "refusal" in str(e).lower() else "was unavailable"
+        return [], f"On-device summary skipped: Apple Intelligence {why}. The TL;DR below is unpick's own."
+    except (OSError, ValueError, AttributeError):
+        return [], "On-device summary skipped: the model's answer could not be read."
     if not isinstance(picks, list) or not picks or any(p not in st for p in picks):
         return [], "On-device summary dropped: the model answered outside unpick's statements."
     pinned = [k for k in PINNED if k in st]  # the severity fact is never left to the model's choice
