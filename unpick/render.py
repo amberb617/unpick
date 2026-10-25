@@ -25,7 +25,11 @@ REFDEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s+\S+")
 HIDDEN_HTML = re.compile(r"<(\w+)[^>]*(style\s*=\s*\"[^\"]*(display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0)[^\"]*\"|hidden\b)[^>]*>.*?</\1>", re.I)
 TAG = re.compile(r"</?[A-Za-z][^>]*>")
 OFFSCREEN = re.compile(r"\S {40,}[^\s|]")  # a padded table cell ends in "|", hidden text does not
+TABLE_ROW = re.compile(r"^\s*([|:+]).*\1\s*$")  # pipe and grid table rows pad their cells with spaces
 DOMAINISH = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}", re.I)
+# "classify.md" or "Next.js" in a link label is a file or framework name, not a website, even though .md is a
+# country domain. Measured 2026-10-25: every link-mismatch high on installed add-ons had a label like these.
+FILE_NAME = re.compile(r"\.(md|mdc|markdown|mjs|cjs|js|jsx|ts|tsx|py|ipynb|json|ya?ml|toml|txt|sh|html?|css|rs|go|rb|java|kt|swift|cpp|c|h|sql|csv|lock)$", re.I)
 
 
 @dataclass
@@ -120,11 +124,18 @@ def _details(shown: str, st: _State, reasons: list[str]) -> tuple[str, bool]:
     return shown, collapsed
 
 
+def _same_site(label: str, host: str) -> bool:
+    """The link goes where its label says: the same host or a subdomain of it. A substring test let
+    "github.com" pass for github.com.evil.test."""
+    label, host = label.lower().removeprefix("www."), host.lower().removeprefix("www.")
+    return host == label or host.endswith("." + label)
+
+
 def _links(shown: str, reasons: list[str]) -> str:
     def swap(m):
         label, href = m.group(1), m.group(2)
         ld, hd = DOMAINISH.search(label), DOMAINISH.search(href)
-        if ld and hd and ld.group(0).lower().removeprefix("www.") not in hd.group(0).lower():
+        if ld and hd and not FILE_NAME.search(ld.group(0)) and not _same_site(ld.group(0), hd.group(0)):
             reasons.append(f"link text says {ld.group(0)} but points to {hd.group(0)}")
         return label
 
@@ -168,7 +179,7 @@ def _row(n: int, raw_line: str, st: _State) -> Row:
         reasons.append("link reference definition (not rendered)")
         shown = ""
     shown = _links(shown, reasons)
-    if OFFSCREEN.search(shown) and not shown.lstrip().startswith("|"):
+    if OFFSCREEN.search(shown) and not shown.lstrip().startswith("|") and not TABLE_ROW.match(shown):
         reasons.append("text pushed off-screen by a long run of spaces")
         shown = re.sub(r" {40,}", "  ", shown)
     if st.in_comment and not reasons:
