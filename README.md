@@ -1,7 +1,5 @@
 # unpick
 
-*Gird your loins. Then read the Markdown raw.*
-
 unpick vets AI components on your own laptop before you trust them: agent skills
 (SKILL.md folders), IDE rules files, MCP servers and their tool descriptions, and Claude Code plugins
 and hooks. It is for people with no security team, no budget and no vendor accounts. It runs offline by
