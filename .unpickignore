@@ -1,4 +1,5 @@
 # Paths `unpick scan .` skips in this repository. Each one holds deliberately suspicious text.
+# It counts only when the current directory is what is scanned, so a component cannot ship one to hide its files.
 # Everything else must pass with zero unaccepted findings (tests/test_dogfood.py).
 tests/          # test inputs, third-party eval fixtures, recorded scanner output and the adversarial corpus
 data/           # the pattern lists the checks match against

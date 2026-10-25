@@ -93,10 +93,16 @@ def prepare(component: Path, work: Path) -> dict:
     else:
         dest.mkdir(parents=True)
         shutil.copy2(component, dest / component.name)
+    links = []
+    for p in list(home.rglob("*")):
+        if p.is_symlink():  # a link can point at the host (~/.ssh); the box gets none, and the chmod below never follows one
+            links.append(p.relative_to(dest).as_posix() if p.is_relative_to(dest) else p.relative_to(home).as_posix())
+            p.unlink()
     for p in [home, *home.rglob("*")]:  # the box user (uid 1000) must be able to read and write its own home
         p.chmod(0o777 if p.is_dir() else 0o666)
     trace.chmod(0o777)
-    return {"home": home, "trace": trace, "canaries": canaries, "component_in_box": f"/home/box/.claude/skills/{name}"}
+    return {"home": home, "trace": trace, "canaries": canaries, "component_in_box": f"/home/box/.claude/skills/{name}",
+            "links_dropped": links}
 
 
 def docker_argv(prep: dict, task: str, max_steps: int) -> list[str]:
@@ -211,7 +217,7 @@ def run(component: Path, task: str = "Summarise the README in this folder.", max
             "component": str(component), "task": task, "exit_code": p.returncode, "stderr": p.stderr[-1500:],
             "box": {"network": "none", "image": IMAGE, "argv": argv[:argv.index(IMAGE) + 1], "model": fallback.FILE},
             "events": events, "transcript": transcript, "evidence": items, "verdict": verdict(items, name),
-            "canaries": prep["canaries"], "dns_canary": beacon,
+            "canaries": prep["canaries"], "dns_canary": beacon, "links_dropped": prep["links_dropped"],
             "findings": [f.to_dict() for f in findings(items, name)],
             "scope": "Evidence, not proof: a component can behave differently outside the box or after an update.",
         }

@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
-import urllib.request
 from pathlib import Path
+
+from unpick import net
 
 NAME = "fallback"
 KIND = "on-device"
@@ -114,7 +115,7 @@ def install(progress=None) -> str:
     MODEL.parent.mkdir(parents=True, exist_ok=True)
     part = MODEL.with_suffix(".part")
     h = hashlib.sha256()
-    with urllib.request.urlopen(URL, timeout=60) as r, part.open("wb") as out:  # noqa: S310 - fixed pinned URL
+    with net.urlopen(URL, timeout=60) as r, part.open("wb") as out:
         while chunk := r.read(1 << 20):
             out.write(chunk)
             h.update(chunk)

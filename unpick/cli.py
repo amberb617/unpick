@@ -73,7 +73,7 @@ def _print_scan(d: dict) -> None:
     s = d["summary"]
     console.print(f"\n[bold]{s['open']} open finding(s), {s['accepted']} accepted.[/] By source: {s['by_source']}")
     if d.get("skipped"):
-        console.print(f"[dim]{len(d['skipped'])} file(s) not read (binary, too large or not text); see --json \"skipped\".[/]")
+        console.print(f"[dim]{len(d['skipped'])} file(s) not read (ignored, binary, too large or not text); see --json \"skipped\".[/]")
     if len(d["sources"]) > 1:
         console.print(f"Agreement (Jaccard on file+line): {s['agreement']}")
     if s["open"]:
@@ -375,6 +375,9 @@ def cmd_check(args) -> int:
         m = check.run(args.ref, backends=_backend_list(args.backends), judge=judge, boxed=args.boxed, offline=args.offline)
     except quarantine.Refused as e:
         print(f"unpick: refused: {e}", file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(f"unpick: could not fetch it: {e}", file=sys.stderr)
         return 2
     _out(args, m, _print_check)
     return 1 if m["scan"]["summary"]["open"] or m["questions"] else 0

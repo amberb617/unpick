@@ -117,7 +117,8 @@ def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     from unpick.finding import SEVERITIES
     if not target.exists():
         return {"path": str(target), "status": "removed"}
-    before = _fingerprint(target)
+    owner = owning_component(target) if quarantine_at else None
+    before = _fingerprint(owner or target)  # what gets moved is the owner, so that is what must not change meanwhile
     res = scan.scan(target)
     high = [f for f in res.findings if f.severity == "high"]
     entry = {"path": str(target), "open": len(res.findings), "high": len(high),
@@ -125,7 +126,6 @@ def scan_and_report(target: Path, quarantine_at: str | None = None) -> dict:
     if quarantine_at:
         floor = SEVERITIES.index(quarantine_at)
         if any(SEVERITIES.index(f.severity) >= floor for f in res.findings):
-            owner = owning_component(target)
             if owner is None:
                 entry["quarantine_skipped"] = "not a whole add-on folder (a config file or a shared cache); review it with unpick recover"
             elif _changed_since(owner, before):
@@ -194,8 +194,9 @@ def run(project: Path, once: bool = False, quarantine_at: str | None = None) -> 
 
 
 def command(quarantine_at: str | None = None) -> list[str]:
-    exe = shutil.which("unpick") or f"{sys.executable} -m unpick"
-    return shlex.split(exe) + ["watch"] + (["--quarantine", quarantine_at] if quarantine_at else [])
+    exe = shutil.which("unpick")
+    argv = [exe] if exe else [sys.executable, "-m", "unpick"]  # never split: a home folder can have a space in it
+    return argv + ["watch"] + (["--quarantine", quarantine_at] if quarantine_at else [])
 
 
 def windows_command(argv: list[str]) -> str:

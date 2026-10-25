@@ -188,6 +188,41 @@ change it. Open ones are marked **OPEN**. Answer by editing this file or telling
     command needs, so the path box stays. The next steps (test run, recovery) now always follow the
     latest scan instead.
 
+## After the security review (2026-10-24)
+
+45. **A component cannot hide its own files.** `.unpickignore` is a project setting, like `.gitignore`: it
+    counts only when the current directory is what is scanned, so a skill fetched by `check`, seen by
+    `watch` or named on the command line is read whole even if it ships one. Ignored files are listed under
+    `skipped` so a scan never says "clean" about something it did not read. A symlinked `.git/config` is
+    not read either. Project decisions (`./.unpick/decisions.json`) still apply to `scan .`, because a
+    project's own accepted findings are the point of them; the hook's config-edit check reads only your
+    user-wide decisions, since a cloned repository can ship a project file accepting the exact line it wants.
+
+46. **The hook fails closed on its own errors.** To Claude Code and Codex, any exit code other than 2 is a
+    non-blocking error, so a crash inside the check (a clone timing out, a parser hitting a limit) would
+    have let the install run. Every exception now ends as a refusal, overridable only by
+    `UNPICK_HOOK_FAIL_OPEN=1` like any other unverifiable install. Git clones stop at 120 s so the hook
+    answers before its own 300 s timeout.
+
+47. **https only, redirects included.** urllib follows a redirect from https to http or ftp on its own.
+    Every request that leaves the machine now goes through `unpick.net`, which refuses any non-https URL
+    before and after a redirect. A download larger than the quarantine cap is refused rather than
+    silently truncated.
+
+48. **The lockfile only ever holds a SHA.** `git_head` reads `.git/HEAD` and the ref it names without
+    running git, so a component's own `.git` chooses the file. A HEAD of `ref: ../../.ssh/id_rsa` used to
+    copy that file into `unpick.lock.json`; now anything that is not a 40- or 64-digit hex string is
+    recorded as no commit.
+
+49. **`rehearse` drops a component's links before the box starts.** The copy in the throwaway home is
+    made world-readable for the box's user, and `chmod` follows a symlink, so a link to `~/.ssh` would
+    have made that folder world-writable on the host. Links are removed from the copy, listed in the
+    result as `links_dropped`, and a check id must match the folder name pattern `check` creates, like
+    `restore` already required.
+
+50. **Actions are pinned to commits**, with Dependabot to move the pins, and the package version has one
+    source (`unpick/__init__.py`), which the release workflow still checks against the tag.
+
 ## Phase 2 (looking ahead)
 
 17. **UI fonts.** Resolved: system sans and a Courier New mono stack, as specified. No font files are

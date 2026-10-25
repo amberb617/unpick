@@ -22,6 +22,7 @@ TEXT_NAMES = {".cursorrules", ".clinerules", ".windsurfrules", ".gitattributes",
               "pip.conf", "pip.ini", "dockerfile", "makefile"}
 MAX_BYTES = 2_000_000
 IGNORE_FILE = ".unpickignore"
+IGNORED = f"ignored by {IGNORE_FILE}"
 GIT_FILES = (".git/config", ".git/commondir")  # read even though .git/ is otherwise skipped (git_autorun check)
 OPAQUE = {".mcpb", ".dxt", ".wasm", ".pyc", ".pyo", ".so", ".dylib", ".dll", ".node", ".exe", ".jar", ".zip",
           ".tgz", ".gz", ".whl", ".vsix", ".bin"}
@@ -61,17 +62,21 @@ def walk(target: Path) -> tuple[Path, list[Path], list[tuple[str, str]]]:
     if target.is_file():
         reason = _skip_reason(target)
         return target.parent, ([] if reason and reason != "state" else [target]), ([(target.name, reason)] if reason else [])
-    patterns = _ignored(target)
+    # The ignore file is a project setting, like .gitignore: it counts only when scanning the current directory,
+    # so a component cannot ship one that hides its own files from `check`, `watch` or `scan <path>`.
+    patterns = _ignored(target) if target == Path.cwd().resolve() else []
     files, skipped = [], []
     for p in sorted(target.rglob("*")):
         parts = p.relative_to(target).parts
         rel = p.relative_to(target).as_posix()
-        if rel in GIT_FILES and p.is_file():
+        if rel in GIT_FILES and p.is_file() and not p.is_symlink():
             files.append(p)
             continue
         if any(part in SKIP_DIRS for part in parts[:-1]) or not p.is_file() or p.is_symlink():
             continue
         if any(fnmatch.fnmatch(rel, pat) or fnmatch.fnmatch(rel, pat.rstrip("/") + "/*") for pat in patterns):
+            if p.is_file():
+                skipped.append((rel, IGNORED))
             continue
         reason = _skip_reason(p)
         if reason == "state":
@@ -138,7 +143,7 @@ def scan(target: Path, backends: list[str] | None = None, judge: str | None = No
                      sources=["builtin"], files=[])
     res.skipped = [{"path": rel, "reason": why} for rel, why in skipped]
     for rel, why in skipped:
-        if Path(rel).suffix.lower() in OPAQUE or why == "binary" or why.startswith("larger"):
+        if why != IGNORED and (Path(rel).suffix.lower() in OPAQUE or why == "binary" or why.startswith("larger")):
             res.findings.append(Finding(
                 rule_id=UNREAD_RULE, source="builtin", severity="medium", path=rel, line=0,
                 message=f"not read ({why}); review it another way or remove it", why=UNREAD_WHY, false_positive=UNREAD_FP))

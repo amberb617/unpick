@@ -14,6 +14,7 @@ import urllib.error
 import urllib.request
 from datetime import UTC, datetime
 
+from unpick import net
 from unpick.checks.lookalike_names import judge_name
 
 UA = {"User-Agent": "unpick (https://github.com/amberb617/unpick)", "Accept": "application/vnd.github+json"}
@@ -21,8 +22,7 @@ INSTALL_ASK = re.compile(r"\b(curl|wget|iwr|irm)\b[^\n]*\|\s*(sudo\s+)?(ba|z)?sh
 
 
 def _json(url: str):
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=20) as r:  # noqa: S310 - fixed https API hosts
+    with net.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
         return json.loads(r.read().decode("utf-8")), r.geturl()
 
 

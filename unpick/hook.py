@@ -189,7 +189,7 @@ def _check_refs(refs, min_severity, runner):
 
 
 def _check_edit(ti, min_severity):
-    from unpick import scan
+    from unpick import decisions, scan
 
     path = Path(str(ti.get("file_path")))
     if "content" in ti:
@@ -203,7 +203,7 @@ def _check_edit(ti, min_severity):
         mirror = Path(d) / Path(*path.parts[-2:]) if len(path.parts) >= 2 else Path(d) / path.name
         mirror.parent.mkdir(parents=True, exist_ok=True)
         mirror.write_text(new, encoding="utf-8")
-        res = scan.scan(Path(d), decision_files=None)
+        res = scan.scan(Path(d), decision_files=[decisions.user_file()])  # never the working tree's: a cloned repo can ship one
     bad = _too_severe([f.to_dict() for f in res.findings], min_severity)
     if bad:
         return False, f"unpick blocked this edit to {path.name}: {_summary(bad)}"
@@ -226,7 +226,10 @@ def run(agent: str, stdin=None, stdout=None, stderr=None, min_severity: str | No
     sev = min_severity or os.environ.get("UNPICK_HOOK_MIN_SEVERITY", "high")
     if agent == "cursor" and "command" in event and "tool_name" not in event:
         event = {"tool_name": "beforeShellExecution", "tool_input": {"command": event["command"]}}
-    allowed, msg = decide(event, sev)
+    try:
+        allowed, msg = decide(event, sev)
+    except Exception as e:  # any other exit code is a non-blocking error to the agent, which would let the call run
+        allowed, msg = _unverifiable(f"unpick hit an error while checking this call ({type(e).__name__}: {str(e)[:200]})")
     if agent == "cursor":
         stdout.write(json.dumps({"permission": "allow" if allowed else "deny", "user_message": msg, "agent_message": msg}))
         return 0
