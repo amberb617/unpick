@@ -1309,6 +1309,17 @@
       "source": "builtin",
       "matched": "        if p.is_symlink():  # a link can point at the host (~/.ssh); the box gets none, and the chmod below never follows one",
       "decided_at": "2026-10-24T23:57:35+00:00"
+    },
+    {
+      "rule_id": "RT-SENSITIVE-PATH",
+      "line_hash": "1697121df8c26032ce0e537cddcd14046ed37856a46c315803b42b5e2703a51f",
+      "decision": "accept",
+      "note": "the release job hands GitHub's per-run token to the gh CLI so it can create the release; it is not read from or written to disk",
+      "path": ".github/workflows/release.yml",
+      "line": 57,
+      "source": "builtin",
+      "matched": "          GH_TOKEN: ${{ github.token }}",
+      "decided_at": "2026-10-25T04:25:09+00:00"
     }
   ]
 }

@@ -1,8 +1,8 @@
 name: release
 
-# Publishes to PyPI when a v* tag is pushed, using PyPI trusted publishing (OIDC): no token is stored
-# anywhere. One-time setup on PyPI: add a pending publisher for project "unpick", owner amberb617,
-# repository unpick, workflow release.yml, environment pypi.
+# Publishes to PyPI when a v* tag is pushed, then creates the GitHub release. PyPI uses trusted publishing
+# (OIDC): no token is stored anywhere. One-time setup on PyPI: add a pending publisher for project "unpick",
+# owner amberb617, repository unpick, workflow release.yml, environment pypi.
 on:
   push:
     tags: ["v*"]
@@ -43,3 +43,19 @@ jobs:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # release/v1
+
+  github-release:
+    # After PyPI, so the release page never names a version PyPI does not have. Skips a tag that already
+    # has a release, so a hand-written one is never overwritten.
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: GitHub release, notes generated from the merged pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 && exit 0
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "unpick ${GITHUB_REF_NAME#v}" --generate-notes
