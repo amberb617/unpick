@@ -1,0 +1,34 @@
+name: False positive
+description: unpick flagged something that is fine.
+labels: [false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks: false positives are how the rules get better. Paste only text you are happy to make public.
+  - type: input
+    id: rule
+    attributes:
+      label: Rule id
+      description: For example RT-SENSITIVE-PATH. `unpick show <id>` prints it.
+    validations:
+      required: true
+  - type: textarea
+    id: line
+    attributes:
+      label: The flagged line and a few lines around it
+      description: The output of `unpick show <id>` is ideal.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is fine
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: unpick version
+      description: "`unpick --version`"

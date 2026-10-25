@@ -1,0 +1,32 @@
+name: Missed attack
+description: A skill, plugin, MCP server or rules file did something bad and unpick did not flag it.
+labels: [missed-attack]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If this is a live attack on a published component, or a way to get past the install hook, please report
+        it privately as SECURITY.md describes instead of opening a public issue.
+  - type: textarea
+    id: sample
+    attributes:
+      label: A minimal sample
+      description: The smallest text that shows the attack. Defang URLs and commands (evil.test, echo instead of rm).
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What unpick should have said
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Public write-up, if any
+      description: A link to where this technique is described.
+  - type: input
+    id: version
+    attributes:
+      label: unpick version

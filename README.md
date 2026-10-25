@@ -1,9 +1,71 @@
 # unpick
 
-unpick vets AI components on your own laptop before you trust them: agent skills
-(SKILL.md folders), IDE rules files, MCP servers and their tool descriptions, and Claude Code plugins
-and hooks. It is for people with no security team, no budget and no vendor accounts. It runs offline by
-default, and it is fully useful with nothing else installed.
+**Vet AI agent add-ons before you install them.** unpick reads skills, MCP servers, plugins, hooks and rules
+files the way your AI will read them, and flags what a preview hides: setup steps that ask you to paste a
+command, base64 one-liners piped into a shell, instructions spelled out in invisible characters, and settings
+that switch off your agent's approvals. It runs offline by default and is built for people with no security
+team, no budget and no vendor accounts.
+
+![unpick scanning a sample skill with planted attacks: three high findings, a summary and next steps](docs/screenshots/cli/scan-sample-a.svg)
+
+## Try it in 30 seconds
+
+```
+uvx unpick demo                 # writes a sample skill with planted attacks, nothing runs
+uvx unpick scan demo/sample-a
+```
+
+`uvx` runs unpick without installing it. Then point it at a skill or plugin you already use:
+`uvx unpick scan ~/.claude/skills/<name>`.
+
+## Install
+
+```
+pipx install 'unpick[tui]'      # or: brew install amberb617/tap/unpick
+unpick setup                    # protect Claude Code, Codex and Cursor; shows every change first
+unpick                          # the home screen
+```
+
+Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows PowerShell 5.1). Optional
+extras: `pipx install 'unpick[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
+the watcher (phase 3), `'.[tui]'` for the home screen, `'.[fallback]'` for the fallback judge runtime (see below).
+
+
+Then run `unpick setup`. It finds Claude Code, Codex CLI and Cursor on this machine, asks which to protect,
+how strict to be and whether to run the watcher at login, then shows every file it will change before it
+changes anything. `--dry-run` stops after showing the changes; `unpick setup --undo` removes all of it.
+
+`unpick` on its own opens a home screen in the terminal (with the `tui` extra): which agents are protected,
+every add-on on this machine grouped by its worst finding, and recent watcher alerts. `s` runs setup, `c`
+checks something before you install it, `i` lists every add-on worst first, `n` shows integrations. Without
+the extra it prints the command list.
+
+**Integrations.** `unpick integrations` lists every optional scanner and AI review provider, whether it is
+ready, and what it sends off your machine. `unpick integrations connect jiffy` asks for a Jiffy API key
+(create one at app.jiffylabs.ai/settings/api-keys), hidden as you type, and hands it to the Jiffy CLI through
+the environment; the CLI checks it and saves it for your user. unpick stores no keys. Hosted AI review reads
+the provider's key from your shell; `unpick integrations` names the variable for each one.
+
+![The unpick home screen: which agents are protected, every add-on by its worst finding, integrations](docs/screenshots/cli/home.svg)
+
+## What it catches
+
+Built-in checks, no network, no accounts. Each finding says why it fired and when it is a false positive.
+
+- **Setup steps that hand you a command:** prerequisites that want you to run something yourself, and
+  one-liners that download or decode code and run it.
+- **Text your AI reads but you don't see:** invisible Unicode (tag characters are decoded so you can read the
+  hidden message), HTML comments, collapsed sections, text pushed off-screen, links whose label lies.
+- **Instructions aimed at the agent:** secrecy and override wording, and MCP tool descriptions that tell the
+  model to read keys or call other tools.
+- **Settings that disarm your agent:** approvals switched off, API traffic redirected, hooks and project files
+  that run code when you open a folder.
+- **Supply-chain tells:** lookalike names, unpinned `npx` launches, paste-site and bot-API exfiltration sinks,
+  install commands that point at another registry.
+
+It finds add-ons for 22 tools, including Claude Code, Claude Desktop, Codex, Cursor, Gemini CLI, GitHub
+Copilot, Windsurf, Cline, Roo Code, Kiro, Zed and opencode, and blocks risky installs in Claude Code, Codex and
+Cursor through `unpick setup`.
 
 To unpick a seam is to take it apart stitch by stitch and see what was sewn in. unpick does that to a
 Markdown file.
@@ -25,33 +87,6 @@ when it is a false positive.
 **What it does not protect against:** a compromised machine, a malicious agent runtime itself, attacks
 that only trigger outside a rehearsal, or anything already exfiltrated. It does not replace a sandbox or a
 runtime guard (see "What unpick does not do").
-
-## Install
-
-```
-pipx install unpick
-```
-
-or, from a clone, `pipx install .`.
-
-Python 3.11 or later, on macOS, Linux or Windows 11 (PowerShell 7 or Windows PowerShell 5.1). Optional
-extras: `pipx install '.[yara]'` for YARA-X, `'.[ui]'` for the local web UI (phase 2), `'.[watch]'` for
-the watcher (phase 3), `'.[tui]'` for the home screen, `'.[fallback]'` for the fallback judge runtime (see below).
-
-Then run `unpick setup`. It finds Claude Code, Codex CLI and Cursor on this machine, asks which to protect,
-how strict to be and whether to run the watcher at login, then shows every file it will change before it
-changes anything. `--dry-run` stops after showing the changes; `unpick setup --undo` removes all of it.
-
-`unpick` on its own opens a home screen in the terminal (with the `tui` extra): which agents are protected,
-every add-on on this machine grouped by its worst finding, and recent watcher alerts. `s` runs setup, `c`
-checks something before you install it, `i` lists every add-on worst first, `n` shows integrations. Without
-the extra it prints the command list.
-
-**Integrations.** `unpick integrations` lists every optional scanner and AI review provider, whether it is
-ready, and what it sends off your machine. `unpick integrations connect jiffy` asks for a Jiffy API key
-(create one at app.jiffylabs.ai/settings/api-keys), hidden as you type, and hands it to the Jiffy CLI through
-the environment; the CLI checks it and saves it for your user. unpick stores no keys. Hosted AI review reads
-the provider's key from your shell; `unpick integrations` names the variable for each one.
 
 ## The five-minute triage, mapped to commands
 
