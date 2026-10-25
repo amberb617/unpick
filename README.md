@@ -101,6 +101,46 @@ in docs/screenshots/ui/.
 Exit codes for `scan`: 0 clean, 1 unaccepted findings, 2 error (including "nothing was scanned"),
 3 a requested backend or judge was unavailable.
 
+## Use it inside your AI agent
+
+Three layers. Only the hook can stop an install. The skill and the rules snippet remind the agent.
+What each layer misses is in docs/research/ux-and-integration.md.
+
+1. Hook. `--dry-run` prints the settings change and writes nothing. Then run the same command
+   without it. Use `codex` or `cursor` in place of `claude-code` for those agents.
+   `unpick setup` does the same for every agent it finds, and shows each change first.
+
+```
+unpick hook install claude-code --dry-run
+unpick hook install claude-code
+```
+
+After the Codex install, open `/hooks` in Codex and trust the new hook. That trust follows the
+command text, so a changed command has to be trusted again.
+
+2. Skill, so the agent runs `unpick check` and explains the result before it tries an install.
+   Copy the folder once. Claude Code and Cursor both read the first path. Codex reads the second.
+   An older Codex page still names `~/.codex/skills`. Use one Codex folder, or two skills with the
+   same name can both load. Leave `~/.cursor/skills` alone; Cursor already reads the Claude folder.
+
+```
+mkdir -p ~/.claude/skills && cp -R integrations/claude-code/skills/unpick ~/.claude/skills/unpick
+mkdir -p ~/.agents/skills && cp -R integrations/claude-code/skills/unpick ~/.agents/skills/unpick
+```
+
+3. Rules snippet, once. Codex reads a repo `AGENTS.md` and `~/.codex/AGENTS.md` on its own. Cursor
+   treats `AGENTS.md` as rules. Claude Code, from version 2.1.277, reads `./AGENTS.md` only when
+   the working directory and its parents have no `CLAUDE.md` and no `CLAUDE.local.md`. If
+   `CLAUDE.md` exists, put a line containing only `@AGENTS.md` at the top of it. A file that
+   already has that line does not need a second one.
+
+```
+cat integrations/AGENTS.md.snippet >> AGENTS.md
+```
+
+A Claude cloud or Cowork session does not read `~/.claude/skills` on this machine. A Cursor cloud
+agent does not load `~/.cursor/hooks.json`, which is where `unpick hook install cursor` writes.
+
 ## After a flag: quarantine and clean
 
 Like antivirus, unpick can take a flagged add-on out of your agent's reach without deleting it:
