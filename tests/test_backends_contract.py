@@ -20,6 +20,7 @@ CASES = {
     "cisco-mcp-scanner": ("mcp-scanner", "input/tools.json"),
     "skillspector": ("skillspector", "input/defanged-test-skill"),
     "yara-x": ("yara-x", "input/targets"),
+    "jiffy": ("jiffy", "input/sample-a"),
 }
 
 
@@ -93,3 +94,13 @@ def test_bundled_yara_rules_exist_and_compile():
     assert mod.RULES.is_file(), mod.RULES
     yara_x = pytest.importorskip("yara_x")
     yara_x.compile(mod.RULES.read_text(encoding="utf-8"))
+
+
+def test_jiffy_local_findings_and_a_missing_server_check_are_both_kept():
+    mod = backends.adapters()["jiffy"]
+    out = recorded("jiffy")
+    [f] = mod.parse(out, FIX / "jiffy" / "input/sample-a")
+    assert (f.rule_id, f.severity, f.line) == ("jiffy:local.decode-and-run", "high", 17)
+    [note] = mod.notes(out)
+    assert "server did not check this" in note and "does not support that request yet" in note
+    assert mod.notes(json.dumps({"via": "server", "reasons": []})) == []

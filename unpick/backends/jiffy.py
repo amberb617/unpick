@@ -25,6 +25,7 @@ INSTALL = None  # npm package; install with your Node package manager if you cho
 NETWORK = "Jiffy API: file hashes, then the component's files if not already known; needs a Jiffy account"
 NEEDS_ONLINE = True
 WHY = "The Jiffy service flagged this location."
+WHY_LOCAL = "The Jiffy CLI's local checks flagged this location."
 FP = "Verdicts follow your organization's Jiffy policies; a finding here is one source among several."
 
 
@@ -41,6 +42,8 @@ def command(target: Path) -> list[str]:
 
 
 def parse(stdout: str, target: Path):
+    """Server findings (`findings[]`) and the CLI's own local checks (`local.findings[]`, jiffy-cli 1.2.0:
+    ruleId, severity, title, file, line). Reading only the first list dropped every local finding."""
     data = json.loads(stdout)
     base = target if target.is_dir() else target.parent
     out = []
@@ -49,4 +52,23 @@ def parse(stdout: str, target: Path):
         out.append(finding(NAME, f.get("ruleId") or "finding", f.get("severity"), path, f.get("line") or 0,
                            f.get("message") or f.get("ruleName") or "", WHY, FP,
                            original_rule_id=f.get("ruleId"), original_message=f.get("message")))
+    for f in (data.get("local") or {}).get("findings", []):
+        path = (base / f["file"]).as_posix() if f.get("file") else str(base)
+        out.append(finding(NAME, f.get("ruleId") or "local", f.get("severity"), path, f.get("line") or 0,
+                           f.get("title") or "", WHY_LOCAL, FP, original_rule_id=f.get("ruleId"),
+                           original_message=f.get("title"), extra={"via": "jiffy-cli local check"}))
     return out
+
+
+def notes(stdout: str) -> list[str]:
+    """What Jiffy could not do. `via: none` means no server verdict: only the CLI's local checks ran, so the
+    scan must not read as a full Jiffy check."""
+    try:
+        data = json.loads(stdout)
+    except ValueError:
+        return []
+    if data.get("via") != "none":
+        return []
+    reasons = [r for r in data.get("reasons", []) if not r.startswith("a local check found")]
+    return [f"jiffy: the Jiffy server did not check this ({'; '.join(reasons) or 'no server verdict'}); "
+            "only the Jiffy CLI's local checks ran"]
