@@ -272,9 +272,9 @@ def _connect_jiffy(args) -> int:
             print("unpick: connecting asks for your key; run it in a terminal, or set JIFFY_TOKEN", file=sys.stderr)
             return 2
         import getpass
-        console.print(f"Create a key at {integrations.JIFFY_KEYS_URL}\n"
+        console.print(f"Create a CLI token at {integrations.JIFFY_KEYS_URL}, or press Enter alone to use your browser.\n"
                       "It goes to the Jiffy CLI, which checks it and saves it for your user. unpick does not keep it.")
-        key = getpass.getpass("Jiffy API key (hidden; press Enter alone to sign in with your browser instead): ").strip() or None
+        key = getpass.getpass("Jiffy CLI token, starts with jfy_ (hidden; press Enter alone to sign in with your browser instead): ").strip() or None
     code, msg = integrations.connect_jiffy(key)
     if msg:
         console.print(esc(msg))

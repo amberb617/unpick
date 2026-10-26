@@ -41,10 +41,12 @@ checks something before you install it, `i` lists every add-on worst first, `n` 
 the extra it prints the command list.
 
 **Integrations.** `unpick integrations` lists every optional scanner and AI review provider, whether it is
-ready, and what it sends off your machine. `unpick integrations connect jiffy` asks for a Jiffy API key
-(create one at app.jiffylabs.ai/settings/api-keys), hidden as you type, and hands it to the Jiffy CLI through
-the environment; the CLI checks it and saves it for your user. unpick stores no keys. Hosted AI review reads
-the provider's key from your shell; `unpick integrations` names the variable for each one.
+ready, and what it sends off your machine. `unpick integrations connect jiffy` signs the Jiffy CLI in: press
+Enter to use your browser, or paste a CLI token (`jfy_...`, from app.jiffylabs.ai/settings/cli-tokens; an API
+key will not work), hidden as you type. The token goes to the Jiffy CLI through the environment, which checks it
+and saves it for your user; unpick stores no keys. `unpick integrations check jiffy` asks Jiffy whether the
+saved login still works. Hosted AI review reads the provider's key from your shell; `unpick integrations` names
+the variable for each one.
 
 ![The unpick home screen: which agents are protected, every add-on by its worst finding, integrations](docs/screenshots/cli/home.svg)
 

@@ -136,3 +136,9 @@ def test_check_command_reports_a_rejected_key(env, monkeypatch, capsys):
     assert "Token is invalid or revoked." in out and "unpick integrations connect jiffy" in out
     monkeypatch.setattr(integrations, "check_jiffy", lambda: (0, "Logged in as amber (jiffy)"))
     assert cli.main(["integrations", "check", "jiffy"]) == 0 and "accepted the saved key" in capsys.readouterr().out
+
+
+def test_an_api_key_is_caught_before_anything_is_sent(env):
+    code, msg = integrations.connect_jiffy("jsk_realbutwrongkind", lambda *a, **k: pytest.fail("must not run"))
+    assert code == 2 and "CLI token" in msg and "settings/cli-tokens" in msg and "Nothing was sent" in msg
+    assert integrations.JIFFY_KEYS_URL.endswith("/settings/cli-tokens")
