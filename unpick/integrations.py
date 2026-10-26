@@ -22,7 +22,8 @@ from unpick import backends
 from unpick.judges.api import PROVIDERS
 
 JIFFY_PACKAGE = "@jiffylabs/jiffy-cli"
-JIFFY_KEYS_URL = "https://app.jiffylabs.ai/settings/api-keys"
+JIFFY_KEYS_URL = "https://app.jiffylabs.ai/settings/cli-tokens"  # jfy_ CLI tokens; settings/api-keys makes jsk_ keys
+API_KEY_PREFIX = "jsk_"  # a Jiffy API key: real, but for other endpoints, so `jiffy login` answers 401
 JIFFY_DEFAULT_SERVER = "https://app.jiffylabs.ai"  # jiffy-cli DEFAULT_API_URL
 
 
@@ -64,6 +65,10 @@ def connect_jiffy(key: str | None, runner=subprocess.run) -> tuple[int, str]:
         return 2, f"The Jiffy CLI is not installed. Install it with: npm install -g {JIFFY_PACKAGE}"
     if key is None:
         return runner(["jiffy", "login"]).returncode, ""
+    if key.strip().startswith(API_KEY_PREFIX):
+        return 2, (f"That is a Jiffy API key ({API_KEY_PREFIX}...), which the Jiffy CLI cannot log in with. "
+                   f"Create a CLI token (jfy_...) at {JIFFY_KEYS_URL}, or press Enter alone to sign in with your browser. "
+                   "Nothing was sent.")
     p = runner(["jiffy", "login"], env={**os.environ, "JIFFY_TOKEN": key.strip()}, capture_output=True, text=True)
     return p.returncode, (p.stdout + p.stderr).strip()
 
