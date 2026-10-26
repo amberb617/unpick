@@ -104,7 +104,10 @@ def run(name: str, target: Path, boxed: bool = False, online: bool = False) -> B
     except Exception as e:  # a parser bug must not hide the built-in results
         return BackendRun(errors=[f"{name}: could not parse output ({e}); stderr: {proc.stderr[-500:]}"],
                           meta={**meta, "status": "parse error"})
-    return BackendRun(findings=findings, meta=meta)
+    notes = mod.notes(proc.stdout) if hasattr(mod, "notes") else []  # what the backend says it could not do
+    if notes:
+        meta["status"] = "ran, incomplete"
+    return BackendRun(findings=findings, meta=meta, errors=notes)
 
 
 def which(cmd: str) -> str | None:

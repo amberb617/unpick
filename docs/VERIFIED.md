@@ -629,6 +629,8 @@ No model weights were downloaded. Sizes and sha256 come from the Hugging Face tr
 
 ## jiffy backend
 
+- `jiffy scanner scan <path> --json` (jiffy-cli 1.2.0) puts the server's findings in `findings[]` and the CLI's own local checks in `local.findings[]` (`ruleId`, `severity`, `title`, `file`, `line`); `outcome` is pass, review, block or unverified, and `via: none` means no server verdict was reached. Verified 2026-10-25 by running it on `demo/sample-a` while logged in to app.jiffylabs.ai (recorded in tests/fixtures/backends/jiffy) and against Jiffy-Labs-AI/jiffy-cli@f34612d src/commands/scanner.ts. On that date production answered 404 for POST /api/cli/artifact-scan, so the run was local checks only.
+
 - `jiffy scanner scan <path> --json` exits 0 pass/review, 2 block, 1 unverified; JSON has `findings[]` with severity, ruleId, ruleName, file, line, message — verified 2026-10-18 against Jiffy-Labs-AI/jiffy-cli@b724e01 README.md and src/commands/scanner.ts
 - `jiffy scanner scan` hashes first and uploads files only when the hash is unknown to Jiffy — verified 2026-10-18 against Jiffy-Labs-AI/jiffy-cli@b724e01 README.md (Local mode)
 

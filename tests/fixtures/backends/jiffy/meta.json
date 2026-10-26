@@ -1,0 +1,17 @@
+{
+  "backend": "jiffy",
+  "argv": [
+    "jiffy",
+    "scanner",
+    "scan",
+    "input/sample-a",
+    "--json"
+  ],
+  "cwd": "tests/fixtures/backends/jiffy",
+  "version": "@jiffylabs/jiffy-cli 1.2.0",
+  "date": "2026-10-25",
+  "network": "Jiffy API at https://app.jiffylabs.ai, logged in; this input is unpick's public, defanged demo skill",
+  "server": "POST /api/cli/artifact-scan answered 404 (not deployed), so only the CLI's local checks ran: outcome block, via none",
+  "exit_code": 2,
+  "input_note": "input/sample-a/SKILL.md is sample-a as written by `unpick demo`, which adds the hidden tag characters at write time"
+}

@@ -158,9 +158,9 @@ def _coverage(console, cov: dict) -> None:
     p = console.print
     p("\n[bold]Coverage[/]")
     for err in cov["errors"]:
-        p(f"{INDENT}[red]Check incomplete:[/] {esc(err)}")
+        _para(console, err, "Check incomplete: ")
     for src in cov["unavailable"]:
-        p(f"{INDENT}[yellow]Not available:[/] {esc(src)}")
+        _para(console, src, "Not available: ")
     for reason, paths in cov["not_read_by_reason"].items():
         more = f" and {len(paths) - 3} more" if len(paths) > 3 else ""
         p(f"{INDENT}Not read ({esc(reason)}): {esc(', '.join(raw_escape(x) for x in paths[:3]))}{more}.")
